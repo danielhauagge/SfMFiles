@@ -1,13 +1,13 @@
 #ifndef __PMVSDATA_HPP__
 #define __PMVSDATA_HPP__
 
-// Eigen3
-#include <Eigen/Core>
-#include <Eigen/LU>
-
 // std
 #include <vector>
 #include <iostream>b
+
+// Eigen3
+#include <Eigen/Core>
+#include <Eigen/LU>
 
 // Boost libs
 #include <boost/shared_ptr.hpp>
