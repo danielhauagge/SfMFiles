@@ -32,30 +32,42 @@ INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIRS})
 FIND_PACKAGE(Boost REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
-# Build a universal binary
-SET( CMAKE_OSX_ARCHITECTURES x86_64;i386 )
-
 INCLUDE_DIRECTORIES(".")
 
-# The framework
-ADD_LIBRARY( SfMFiles 
-	     SHARED 
-	     BundlerData.cpp  PMVSData.cpp
-	     BundlerData.hpp PMVSData.hpp)
 
-# MacOS Framework
-SET_TARGET_PROPERTIES( SfMFiles PROPERTIES
-		       FRAMEWORK TRUE
-		       FRAMEWORK_VERSION none
-		       PUBLIC_HEADER "BundlerData.hpp;PMVSData.hpp" 
-		       DEBUG_POSTIFX -d
-		       )
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  # Build a universal binary
+  SET( CMAKE_OSX_ARCHITECTURES x86_64;i386 )
 
-INSTALL( TARGETS SfMFiles
-	 FRAMEWORK DESTINATION Library/Frameworks
-	 LIBRARY DESTINATION lib
-	 ARCHIVE DESTINATION lib
-	 )
+  # The framework
+  ADD_LIBRARY( SfMFiles 
+    SHARED 
+    BundlerData.cpp  PMVSData.cpp
+    BundlerData.hpp PMVSData.hpp)
+
+  # MacOS Framework
+  SET_TARGET_PROPERTIES( SfMFiles PROPERTIES
+    FRAMEWORK TRUE
+    FRAMEWORK_VERSION none
+    PUBLIC_HEADER "BundlerData.hpp;PMVSData.hpp" 
+    DEBUG_POSTIFX -d
+    )
+  
+  INSTALL( TARGETS SfMFiles
+    FRAMEWORK DESTINATION Library/Frameworks
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    )
+ELSE()
+  ADD_LIBRARY(SfMFiles SHARED
+    BundlerData.cpp  PMVSData.cpp BundlerData.hpp PMVSData.hpp)
+  
+  INSTALL_FILES(/include/SfMFiles .hpp BundlerData.hpp PMVSData.hpp)
+  INSTALL_TARGETS(/lib SfMFiles)
+  #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
+
+
+ENDIF()
 
 # Some utilities
 ADD_EXECUTABLE(bundler_file_converter bundler_file_converter.cpp)

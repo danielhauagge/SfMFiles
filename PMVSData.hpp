@@ -43,8 +43,8 @@ namespace BDATA
     {
         class Patch
         {
-        private:
-            Patch(Patch &p) {}
+	  //private:
+	  //Patch(Patch &p) {}
             
         public:
             Eigen::Vector4d position, normal;
@@ -65,6 +65,17 @@ namespace BDATA
                 this->goodCameras = p.goodCameras;
                 this->badCameras = p.badCameras;
             }
+
+            Patch(Patch &p) {
+                this->score = p.score;
+                this->debug1 = p.debug1;
+                this->debug2 = p.debug2;
+                this->position = p.position;
+                this->normal = p.normal;
+                this->goodCameras = p.goodCameras;
+                this->badCameras = p.badCameras;
+            }
+
         };
         
         //! Class that loads .patch files produced by PMVS
