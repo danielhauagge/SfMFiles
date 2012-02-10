@@ -281,7 +281,6 @@ BDATA::BundlerData::readFileASCII(const char *bundlerFileName)
     // Get the number of points and cameras
     int nCameras, nPoints;
     fscanf(file, "%d %d", &nCameras, &nPoints);
-    LOG(__PRETTY_FUNCTION__ << ":" << __LINE__);
 
     // Read the camaeras
     _cameras.resize(nCameras);
@@ -304,9 +303,6 @@ BDATA::BundlerData::readFileASCII(const char *bundlerFileName)
       fscanf(file, "%lf %lf %lf\n", t+0, t+1, t+2);
     }
     
-    LOG(__PRETTY_FUNCTION__ << ":" << __LINE__);
-
-
     // Read the points
     _points.resize(nPoints);
     PointInfo::Vector::iterator itPoint = _points.begin();
