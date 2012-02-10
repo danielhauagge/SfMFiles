@@ -257,10 +257,10 @@ BDATA::BundlerData::readFileASCII(const char *bundlerFileName)
 
     // File signature
     char sig[200];
-    fread(sig, sizeof(char), strlen(ASCII_SIGNATURE), file);
-    sig[strlen(ASCII_SIGNATURE) + 1] = '\0';
+    size_t nread = fread(sig, sizeof(char), strlen(ASCII_SIGNATURE), file);
+    sig[nread + 1] = '\0';
     if (strcmp(sig, ASCII_SIGNATURE) != 0) {
-      LOG("ERROR: Bad signature in ASCII file");
+      LOG("ERROR: Bad signature in ASCII file: " << sig);
       throw BadFileException("Bad signature in binary file");
       return;
     }
@@ -277,34 +277,39 @@ BDATA::BundlerData::readFileASCII(const char *bundlerFileName)
       throw BadFileException(err.str());
       return;
     }
-    
+
     // Get the number of points and cameras
     int nCameras, nPoints;
     fscanf(file, "%d %d", &nCameras, &nPoints);
-    
+    LOG(__PRETTY_FUNCTION__ << ":" << __LINE__);
+
     // Read the camaeras
     _cameras.resize(nCameras);
     for(int i = 0; i < nCameras; i++) {
-        Camera &cam = _cameras[i];
-        
-        // Focal length and radial distortion
-        fscanf(file, "%lf %lf %lf\n", &cam.focalLength, &cam.k1, &cam.k2);
-        
-        // Rotation
-        double *R = &cam.rotation(0,0);
-        fscanf(file, "%lf %lf %lf\n%lf %lf %lf\n%lf %lf %lf\n", 
-               &cam.rotation(0,0), &cam.rotation(0,1), &cam.rotation(0,2), 
-               &cam.rotation(1,0), &cam.rotation(1,1), &cam.rotation(1,2), 
-               &cam.rotation(2,0), &cam.rotation(2,1), &cam.rotation(2,2));
-        
-        // Translation
-        double *t = &cam.translation(0,0);
-        fscanf(file, "%lf %lf %lf\n", t+0, t+1, t+2);
+      
+      Camera &cam = _cameras[i];
+      
+      // Focal length and radial distortion
+      fscanf(file, "%lf %lf %lf\n", &cam.focalLength, &cam.k1, &cam.k2);
+      
+      // Rotation
+      double *R = &cam.rotation(0,0);
+      fscanf(file, "%lf %lf %lf\n%lf %lf %lf\n%lf %lf %lf\n", 
+	     &cam.rotation(0,0), &cam.rotation(0,1), &cam.rotation(0,2), 
+	     &cam.rotation(1,0), &cam.rotation(1,1), &cam.rotation(1,2), 
+	     &cam.rotation(2,0), &cam.rotation(2,1), &cam.rotation(2,2));
+      
+      // Translation
+      double *t = &cam.translation(0,0);
+      fscanf(file, "%lf %lf %lf\n", t+0, t+1, t+2);
     }
     
+    LOG(__PRETTY_FUNCTION__ << ":" << __LINE__);
+
+
     // Read the points
     _points.resize(nPoints);
-    std::vector<PointInfo>::iterator itPoint = _points.begin();
+    PointInfo::Vector::iterator itPoint = _points.begin();
     for(int i = 0; i < nPoints; i++, itPoint++) {
         
         // Position
@@ -322,7 +327,9 @@ BDATA::BundlerData::readFileASCII(const char *bundlerFileName)
         int viewListSize;
         fscanf(file, "%d", &viewListSize);
         itPoint->viewList.resize(viewListSize);
-        std::vector<PointEntry>::iterator itEntry = itPoint->viewList.begin();
+
+        PointEntry::Vector::iterator itEntry = itPoint->viewList.begin();
+
         for(int j = 0; j < viewListSize; j++, itEntry++) {
             fscanf(file, "%d %d %lf %lf", 
                    &itEntry->camera, &itEntry->key, 
@@ -330,6 +337,7 @@ BDATA::BundlerData::readFileASCII(const char *bundlerFileName)
             assert(itEntry->camera < nCameras && itEntry->camera >= 0);
         }
     }    
+
 
     fclose(file);
 }
@@ -391,7 +399,7 @@ BDATA::BundlerData::readFileBinary(const char *bundlerFileName)
     
     // Read the points
     _points.resize(nPoints);
-    std::vector<PointInfo>::iterator itPoint = _points.begin();
+    PointInfo::Vector::iterator itPoint = _points.begin();
     for(int i = 0; i < nPoints; i++, itPoint++) {
         
         // Position
@@ -409,7 +417,7 @@ BDATA::BundlerData::readFileBinary(const char *bundlerFileName)
         int viewListSize;
         fread(&viewListSize, sizeof(int), 1, file);
         itPoint->viewList.resize(viewListSize);
-        std::vector<PointEntry>::iterator itEntry = itPoint->viewList.begin();
+        PointEntry::Vector::iterator itEntry = itPoint->viewList.begin();
         for(int j = 0; j < viewListSize; j++, itEntry++) {
             fread(&itEntry->camera, sizeof(int), 1, file);
             fread(&itEntry->key, sizeof(int), 1, file);
@@ -431,7 +439,6 @@ BDATA::BundlerData::readFile(const char *bundlerFileName)
     fread(fileType, sizeof(char), sizeof(fileType) - 1, file);
     fileType[2] = '\0';
     fclose(file);
-    
     if (strcmp(fileType, "#b") == 0) {
         readFileBinary(bundlerFileName);
     } else if(strcmp(fileType, "# ") == 0) {
@@ -542,7 +549,7 @@ BDATA::BundlerData::writeFileBinary(const char *bundlerFileName) const
     }
     
     // Points
-    std::vector<PointInfo>::const_iterator itPoint = _points.begin();
+    PointInfo::Vector::const_iterator itPoint = _points.begin();
     for(int i = 0; i < nPoints; i++, itPoint++) {
         
         // Position
@@ -556,7 +563,7 @@ BDATA::BundlerData::writeFileBinary(const char *bundlerFileName) const
         // Write the view list
         int viewListSize = itPoint->viewList.size();
         fwrite(&viewListSize, sizeof(int), 1, file);
-        std::vector<PointEntry>::const_iterator itEntry = itPoint->viewList.begin();
+        PointEntry::Vector::const_iterator itEntry = itPoint->viewList.begin();
         for(int j = 0; j < viewListSize; j++, itEntry++) {
             fwrite(&itEntry->camera, sizeof(int), 1, file);
             fwrite(&itEntry->key, sizeof(int), 1, file);

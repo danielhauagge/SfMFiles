@@ -64,6 +64,8 @@ namespace BDATA
   class Camera
   {
   public:
+    typedef std::vector<Camera, Eigen::aligned_allocator<Camera> > Vector;
+
     Eigen::Vector3d translation;
     Eigen::Matrix3d rotation; 
     double focalLength; // Focal length
@@ -85,9 +87,14 @@ namespace BDATA
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
   };
     
+  //EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(BDATA::Camera);
+
+
   class PointEntry // TODO Find a better name for this class
   {
   public:
+    typedef std::vector<PointEntry, Eigen::aligned_allocator<PointEntry> > Vector;
+
     int camera, key;
     Eigen::Vector2d keyPosition;
     
@@ -101,10 +108,12 @@ namespace BDATA
   class PointInfo
   {
   public:
+    typedef std::vector<PointInfo, Eigen::aligned_allocator<PointInfo> > Vector;
+    
     Eigen::Vector3d position;
     Color color;
-    std::vector<PointEntry> viewList;
-        
+    PointEntry::Vector viewList;
+
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
   };
     
@@ -126,18 +135,20 @@ namespace BDATA
     int getNCameras() const { return _cameras.size(); }
     int getNPoints() const { return _points.size(); }
     
-    const std::vector<PointInfo> &getPointInfo() const { return _points; };
-    const std::vector<Camera> &getCameras() const { return _cameras; };
+    const PointInfo::Vector& getPointInfo() const { return _points; };
+    const Camera::Vector& getCameras() const { return _cameras; };
     
-    std::vector<PointInfo> &getPointInfo() { return _points; };
-    std::vector<Camera> &getCameras() { return _cameras; };
+    PointInfo::Vector &getPointInfo() { return _points; };
+    Camera::Vector &getCameras() { return _cameras; };
     
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
   private:
     static const char *BINARY_SIGNATURE;
     static const char *ASCII_SIGNATURE;
 
-    std::vector<Camera> _cameras;
-    std::vector<PointInfo> _points;
+    Camera::Vector _cameras;
+    PointInfo::Vector _points;
     
     void readFileASCII(const char *bundlerFileName);        
     void readFileBinary(const char *bundlerFileName);
