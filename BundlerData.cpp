@@ -24,24 +24,24 @@
 #include <Macros.hpp>
 
 //static inline
-//std::istream& 
-//operator>>(std::istream &s, Eigen::Matrix3d &m)
-//{
-//    for(int i = 0; i < 3; i++) 
-//        for(int j = 0; j < 3; j++)
-//            s >> m(i, j);
-//    
-//    return s;
-//}
-//
+std::istream& 
+operator>>(std::istream &s, Eigen::Matrix3d &m)
+{
+    for(int i = 0; i < 3; i++) 
+        for(int j = 0; j < 3; j++)
+            s >> m(i, j);
+    
+    return s;
+}
+
 //static inline
-//std::istream& 
-//operator>>(std::istream &s, Eigen::Vector3d &p)
-//{
-//    for(int i = 0; i < 3; i++) s >> p[i];
-//    
-//    return s;
-//}
+std::istream& 
+operator>>(std::istream &s, Eigen::Vector3d &p)
+{
+    for(int i = 0; i < 3; i++) s >> p[i];
+    
+    return s;
+}
 //
 //static inline
 //std::istream& 
@@ -56,21 +56,21 @@
 //}
 //
 //static inline
-//std::istream& 
-//operator>>(std::istream &s, Eigen::Vector2d &p)
-//{
-//    for(int i = 0; i < 2; i++) s >> p[i];
-//    
-//    return s;
-//}
-//
+std::istream& 
+operator>>(std::istream &s, Eigen::Vector2d &p)
+{
+    for(int i = 0; i < 2; i++) s >> p[i];
+    
+    return s;
+}
+
 //static inline
-//std::istream& 
-//operator>>(std::istream &s, BDATA::Camera &cam)
-//{
-//    s >> cam.focalLength >> cam.k1 >> cam.k2 >> cam.rotation >> cam.translation;
-//    return s;
-//}
+std::istream& 
+operator>>(std::istream &s, BDATA::Camera &cam)
+{
+  s >> cam.focalLength >> cam.k1 >> cam.k2 >> cam.rotation >> cam.translation;
+  return s;
+}
 
 std::ostream& 
 operator<<(std::ostream &s, const BDATA::Camera &cam)
@@ -245,7 +245,7 @@ const char * BDATA::BundlerData::BINARY_SIGNATURE = "#bBundle file v";
 const char * BDATA::BundlerData::ASCII_SIGNATURE = "# Bundle file v";
 
 void
-BDATA::BundlerData::readFileASCII(const char *bundlerFileName)
+BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
 {
     FILE* file = fopen(bundlerFileName, "r");
     if(!file) {
@@ -339,7 +339,7 @@ BDATA::BundlerData::readFileASCII(const char *bundlerFileName)
 }
 
 void
-BDATA::BundlerData::readFileBinary(const char *bundlerFileName)
+BDATA::BundlerData::_readFileBinary(const char *bundlerFileName)
 {
     FILE* file = fopen(bundlerFileName, "r");
     if(!file) {
@@ -436,11 +436,19 @@ BDATA::BundlerData::readFile(const char *bundlerFileName)
     fileType[2] = '\0';
     fclose(file);
     if (strcmp(fileType, "#b") == 0) {
-        readFileBinary(bundlerFileName);
+        _readFileBinary(bundlerFileName);
     } else if(strcmp(fileType, "# ") == 0) {
-        readFileASCII(bundlerFileName);        
+        _readFileASCII(bundlerFileName);        
     } else {
 	throw BadFileException("File does not seem to be a bundle file.");
+    }
+
+    _bundleFName = std::string(bundlerFileName);
+
+    // Figure out how many of these cameras are actually valid
+    _nValidCams = 0;
+    for(int i = 0; i < _cameras.size(); i++) {
+      if(_cameras[i].isValid()) _nValidCams++;
     }
 }
 
@@ -453,13 +461,13 @@ BDATA::BundlerData::init(const char *bundlerFileName)
 void 
 BDATA::BundlerData::writeFile(const char *bundlerFileName, bool ASCII) const
 {
-    if (ASCII) writeFileASCII(bundlerFileName);
-    else writeFileBinary(bundlerFileName);
+    if (ASCII) _writeFileASCII(bundlerFileName);
+    else _writeFileBinary(bundlerFileName);
 }
 
 // FIXME get rid of C++ stream operators, makes code go really slow
 void 
-BDATA::BundlerData::writeFileASCII(const char *bundlerFileName) const
+BDATA::BundlerData::_writeFileASCII(const char *bundlerFileName) const
 {
     std::ofstream f(bundlerFileName);
     
@@ -503,10 +511,9 @@ BDATA::BundlerData::writeFileASCII(const char *bundlerFileName) const
     f.close();
 }
 
-
 // FIXME get rid of C++ stream operators, makes code go really slow
 void 
-BDATA::BundlerData::writeFileBinary(const char *bundlerFileName) const
+BDATA::BundlerData::_writeFileBinary(const char *bundlerFileName) const
 {
     FILE* file = fopen(bundlerFileName, "wb");
     if(!file) {
@@ -570,10 +577,60 @@ BDATA::BundlerData::writeFileBinary(const char *bundlerFileName) const
     fclose(file);
 }
 
+void 
+BDATA::BundlerData::loadListFile(const char *listFName)
+{
+  _imageFNames.resize(this->getNCameras());
+  
+  std::ifstream listF(listFName);
+  int i = 0;
+  for(i = 0; listF.good(); i++) {
+    char line[1000];
+    listF.getline(line, 1000);
+    if(!listF.good()) break;
 
-BDATA::BundlerData::BundlerData(const char *bundlerFileName)
+    if(i >= this->getNCameras()) {
+      _imageFNames.resize(0);
+      std::stringstream errMsg;
+      errMsg << "Bad list file: number of filenames exceeds the number of cameras";
+      throw BadFileException(errMsg.str());
+    }
+
+    std::istringstream lineStream(line);
+    std::string fname;
+    lineStream >> fname;
+    _imageFNames[i] = fname;
+  }
+
+  if(i < this->getNCameras() ) {
+    _imageFNames.resize(0);
+    std::stringstream errMsg;
+    errMsg << "Bad list file: number of filenames smaller than number of cameras (" << i << " vs " << this->getNCameras() << ")";
+    throw BadFileException(errMsg.str());
+  }
+
+  _listFName = std::string(listFName);
+}
+
+BDATA::BundlerData::BundlerData(const char *bundlerFileName):
+  _nValidCams(0)
 {
     init(bundlerFileName);
+}
+
+const char* 
+BDATA::BundlerData::getListFileName() const 
+{
+  if(_listFName.size() ) return _listFName.c_str();
+  return NULL;
+}
+
+const char* 
+BDATA::BundlerData::getImageFileName(int i) const
+{
+  if(i < 0 || i >= this->getNCameras()) return NULL;
+  if(_imageFNames.size() == 0) return NULL;
+  return _imageFNames[i].c_str();
 }
 
 BDATA::BundlerData::Ptr

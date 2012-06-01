@@ -27,7 +27,6 @@
 //       the right way to get rid of that runtime error.
 #define EIGEN_DONT_ALIGN_STATICALLY
 
-
 #define LOG(msg) std::cout << ">> " << msg << std::endl
 #define PRINT_VAR(var) std::cout << ">> " << #var << " = " << (var) << std::endl;
 

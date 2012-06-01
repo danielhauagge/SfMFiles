@@ -34,7 +34,6 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 INCLUDE_DIRECTORIES(".")
 
-
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # Build a universal binary
   SET( CMAKE_OSX_ARCHITECTURES x86_64;i386 )
@@ -72,3 +71,6 @@ ENDIF()
 # Some utilities
 ADD_EXECUTABLE(bundler_file_converter bundler_file_converter.cpp)
 TARGET_LINK_LIBRARIES(bundler_file_converter SfMFiles)
+
+ADD_EXECUTABLE(testBundlerData testBundlerData.cpp)
+TARGET_LINK_LIBRARIES(testBundlerData SfMFiles)

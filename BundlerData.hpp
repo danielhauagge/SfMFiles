@@ -87,9 +87,6 @@ namespace BDATA
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
   };
     
-  //EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(BDATA::Camera);
-
-
   class PointEntry // TODO Find a better name for this class
   {
   public:
@@ -113,10 +110,10 @@ namespace BDATA
     Eigen::Vector3d position;
     Color color;
     PointEntry::Vector viewList;
-
+    
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
   };
-    
+  
   // Class that represents bundler output, encapsulating
   // camera information and point information for reconstructed model.
   class BundlerData
@@ -125,40 +122,51 @@ namespace BDATA
     typedef boost::shared_ptr<BundlerData> Ptr;
     static BundlerData::Ptr New(const char *bundlerFileName);
     
-    BundlerData() {};
-    BundlerData(const char *bundlerFileName);
-    void init(const char *bundlerFileName);
-        
+    BundlerData():_nValidCams(0) {};
+    BundlerData(const char *bundleFileName);
+    void init(const char *bundleFileName);
+    
+    //! Load file with image filenames
+    void loadListFile(const char *listFName);
+    const char* getListFileName() const;
+    const char* getBundleFileName() const { return _bundleFName.c_str(); };
+    const char* getImageFileName(int i) const;
+    
     void readFile(const char *bundlerFileName);
     void writeFile(const char *bundlerFileName, bool ASCII = true) const;
     
     int getNCameras() const { return _cameras.size(); }
+    int getNValidCameras() const { return _nValidCams; }
     int getNPoints() const { return _points.size(); }
     
     const PointInfo::Vector& getPointInfo() const { return _points; };
     const Camera::Vector& getCameras() const { return _cameras; };
     
-    PointInfo::Vector &getPointInfo() { return _points; };
-    Camera::Vector &getCameras() { return _cameras; };
-    
+    PointInfo::Vector& getPointInfo() { return _points; };
+    Camera::Vector& getCameras() { return _cameras; };
+
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
   private:
-    static const char *BINARY_SIGNATURE;
-    static const char *ASCII_SIGNATURE;
+    static const char* BINARY_SIGNATURE;
+    static const char* ASCII_SIGNATURE;
 
     Camera::Vector _cameras;
     PointInfo::Vector _points;
+    int _nValidCams;
     
-    void readFileASCII(const char *bundlerFileName);        
-    void readFileBinary(const char *bundlerFileName);
+    std::string _listFName, _bundleFName;
+    std::vector<std::string> _imageFNames;
+
+    void _readFileASCII(const char* bundlerFileName);        
+    void _readFileBinary(const char* bundlerFileName);
     
-    void writeFileASCII(const char *bundlerFileName) const;        
-    void writeFileBinary(const char *bundlerFileName) const;
+    void _writeFileASCII(const char* bundlerFileName) const;        
+    void _writeFileBinary(const char* bundlerFileName) const;
   };
 }
 //
-//std::istream& operator>> (std::istream &s, BDATA::Camera &cam);
+std::istream& operator>> (std::istream& s, BDATA::Camera& cam);
 //std::istream& operator>> (std::istream &s, Eigen::Vector2d &p);
 //std::istream& operator>> (std::istream &s, Eigen::Vector3d &p);
 //std::istream& operator>> (std::istream &s, Eigen::Matrix3d &m);
