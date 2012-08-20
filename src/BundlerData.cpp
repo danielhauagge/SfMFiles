@@ -194,6 +194,13 @@ camera(-1), key(-1)
 {
 }
 
+BDATA::PointEntry::PointEntry(const BDATA::PointEntry& other)
+{
+  this->camera = other.camera;
+  this->key = other.key;
+  this->keyPosition = other.keyPosition;
+}
+
 //void
 //BDATA::BundlerData::init(const char *bundlerFileName)
 //{
@@ -286,7 +293,7 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
     _cameras.resize(nCameras);
     for(int i = 0; i < nCameras; i++) {
       
-      Camera &cam = _cameras[i];
+      Camera& cam = _cameras[i];
       
       // Focal length and radial distortion
       fscanf(file, "%lf %lf %lf\n", &cam.focalLength, &cam.k1, &cam.k2);
@@ -333,7 +340,6 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
             assert(itEntry->camera < nCameras && itEntry->camera >= 0);
         }
     }    
-
 
     fclose(file);
 }
@@ -426,7 +432,7 @@ BDATA::BundlerData::_readFileBinary(const char *bundlerFileName)
 }
 
 void
-BDATA::BundlerData::readFile(const char *bundlerFileName)
+BDATA::BundlerData::readFile(const char* bundlerFileName, bool computeCamIndex)
 {
     FILE* file = fopen(bundlerFileName, "rb");
     
@@ -446,6 +452,15 @@ BDATA::BundlerData::readFile(const char *bundlerFileName)
     _bundleFName = std::string(bundlerFileName);
 
     // Figure out how many of these cameras are actually valid
+    _updateNValidCams();
+
+    // Build camera to point index
+    if(computeCamIndex) buildCam2PointIndex();
+}
+
+void 
+BDATA::BundlerData::_updateNValidCams()
+{
     _nValidCams = 0;
     for(int i = 0; i < _cameras.size(); i++) {
       if(_cameras[i].isValid()) _nValidCams++;
@@ -453,9 +468,27 @@ BDATA::BundlerData::readFile(const char *bundlerFileName)
 }
 
 void
-BDATA::BundlerData::init(const char *bundlerFileName)
+BDATA::BundlerData::init(const char* bundlerFileName, bool computeCamIndex)
 {
-    readFile(bundlerFileName);
+  _cam2PointIndexInitialized = false;
+  readFile(bundlerFileName, computeCamIndex);
+}
+
+void
+BDATA::BundlerData::init(const char* bundlerFileName, const char* listFileName, bool computeCamIndex)
+{
+  _cam2PointIndexInitialized = false;
+  init(bundlerFileName, computeCamIndex);
+  loadListFile(listFileName);
+}
+
+void 
+BDATA::BundlerData::init(const Camera::Vector& cameras, const PointInfo::Vector& points)
+{
+  _cam2PointIndexInitialized = false;
+  _cameras = cameras;
+  _points = points;
+  _updateNValidCams();
 }
 
 void 
@@ -602,7 +635,7 @@ BDATA::BundlerData::loadListFile(const char *listFName)
     _imageFNames[i] = fname;
   }
 
-  if(i < this->getNCameras() ) {
+  if( i < this->getNCameras() ) {
     _imageFNames.resize(0);
     std::stringstream errMsg;
     errMsg << "Bad list file: number of filenames smaller than number of cameras (" << i << " vs " << this->getNCameras() << ")";
@@ -612,10 +645,22 @@ BDATA::BundlerData::loadListFile(const char *listFName)
   _listFName = std::string(listFName);
 }
 
-BDATA::BundlerData::BundlerData(const char *bundlerFileName):
+BDATA::BundlerData::BundlerData(const char* bundlerFileName, const char* listFileName, bool computeCam2PointIndex):
   _nValidCams(0)
 {
-    init(bundlerFileName);
+  init(bundlerFileName, listFileName, computeCam2PointIndex);  
+}
+
+BDATA::BundlerData::BundlerData(const char* bundlerFileName, bool computeCam2PointIndex):
+  _nValidCams(0)
+{
+  init(bundlerFileName, computeCam2PointIndex);
+}
+
+BDATA::BundlerData::BundlerData(const Camera::Vector& cameras, const PointInfo::Vector& points):
+  _nValidCams(0)
+{
+  init(cameras, points);
 }
 
 const char* 
@@ -625,20 +670,22 @@ BDATA::BundlerData::getListFileName() const
   return NULL;
 }
 
+#if 0
 const char* 
-BDATA::BundlerData::getImageFileName(int i) const
+BDATA::BundlerData::getImageFileName(int camIdx) const
 {
-  if(i < 0 || i >= this->getNCameras()) return NULL;
+  if(camIdx < 0 || camIdx >= this->getNCameras()) return NULL;
   if(_imageFNames.size() == 0) return NULL;
-  return _imageFNames[i].c_str();
+  return _imageFNames[camIdx].c_str();
 }
+#endif
 
 BDATA::BundlerData::Ptr
-BDATA::BundlerData::New(const char *bundleFileName)
+BDATA::BundlerData::New(const char* bundleFileName, bool computeCam2PointIndex)
 {
   BDATA::BundlerData::Ptr result;
   try {
-    result = BundlerData::Ptr(new BundlerData(bundleFileName));
+    result = BundlerData::Ptr(new BundlerData(bundleFileName, computeCam2PointIndex));
   } catch (BadFileException e) {
     LOG("Caught exception");
     LOG("What: " << e.what());
@@ -646,3 +693,19 @@ BDATA::BundlerData::New(const char *bundleFileName)
   }
   return result;
 }
+
+void
+BDATA::BundlerData::buildCam2PointIndex()
+{
+  if(_cam2PointIndexInitialized) return;
+
+  int pntIdx = 0;
+  for(PointInfo::Vector::iterator pnt = _points.begin(), pntEnd = _points.end(); pnt != pntEnd; pnt++, pntIdx++) {
+    for(PointEntry::Vector::iterator pe = pnt->viewList.begin(), peEnd = pnt->viewList.end(); pe != peEnd; pe++) {
+      _cameras[pe->camera].visiblePoints.push_back(pntIdx);
+    }
+  }
+
+  _cam2PointIndexInitialized = true;
+}
+

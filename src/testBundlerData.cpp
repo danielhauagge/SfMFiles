@@ -4,6 +4,11 @@
 int
 main(int argc, const char* argv[])
 {
+  if(argc == 1) {
+    std::cout << "Usage:\n\t" << argv[0] << " <bundle.out> <list.txt> <cam index>" << std::endl;
+    return EXIT_FAILURE;
+  }
+
   const char* bundleFName = argv[1];
   const char* listFName = argv[2];
   int camNum = atoi(argv[3]);
@@ -14,6 +19,9 @@ main(int argc, const char* argv[])
   PRINT_VAR(bundler.getNValidCameras());
   PRINT_VAR(bundler.getNPoints());
 
+  LOG("Building camera to point index");
+  bundler.buildCam2PointIndex();
+
   try {
     LOG("Loading list file");
     bundler.loadListFile(listFName);
@@ -23,7 +31,7 @@ main(int argc, const char* argv[])
   }  
 
   PRINT_VAR(bundler.getListFileName());
-  PRINT_VAR(bundler.getImageFileName(camNum));
+  PRINT_VAR(bundler.getImageFileNames()[camNum]);
 
   return EXIT_SUCCESS;
 }
