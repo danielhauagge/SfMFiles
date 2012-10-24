@@ -49,13 +49,6 @@
 
 namespace BDATA
 {
-  class BadFileException: public std::runtime_error
-  {
-  public:
-    explicit BadFileException(const std::string what): std::runtime_error(what)
-    {}
-  };
-  
   typedef struct {
     unsigned char r, g, b;
   } Color;

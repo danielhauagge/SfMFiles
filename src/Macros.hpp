@@ -30,4 +30,16 @@
 #define LOG(msg) std::cout << ">> " << msg << std::endl
 #define PRINT_VAR(var) std::cout << ">> " << #var << " = " << (var) << std::endl;
 
+#include <stdexcept>
+namespace BDATA
+{
+  class BadFileException: public std::runtime_error
+  {
+  public:
+    explicit BadFileException(const std::string what): std::runtime_error(what)
+    {}
+  };
+  
+}
+
 #endif

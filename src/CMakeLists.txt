@@ -74,3 +74,6 @@ TARGET_LINK_LIBRARIES(bundler_file_converter SfMFiles)
 
 ADD_EXECUTABLE(testBundlerData testBundlerData.cpp)
 TARGET_LINK_LIBRARIES(testBundlerData SfMFiles)
+
+ADD_EXECUTABLE(testPMVSData testPMVSData.cpp)
+TARGET_LINK_LIBRARIES(testPMVSData SfMFiles)

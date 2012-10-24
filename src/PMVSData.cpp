@@ -30,17 +30,28 @@ operator>>(std::istream &s, BDATA::PMVS::Patch &p)
 {
     assert(s.good());
     
-    // First line of every patch is "PATCHS"
-    while(true) {
-        char c;
-        s.get(c);
-        if(c == 'P' or c == 'p') break;
+    // Get patch type
+    std::string patchType;
+    s >> patchType;
+
+    if(strcmp(patchType.c_str(), "PATCHS") == 0 || strcmp(patchType.c_str(), "PATCHPS") == 0) {
+        s >> p.position(0) >> p.position(1) >> p.position(2) >> p.position(3);
+        s >> p.normal(0)   >> p.normal(1)   >> p.normal(2)   >> p.normal(3);
+        if(strcmp(patchType.c_str(), "PATCHPS") == 0) {
+            s >> p.color(0) >> p.color(1) >> p.color(2);
+        }
+        s >> p.score >> p.debug1 >> p.debug2;        
+
+        if(strcmp(patchType.c_str(), "PATCHPS") == 0) {
+            s >> p.reconstructionAccuracy;
+            s >> p.reconstructionSLevel;
+        }
+    } else {
+        std::stringstream err;
+        err << "Cannot handle patch of type " << patchType; 
+        LOG("ERROR: " << err.str());
+        throw BDATA::BadFileException(err.str());
     }
-    s.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    
-    s >> p.position(0) >> p.position(1) >> p.position(2) >> p.position(3);
-    s >> p.normal(0)   >> p.normal(1)   >> p.normal(2)   >> p.normal(3);
-    s >> p.score >> p.debug1 >> p.debug2;
 
     int nGoodCameras = 0;
     s >> nGoodCameras;
@@ -85,17 +96,6 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName)
         f >> _patches[i];
     }    
     assert(_patches.size() == nPatches);
-
-#if 0
-    LOG("Done reading patches");    
-    PRINT_VAR(_patches[nPatches - 1].position);
-    PRINT_VAR(_patches[nPatches - 1].normal);
-    PRINT_VAR(_patches[nPatches - 1].score);
-    PRINT_VAR(_patches[nPatches - 1].debug1);
-    PRINT_VAR(_patches[nPatches - 1].debug2);
-    PRINT_VAR(_patches[nPatches - 1].goodCameras.size());
-    PRINT_VAR(_patches[nPatches - 1].badCameras.size());
-#endif
 }
 
 BDATA::PMVS::PMVSData::Ptr

@@ -43,8 +43,8 @@ namespace BDATA
     {
         class Patch
         {
-	  //private:
-	  //Patch(Patch &p) {}
+    	  //private:
+    	  //Patch(Patch &p) {}
             
         public:
             Eigen::Vector4d position, normal;
@@ -52,6 +52,10 @@ namespace BDATA
             double debug1, debug2; // Numbers contained in the .patch file that are for debugging purposes
             std::vector<int> goodCameras; // To which cameras is this point visible?
             std::vector<int> badCameras;
+
+            Eigen::Vector3f color;
+            float reconstructionAccuracy;
+            float reconstructionSLevel;
                         
             Patch() {};
             Patch& operator = ( const Patch& source ) { assert(0); return *this;}
