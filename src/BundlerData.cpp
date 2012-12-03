@@ -68,8 +68,8 @@ operator>>(std::istream &s, Eigen::Vector2d &p)
 std::istream& 
 operator>>(std::istream &s, BDATA::Camera &cam)
 {
-  s >> cam.focalLength >> cam.k1 >> cam.k2 >> cam.rotation >> cam.translation;
-  return s;
+    s >> cam.focalLength >> cam.k1 >> cam.k2 >> cam.rotation >> cam.translation;
+    return s;
 }
 
 std::ostream& 
@@ -100,88 +100,100 @@ operator<<(std::ostream &s, const BDATA::Camera &cam)
 bool 
 BDATA::Camera::isValid() const
 {
-  return fabs(rotation.determinant() - 1.0) < 0.00001;
+    return fabs(rotation.determinant() - 1.0) < 0.00001;
 }
 
 void 
-BDATA::Camera::im2world(int imWidth, int imHeight,
-			const Eigen::Vector2d &im, Eigen::Vector3d &w) const
+BDATA::Camera::im2world(const Eigen::Vector2d &im, Eigen::Vector3d &w,
+                        int imWidth, int imHeight) const
 {
-  Eigen::Vector3d c;
-  c[0] = ( im[0] - imWidth/2.0)/focalLength;
-  c[1] = (-im[1] + imHeight/2.0)/focalLength;
-  c[2] = -1;
-  cam2world(c, w);
+    Eigen::Vector3d c;
+//    c[0] = (  imWidth/2.0 - im[0]) / focalLength;
+//    c[1] = ( imHeight/2.0 - im[1]) / focalLength;
+//    c[2] = 1;
+    
+    // TODO: radial distortion
+    im2cam(im, c, imWidth, imHeight);
+    cam2world(c, w);
 }
 
 void 
-BDATA::Camera::world2im(int imWidth, int imHeight,
-			const Eigen::Vector3d &w, Eigen::Vector2d &im) const
+BDATA::Camera::im2cam(const Eigen::Vector2d &im, Eigen::Vector3d &c, int imWidth, int imHeight) const
 {
-  Eigen::Vector3d c;
-  world2cam(w, c);
+    c[0] = (  imWidth/2.0 - im[0]) / focalLength;
+    c[1] = ( imHeight/2.0 - im[1]) / focalLength;
+    c[2] = 1;
+}
 
-  c[0] /= c[2];
-  c[1] /= c[2];
-  c[2] = 1;
+void 
+BDATA::Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d &im, 
+                      bool applyRadialDistortion,
+                      int imWidth, int imHeight) const
+{
+    c /= c[2];
+    
+    double r = 1.0;
+    
+    if(applyRadialDistortion) {
+        double cNorm2 = std::pow(c[0], 2.0) + std::pow(c[1], 2.0);
+        r = 1.0 + k1 * cNorm2 + k2 * std::pow(cNorm2, 2.0);
+    }
+    im[0] = imWidth/2.0 - r * c[0] * focalLength;
+    im[1] = imHeight/2.0 - r * c[1] * focalLength;
+}
 
-  im[0] = imWidth/2.0 - focalLength * c[0];
-  im[1] = imHeight/2.0 + focalLength * c[1];
+void 
+BDATA::Camera::world2im(const Eigen::Vector3d &w, Eigen::Vector2d &im, 
+                        bool applyRadialDistortion,
+                        int imWidth, int imHeight) const
+{
+    Eigen::Vector3d c;
+    world2cam(w, c);    
+    cam2im(c, im, applyRadialDistortion, imWidth, imHeight);    
 }
 
 void 
 BDATA::Camera::cam2world(const Eigen::Vector3d &c, Eigen::Vector3d &w) const
 {
-    // TODO use Eigen methods to do this
-    for(int i = 0; i < 3; i++) {
-        w(i) = 0;
-        for(int j = 0; j < 3; j++) {
-            w(i) += rotation(j, i) * (c(j) - translation(j));
-        }                
-    }
+    w = rotation.transpose() * (c - translation);    
 }
 
 void 
 BDATA::Camera::world2cam(const Eigen::Vector3d &w, Eigen::Vector3d &c) const
 {
-    for(int i = 0; i < 3; i++) {
-        c(i) = 0;
-        for(int j = 0; j < 3; j++) {
-            c(i) += rotation(i, j) * w(j) + translation(j);
-        }                
-    }   
+    c = rotation * w + translation;    
 }
 
 void
 BDATA::Camera::intrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d &K) const
 {
-  K.setZero();
-
-  // z: points to the back of the camera
-  // y: points up (opposite wrt image's y)
-  // x: points to the right (agree's with images's x)
-  // (0, 0) image -> (-x, y, -1) in camera     
-  K(0,0) =  focalLength;  
-  K(1,1) = -focalLength;  
-  K(0,2) = -imWidth  / 2.0;
-  K(1,2) = -imHeight / 2.0;
-  K(2,2) = -1;  
+    K.setZero();
+    
+    // z: points to the back of the camera
+    // y: points up (opposite wrt image's y)
+    // x: points to the right (agree's with images's x)
+    // (0, 0) image -> (-x, y, -1) in camera     
+    K(0,0) =  focalLength;  
+    K(1,1) = -focalLength;  
+    K(0,2) = -imWidth  / 2.0;
+    K(1,2) = -imHeight / 2.0;
+    K(2,2) = -1;  
 }
 
 void
 BDATA::Camera::invIntrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d &invK) const
 {
-  invK.setZero();
-
-  // z: points to the back of the camera
-  // y: points up (opposite wrt image's y)
-  // x: points to the right (agree's with images's x)
-  // (0, 0) image -> (-x, y, -1) in camera     
-  invK(0,0) =  1.0/focalLength;  
-  invK(1,1) = -1.0/focalLength;  
-  invK(0,2) = -imWidth  / (focalLength * 2.0);
-  invK(1,2) =  imHeight / (focalLength * 2.0);
-  invK(2,2) = -1;  
+    invK.setZero();
+    
+    // z: points to the back of the camera
+    // y: points up (opposite wrt image's y)
+    // x: points to the right (agree's with images's x)
+    // (0, 0) image -> (-x, y, -1) in camera     
+    invK(0,0) =  1.0/focalLength;  
+    invK(1,1) = -1.0/focalLength;  
+    invK(0,2) = -imWidth  / (focalLength * 2.0);
+    invK(1,2) =  imHeight / (focalLength * 2.0);
+    invK(2,2) = -1;  
 }
 
 BDATA::PointEntry::PointEntry(int camera_, int key_, Eigen::Vector2d keyPosition_): 
@@ -196,9 +208,9 @@ camera(-1), key(-1)
 
 BDATA::PointEntry::PointEntry(const BDATA::PointEntry& other)
 {
-  this->camera = other.camera;
-  this->key = other.key;
-  this->keyPosition = other.keyPosition;
+    this->camera = other.camera;
+    this->key = other.key;
+    this->keyPosition = other.keyPosition;
 }
 
 //void
@@ -256,58 +268,58 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
 {
     FILE* file = fopen(bundlerFileName, "r");
     if(!file) {
-      std::stringstream err;
-      err << "Could not read file " << bundlerFileName;
-      throw BadFileException(err.str());
-      return;
+        std::stringstream err;
+        err << "Could not read file " << bundlerFileName;
+        throw BadFileException(err.str());
+        return;
     }
-
+    
     // File signature
     char sig[200];
     size_t nread = fread(sig, sizeof(char), strlen(ASCII_SIGNATURE), file);
     sig[nread + 1] = '\0';
     if (strcmp(sig, ASCII_SIGNATURE) != 0) {
-      LOG("ERROR: Bad signature in ASCII file: " << sig);
-      throw BadFileException("Bad signature in binary file");
-      return;
+        LOG("ERROR: Bad signature in ASCII file: " << sig);
+        throw BadFileException("Bad signature in binary file");
+        return;
     }
-
+    
     //char firstLine[255];
     //fgets(firstLine, sizeof(firstLine), file);
     
     double version;
     fscanf(file, "%lf", &version);
     if (version != 0.3) {
-      std::stringstream err;
-      err << "Unsupported version " << version; 
-      LOG("ERROR: " << err.str());
-      throw BadFileException(err.str());
-      return;
+        std::stringstream err;
+        err << "Unsupported version " << version; 
+        LOG("ERROR: " << err.str());
+        throw BadFileException(err.str());
+        return;
     }
-
+    
     // Get the number of points and cameras
     int nCameras, nPoints;
     fscanf(file, "%d %d", &nCameras, &nPoints);
-
+    
     // Read the camaeras
     _cameras.resize(nCameras);
     for(int i = 0; i < nCameras; i++) {
-      
-      Camera& cam = _cameras[i];
-      
-      // Focal length and radial distortion
-      fscanf(file, "%lf %lf %lf\n", &cam.focalLength, &cam.k1, &cam.k2);
-      
-      // Rotation
-      double *R = &cam.rotation(0,0);
-      fscanf(file, "%lf %lf %lf\n%lf %lf %lf\n%lf %lf %lf\n", 
-	     &cam.rotation(0,0), &cam.rotation(0,1), &cam.rotation(0,2), 
-	     &cam.rotation(1,0), &cam.rotation(1,1), &cam.rotation(1,2), 
-	     &cam.rotation(2,0), &cam.rotation(2,1), &cam.rotation(2,2));
-      
-      // Translation
-      double *t = &cam.translation(0,0);
-      fscanf(file, "%lf %lf %lf\n", t+0, t+1, t+2);
+        
+        Camera& cam = _cameras[i];
+        
+        // Focal length and radial distortion
+        fscanf(file, "%lf %lf %lf\n", &cam.focalLength, &cam.k1, &cam.k2);
+        
+        // Rotation
+        double *R = &cam.rotation(0,0);
+        fscanf(file, "%lf %lf %lf\n%lf %lf %lf\n%lf %lf %lf\n", 
+               &cam.rotation(0,0), &cam.rotation(0,1), &cam.rotation(0,2), 
+               &cam.rotation(1,0), &cam.rotation(1,1), &cam.rotation(1,2), 
+               &cam.rotation(2,0), &cam.rotation(2,1), &cam.rotation(2,2));
+        
+        // Translation
+        double *t = &cam.translation(0,0);
+        fscanf(file, "%lf %lf %lf\n", t+0, t+1, t+2);
     }
     
     // Read the points
@@ -318,7 +330,7 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
         // Position
         double *pos = &itPoint->position[0];
         fscanf(file, "%lf %lf %lf\n", pos + 0, pos + 1, pos + 2);
-                
+        
         // Color
         float r, g, b;
         fscanf(file, "%f %f %f\n", &r, &g, &b);
@@ -330,9 +342,9 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
         int viewListSize;
         fscanf(file, "%d", &viewListSize);
         itPoint->viewList.resize(viewListSize);
-
+        
         PointEntry::Vector::iterator itEntry = itPoint->viewList.begin();
-
+        
         for(int j = 0; j < viewListSize; j++, itEntry++) {
             fscanf(file, "%d %d %lf %lf", 
                    &itEntry->camera, &itEntry->key, 
@@ -340,7 +352,7 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
             assert(itEntry->camera < nCameras && itEntry->camera >= 0);
         }
     }    
-
+    
     fclose(file);
 }
 
@@ -349,10 +361,10 @@ BDATA::BundlerData::_readFileBinary(const char *bundlerFileName)
 {
     FILE* file = fopen(bundlerFileName, "r");
     if(!file) {
-      std::stringstream err;
-      err << "Could not read file " << bundlerFileName;
-      throw BadFileException(err.str());
-      return;
+        std::stringstream err;
+        err << "Could not read file " << bundlerFileName;
+        throw BadFileException(err.str());
+        return;
     }
     
     // File signature
@@ -360,19 +372,19 @@ BDATA::BundlerData::_readFileBinary(const char *bundlerFileName)
     fread(sig, sizeof(char), strlen(BINARY_SIGNATURE), file);
     sig[strlen(BINARY_SIGNATURE) + 1] = '\0';
     if (strcmp(sig, BINARY_SIGNATURE) != 0) {
-      throw BadFileException("Bad signature in binary file");
-      return;
+        throw BadFileException("Bad signature in binary file");
+        return;
     }
     
     // Version
     double version;
     fread(&version, sizeof(double), 1, file);
     if (version != 0.3) {
-      std::stringstream err;
-      err << "Unsupported version " << version; 
-      LOG("ERROR: " << err.str());
-      throw BadFileException(err.str());
-      return;
+        std::stringstream err;
+        err << "Unsupported version " << version; 
+        LOG("ERROR: " << err.str());
+        throw BadFileException(err.str());
+        return;
     }
     
     // Get the number of points and cameras
@@ -393,7 +405,7 @@ BDATA::BundlerData::_readFileBinary(const char *bundlerFileName)
         // Rotation
         double *R = &cam.rotation(0,0);
         fread(R, sizeof(double), 9, file);
-
+        
         // Translation
         double *t = &cam.translation(0,0);
         fread(t, sizeof(double), 3, file);
@@ -446,14 +458,14 @@ BDATA::BundlerData::readFile(const char* bundlerFileName, bool computeCamIndex)
     } else if(strcmp(fileType, "# ") == 0) {
         _readFileASCII(bundlerFileName);        
     } else {
-	throw BadFileException("File does not seem to be a bundle file.");
+        throw BadFileException("File does not seem to be a bundle file.");
     }
-
+    
     _bundleFName = std::string(bundlerFileName);
-
+    
     // Figure out how many of these cameras are actually valid
     _updateNValidCams();
-
+    
     // Build camera to point index
     if(computeCamIndex) buildCam2PointIndex();
 }
@@ -463,32 +475,32 @@ BDATA::BundlerData::_updateNValidCams()
 {
     _nValidCams = 0;
     for(int i = 0; i < _cameras.size(); i++) {
-      if(_cameras[i].isValid()) _nValidCams++;
+        if(_cameras[i].isValid()) _nValidCams++;
     }
 }
 
 void
 BDATA::BundlerData::init(const char* bundlerFileName, bool computeCamIndex)
 {
-  _cam2PointIndexInitialized = false;
-  readFile(bundlerFileName, computeCamIndex);
+    _cam2PointIndexInitialized = false;
+    readFile(bundlerFileName, computeCamIndex);
 }
 
 void
 BDATA::BundlerData::init(const char* bundlerFileName, const char* listFileName, bool computeCamIndex)
 {
-  _cam2PointIndexInitialized = false;
-  init(bundlerFileName, computeCamIndex);
-  loadListFile(listFileName);
+    _cam2PointIndexInitialized = false;
+    init(bundlerFileName, computeCamIndex);
+    loadListFile(listFileName);
 }
 
 void 
 BDATA::BundlerData::init(const Camera::Vector& cameras, const PointInfo::Vector& points)
 {
-  _cam2PointIndexInitialized = false;
-  _cameras = cameras;
-  _points = points;
-  _updateNValidCams();
+    _cam2PointIndexInitialized = false;
+    _cameras = cameras;
+    _points = points;
+    _updateNValidCams();
 }
 
 void 
@@ -529,7 +541,7 @@ BDATA::BundlerData::_writeFileASCII(const char *bundlerFileName) const
         << int(_points[i].color.b) << "\n"
         // View list
         << _points[i].viewList.size() << " ";
-                
+        
         // The view list
         for(int j = 0, jEnd = _points[i].viewList.size(); j < jEnd; j++) {
             f 
@@ -540,7 +552,7 @@ BDATA::BundlerData::_writeFileASCII(const char *bundlerFileName) const
         }
         f << "\n";
     }
-
+    
     f.close();
 }
 
@@ -553,7 +565,7 @@ BDATA::BundlerData::_writeFileBinary(const char *bundlerFileName) const
         LOG("ERROR: Could not open file for writing " << bundlerFileName);
         return;
     }
-
+    
     const int nCameras = getNCameras();
     const int nPoints = getNPoints();
     
@@ -613,99 +625,99 @@ BDATA::BundlerData::_writeFileBinary(const char *bundlerFileName) const
 void 
 BDATA::BundlerData::loadListFile(const char *listFName)
 {
-  _imageFNames.resize(this->getNCameras());
-  
-  std::ifstream listF(listFName);
-  int i = 0;
-  for(i = 0; listF.good(); i++) {
-    char line[1000];
-    listF.getline(line, 1000);
-    if(!listF.good()) break;
-
-    if(i >= this->getNCameras()) {
-      _imageFNames.resize(0);
-      std::stringstream errMsg;
-      errMsg << "Bad list file: number of filenames exceeds the number of cameras";
-      throw BadFileException(errMsg.str());
+    _imageFNames.resize(this->getNCameras());
+    
+    std::ifstream listF(listFName);
+    int i = 0;
+    for(i = 0; listF.good(); i++) {
+        char line[1000];
+        listF.getline(line, 1000);
+        if(!listF.good()) break;
+        
+        if(i >= this->getNCameras()) {
+            _imageFNames.resize(0);
+            std::stringstream errMsg;
+            errMsg << "Bad list file: number of filenames exceeds the number of cameras";
+            throw BadFileException(errMsg.str());
+        }
+        
+        std::istringstream lineStream(line);
+        std::string fname;
+        lineStream >> fname;
+        _imageFNames[i] = fname;
     }
-
-    std::istringstream lineStream(line);
-    std::string fname;
-    lineStream >> fname;
-    _imageFNames[i] = fname;
-  }
-
-  if( i < this->getNCameras() ) {
-    _imageFNames.resize(0);
-    std::stringstream errMsg;
-    errMsg << "Bad list file: number of filenames smaller than number of cameras (" << i << " vs " << this->getNCameras() << ")";
-    throw BadFileException(errMsg.str());
-  }
-
-  _listFName = std::string(listFName);
+    
+    if( i < this->getNCameras() ) {
+        _imageFNames.resize(0);
+        std::stringstream errMsg;
+        errMsg << "Bad list file: number of filenames smaller than number of cameras (" << i << " vs " << this->getNCameras() << ")";
+        throw BadFileException(errMsg.str());
+    }
+    
+    _listFName = std::string(listFName);
 }
 
 BDATA::BundlerData::BundlerData(const char* bundlerFileName, const char* listFileName, bool computeCam2PointIndex):
-  _nValidCams(0)
+_nValidCams(0)
 {
-  init(bundlerFileName, listFileName, computeCam2PointIndex);  
+    init(bundlerFileName, listFileName, computeCam2PointIndex);  
 }
 
 BDATA::BundlerData::BundlerData(const char* bundlerFileName, bool computeCam2PointIndex):
-  _nValidCams(0)
+_nValidCams(0)
 {
-  init(bundlerFileName, computeCam2PointIndex);
+    init(bundlerFileName, computeCam2PointIndex);
 }
 
 BDATA::BundlerData::BundlerData(const Camera::Vector& cameras, const PointInfo::Vector& points):
-  _nValidCams(0)
+_nValidCams(0)
 {
-  init(cameras, points);
+    init(cameras, points);
 }
 
 const char* 
 BDATA::BundlerData::getListFileName() const 
 {
-  if(_listFName.size() ) return _listFName.c_str();
-  return NULL;
+    if(_listFName.size() ) return _listFName.c_str();
+    return NULL;
 }
 
 #if 0
 const char* 
 BDATA::BundlerData::getImageFileName(int camIdx) const
 {
-  if(camIdx < 0 || camIdx >= this->getNCameras()) return NULL;
-  if(_imageFNames.size() == 0) return NULL;
-  return _imageFNames[camIdx].c_str();
+    if(camIdx < 0 || camIdx >= this->getNCameras()) return NULL;
+    if(_imageFNames.size() == 0) return NULL;
+    return _imageFNames[camIdx].c_str();
 }
 #endif
 
 BDATA::BundlerData::Ptr
 BDATA::BundlerData::New(const char* bundleFileName, bool computeCam2PointIndex)
 {
-  BDATA::BundlerData::Ptr result;
-  try {
-    result = BundlerData::Ptr(new BundlerData(bundleFileName, computeCam2PointIndex));
-  } catch (BadFileException e) {
-    LOG("Caught exception");
-    LOG("What: " << e.what());
-    result = BDATA::BundlerData::Ptr();
-  }
-  return result;
+    BDATA::BundlerData::Ptr result;
+    try {
+        result = BundlerData::Ptr(new BundlerData(bundleFileName, computeCam2PointIndex));
+    } catch (BadFileException e) {
+        LOG("Caught exception");
+        LOG("What: " << e.what());
+        result = BDATA::BundlerData::Ptr();
+    }
+    return result;
 }
 
 void
 BDATA::BundlerData::buildCam2PointIndex()
 {
-  if(_cam2PointIndexInitialized) return;
-
-  int pntIdx = 0;
-  for(PointInfo::Vector::iterator pnt = _points.begin(), pntEnd = _points.end(); pnt != pntEnd; pnt++, pntIdx++) {
-    for(PointEntry::Vector::iterator pe = pnt->viewList.begin(), peEnd = pnt->viewList.end(); pe != peEnd; pe++) {
-      _cameras[pe->camera].visiblePoints.push_back(pntIdx);
+    if(_cam2PointIndexInitialized) return;
+    
+    int pntIdx = 0;
+    for(PointInfo::Vector::iterator pnt = _points.begin(), pntEnd = _points.end(); pnt != pntEnd; pnt++, pntIdx++) {
+        for(PointEntry::Vector::iterator pe = pnt->viewList.begin(), peEnd = pnt->viewList.end(); pe != peEnd; pe++) {
+            _cameras[pe->camera].visiblePoints.push_back(pntIdx);
+        }
     }
-  }
-
-  _cam2PointIndexInitialized = true;
+    
+    _cam2PointIndexInitialized = true;
 }
 
