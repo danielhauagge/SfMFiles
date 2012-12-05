@@ -21,9 +21,13 @@
 
 
 #include "PMVSData.hpp"
-
 #include <Macros.hpp>
+
+// STD
 #include <fstream>
+
+// Boost
+#include <boost/filesystem.hpp>
 
 std::istream& 
 operator>>(std::istream &s, BDATA::PMVS::Patch &p)
@@ -73,6 +77,15 @@ operator>>(std::istream &s, BDATA::PMVS::Patch &p)
     return s;
 }
 
+void 
+BDATA::PMVS::Camera::world2im(const Eigen::Vector3d &w, Eigen::Vector2d &im) const
+{
+    Eigen::Vector4d wh(w[0], w[1], w[2], 1.0);
+    Eigen::Vector3d imh = (*this) * wh;
+    
+    im[0] = imh[0] / imh[2];
+    im[1] = imh[1] / imh[2];
+}
 
 BDATA::PMVS::PMVSData::PMVSData(const char *pmvsFileName)
 {
@@ -82,6 +95,8 @@ BDATA::PMVS::PMVSData::PMVSData(const char *pmvsFileName)
 void
 BDATA::PMVS::PMVSData::init(const char *pmvsFileName)
 {
+    _patchesFName = pmvsFileName;
+    
     std::ifstream f(pmvsFileName);
 
     // Fist line contains the string PATCHES
@@ -96,6 +111,64 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName)
         f >> _patches[i];
     }    
     assert(_patches.size() == nPatches);
+}
+
+static
+void
+loadCamera(const char* fname, BDATA::PMVS::Camera& cam)
+{
+    std::ifstream camF(fname);
+    std::string header;
+    camF >> header;
+    
+    if(strcmp(header.c_str(), "CONTOUR") != 0) {
+        std::stringstream errMsg;
+        errMsg << "This does not seem to be a PMVS camera file\nFilename:" << fname << "\nHeader:" << header;
+        throw std::runtime_error(errMsg.str());
+    }
+    
+    for(int i = 0; i < 3; i++) {
+        for (int j = 0; j < 4; j++) {
+            camF >> cam(i,j);
+        }
+    }
+}
+
+void
+BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames()
+{
+    using namespace boost::filesystem;
+    assert(_patchesFName.size());
+    
+    path pathPatches(_patchesFName);
+    path camerasDir(pathPatches.parent_path() / path("../txt/"));
+    path imagesDir(pathPatches.parent_path() / path("../visualize/"));
+    
+    if(!exists(camerasDir)) {
+        std::cout << "Camera directory " << camerasDir << "does not seem to exist" << std::endl;
+    } else {
+        std::cout << "Loading cameras" << std::endl;
+        
+        for(int i = 0;; i++) {
+            char camFName[1024];
+            sprintf(camFName, "%08d.txt", i);
+            path camPath = camerasDir / path(camFName);
+
+            char imgFName[1024];
+            sprintf(imgFName, "%08d.jpg", i);
+            path imgPath = imagesDir / path(imgFName);
+            
+            if(!exists(camPath) && i > 0) break;
+            
+            Camera P;
+            loadCamera(camPath.c_str(), P);
+            _cameras.push_back(P);
+
+            if(exists(imgPath)) {
+                _imageFNames.push_back(imgPath.string());
+            }
+        }
+    }
 }
 
 BDATA::PMVS::PMVSData::Ptr

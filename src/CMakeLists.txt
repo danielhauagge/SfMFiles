@@ -28,15 +28,15 @@ PKG_CHECK_MODULES(EIGEN3 REQUIRED eigen3)
 INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIRS})
 
 # Boost
-#SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} 
-FIND_PACKAGE(Boost REQUIRED)
+# http://goo.gl/xEHzb
+FIND_PACKAGE(Boost 1.52 COMPONENTS system filesystem REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 INCLUDE_DIRECTORIES(".")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # Build a universal binary
-  SET( CMAKE_OSX_ARCHITECTURES x86_64;i386 )
+  SET( CMAKE_OSX_ARCHITECTURES x86_64)#;i386 )
 
   # The framework
   ADD_LIBRARY( SfMFiles 
@@ -64,16 +64,18 @@ ELSE()
   INSTALL_FILES(/include/SfMFiles .hpp BundlerData.hpp PMVSData.hpp)
   INSTALL_TARGETS(/lib SfMFiles)
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
-
-
 ENDIF()
+
+MESSAGE(STATUS ${Boost_LIBRARIES})
+
+TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES})
 
 # Some utilities
 ADD_EXECUTABLE(bundler_file_converter bundler_file_converter.cpp)
-TARGET_LINK_LIBRARIES(bundler_file_converter SfMFiles)
+TARGET_LINK_LIBRARIES(bundler_file_converter SfMFiles ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(testBundlerData testBundlerData.cpp)
-TARGET_LINK_LIBRARIES(testBundlerData SfMFiles)
+TARGET_LINK_LIBRARIES(testBundlerData SfMFiles ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(testPMVSData testPMVSData.cpp)
-TARGET_LINK_LIBRARIES(testPMVSData SfMFiles)
+TARGET_LINK_LIBRARIES(testPMVSData SfMFiles ${Boost_LIBRARIES})

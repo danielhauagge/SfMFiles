@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+#include <Macros.hpp>
 #include <PMVSData.hpp>
 
 #include <iostream>
@@ -30,6 +31,11 @@ main(int argc, char **argv)
     const char *patchFName = argv[1];
     
     BDATA::PMVS::PMVSData pmvsData(patchFName);
+    
+    pmvsData.loadCamerasAndImageFilenames();
+    
+    PRINT_VAR(pmvsData.getNPatches());
+    PRINT_VAR(pmvsData.getNCameras());
     
     return EXIT_SUCCESS;
 }
