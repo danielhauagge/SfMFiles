@@ -19,15 +19,16 @@
 // OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 #include "PMVSData.hpp"
 #include <Macros.hpp>
 
 // STD
 #include <fstream>
+#include <algorithm>
 
 // Boost
 #include <boost/filesystem.hpp>
+#include <boost/progress.hpp>
 
 std::istream& 
 operator>>(std::istream &s, BDATA::PMVS::Patch &p)
@@ -95,7 +96,10 @@ BDATA::PMVS::PMVSData::PMVSData(const char *pmvsFileName)
 void
 BDATA::PMVS::PMVSData::init(const char *pmvsFileName)
 {
+    _maxNCameras = 0;
     _patchesFName = pmvsFileName;
+    
+    boost::progress_display* showProgress = NULL;
     
     std::ifstream f(pmvsFileName);
 
@@ -105,11 +109,28 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName)
     unsigned int nPatches = 0;
     f >> nPatches;
     
+    if(nPatches > 1000000) {
+        showProgress = new boost::progress_display(nPatches, std::cout, "Loading patches:\n", "", "");
+    }
+    
     _patches.resize(nPatches);
     assert(_patches.size() == nPatches);
     for(unsigned int i = 0; i < nPatches; i++) {
+        if(showProgress) ++(*showProgress);
         f >> _patches[i];
+        
+        for(int j = 0; j < _patches[i].goodCameras.size(); j++) {
+            _maxNCameras = std::max(_patches[i].goodCameras[j], _maxNCameras);
+        }
+        for(int j = 0; j < _patches[i].badCameras.size(); j++) {
+            _maxNCameras = std::max(_patches[i].badCameras[j], _maxNCameras);
+        }
+        
+        _goodCamStats.accumulate(_patches[i].goodCameras.size());
+        _badCamStats.accumulate(_patches[i].badCameras.size());
     }    
+    _goodCamStats.finish();
+    _badCamStats.finish();
     assert(_patches.size() == nPatches);
 }
 
@@ -144,12 +165,17 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames()
     path camerasDir(pathPatches.parent_path() / path("../txt/"));
     path imagesDir(pathPatches.parent_path() / path("../visualize/"));
     
+    boost::progress_display* showProgress = NULL;
+    if(_maxNCameras > 1000) {
+        showProgress = new boost::progress_display(_maxNCameras, std::cout, "Loading cameras and images:\n", "", "");
+    }
+    
     if(!exists(camerasDir)) {
         std::cout << "Camera directory " << camerasDir << "does not seem to exist" << std::endl;
-    } else {
-        std::cout << "Loading cameras" << std::endl;
-        
+    } else {        
         for(int i = 0;; i++) {
+            if(showProgress) ++(*showProgress);
+
             char camFName[1024];
             sprintf(camFName, "%08d.txt", i);
             path camPath = camerasDir / path(camFName);
@@ -176,3 +202,45 @@ BDATA::PMVS::PMVSData::New(const char *pmvsFileName)
 {
     return PMVSData::Ptr(new PMVSData(pmvsFileName));
 }
+
+
+void 
+BDATA::PMVS::PMVSData::printStats() const
+{
+    printf("# of cameras: %d\n", getNCameras());
+    printf("# of patches: %d\n", getNPatches());
+    
+    printf("\nGood cameras:\n");
+    printf("%10s: %5.0f\n", "Min", _goodCamStats.minVal);
+    printf("%10s: %5.0f\n", "Max", _goodCamStats.maxVal);
+    printf("%10s: %5.1f\n", "Mean", _goodCamStats.avgVal);
+    printf("%10s: %5.0f\n", "Median", _goodCamStats.medianVal);
+
+    printf("\nBad cameras:\n");
+    printf("%10s: %5.0f\n", "Min", _badCamStats.minVal);
+    printf("%10s: %5.0f\n", "Max", _badCamStats.maxVal);
+    printf("%10s: %5.1f\n", "Mean", _badCamStats.avgVal);
+    printf("%10s: %5.0f\n", "Median", _badCamStats.medianVal);
+}
+
+void 
+BDATA::PMVS::PMVSData::Stats::accumulate(uint32_t sample)
+{
+    maxVal = std::max(maxVal, float(sample));
+    minVal = std::min(minVal, float(sample));
+    avgVal += sample;
+    _samples.push_back(sample);
+}
+
+void 
+BDATA::PMVS::PMVSData::Stats::finish()
+{
+    std::sort(_samples.begin(), _samples.end());
+    medianVal = _samples[_samples.size()/2];
+    avgVal /= _samples.size();
+}
+
+
+
+
+

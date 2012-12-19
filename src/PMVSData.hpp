@@ -53,17 +53,14 @@ namespace BDATA
         
         class Patch
         {
-            //private:
-            //Patch(Patch &p) {}
-            
         public:            
             typedef std::vector<Patch, Eigen::aligned_allocator<Patch> > Vector;
 
             Eigen::Vector4d position, normal;
             double score; // Photometric consistency score, stays within -1 and 1 (good score)
             double debug1, debug2; // Numbers contained in the .patch file that are for debugging purposes
-            std::vector<int> goodCameras; // To which cameras is this point visible?
-            std::vector<int> badCameras;
+            std::vector<uint32_t> goodCameras; // To which cameras is this point visible?
+            std::vector<uint32_t> badCameras;
             
             Eigen::Vector3f color;
             float reconstructionAccuracy;
@@ -91,7 +88,6 @@ namespace BDATA
                 this->goodCameras = p.goodCameras;
                 this->badCameras = p.badCameras;
             }
-            
         };
         
         //! Class that loads .patch files produced by PMVS
@@ -104,7 +100,29 @@ namespace BDATA
             std::vector<std::string> _imageFNames;
             
             Camera::Vector _cameras;
+            uint32_t _maxNCameras; // Highest camera index that shows up in the patch file
             
+            class Stats
+            {
+            private:
+                // Used when computing the median
+                std::vector<uint32_t> _samples;
+                
+            public:
+                float maxVal, minVal;
+                float avgVal, medianVal;
+                                
+                Stats():
+                maxVal(0.0), minVal(std::numeric_limits<float>::max()),
+                avgVal(0.0), medianVal(0.0)
+                {}
+                
+                void accumulate(uint32_t sample);
+                void finish();
+            };
+            
+            // Statistics about the file
+            Stats _goodCamStats, _badCamStats;
         public:
             typedef boost::shared_ptr<PMVSData> Ptr;
             static PMVSData::Ptr New(const char* pmvsFileName);
@@ -130,6 +148,8 @@ namespace BDATA
             std::vector<std::string>& getImageFileNames() { return _imageFNames; };
             const Camera::Vector& getCameras() const { return _cameras; };
             Camera::Vector& getCameras() { return _cameras; };
+            
+            void printStats() const;
         };
     }
 }
