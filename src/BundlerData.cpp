@@ -277,7 +277,7 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
     // File signature
     char sig[200];
     size_t nread = fread(sig, sizeof(char), strlen(ASCII_SIGNATURE), file);
-    sig[nread + 1] = '\0';
+    if (nread>0) { sig[nread] = '\0'; }
     if (strcmp(sig, ASCII_SIGNATURE) != 0) {
         LOG("ERROR: Bad signature in ASCII file: " << sig);
         throw BadFileException("Bad signature in binary file");
