@@ -165,8 +165,8 @@ namespace BDATA
             /// root/visualize.
             void loadCamerasAndImageFilenames();
 
-            int getNPatches() const { return _patches.size(); }
-            int getNCameras() const { return _cameras.size(); }
+            size_t getNPatches() const { return _patches.size(); }
+            size_t getNCameras() const { return _cameras.size(); }
             
             // Accessors
             const Patch::Vector& getPatches() const { return _patches; }
