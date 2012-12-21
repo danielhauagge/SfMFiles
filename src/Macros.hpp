@@ -31,6 +31,18 @@
 #define PRINT_VAR(var) std::cout << ">> " << #var << " = " << (var) << std::endl;
 
 #include <stdexcept>
+
+namespace sfmf
+{
+  class Error: public std::runtime_error
+  {
+  public:
+    explicit Error(const std::string what): std::runtime_error(what)
+    {}
+  };
+}
+
+// FIXME: Get rid of this, use sfmf::Error instead
 namespace BDATA
 {
   class BadFileException: public std::runtime_error

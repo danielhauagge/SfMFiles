@@ -30,8 +30,61 @@
 #include <boost/filesystem.hpp>
 #include <boost/progress.hpp>
 
+static
+void
+readSeq(std::istream& s, std::vector<uint32_t>& seq)
+{
+    int len;
+    s >> len;
+    if(len > 0) {
+        seq.resize(len);
+        for(int i = 0; i < len; i++) {
+            s >> seq[i];
+        }
+    } else if(len < 0) {
+        int begin, end;
+        s >> begin >> end;
+        seq.resize(end - begin);
+        for(int i = 0; i < seq.size(); i++) {
+            seq[i] = begin + i;
+        }
+    }
+}
+
 std::istream& 
-operator>>(std::istream &s, BDATA::PMVS::Patch &p)
+operator>>(std::istream& s, BDATA::PMVS::Options& opt)
+{
+    using namespace std;
+
+    while(true && !s.eof()) {
+        char firstToken[128];
+        s.getline(firstToken, 128, ' ');
+                
+        if(strlen(firstToken) == 0) continue;
+        if(firstToken[0] == '#') {
+            s.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+             if(strcmp("level"      , firstToken) == 0) s >> opt.level;
+        else if(strcmp("csize"      , firstToken) == 0) s >> opt.csize;
+        else if(strcmp("threshold"  , firstToken) == 0) s >> opt.threshold;
+        else if(strcmp("minImageNum", firstToken) == 0) s >> opt.minImageNum;
+        else if(strcmp("setEdge"    , firstToken) == 0) s >> opt.setEdge;
+        else if(strcmp("useBound"   , firstToken) == 0) s >> opt.useBound;
+        else if(strcmp("useVisData" , firstToken) == 0) s >> opt.useVisData;
+        else if(strcmp("sequence"   , firstToken) == 0) s >> opt.sequence;
+        else if(strcmp("maxAngle"   , firstToken) == 0) s >> opt.maxAngle;
+        else if(strcmp("quad"       , firstToken) == 0) s >> opt.quad;
+        else if(strcmp("timages"    , firstToken) == 0) readSeq(s, opt.timages);
+        else if(strcmp("oimages"    , firstToken) == 0) readSeq(s, opt.oimages);
+
+        s.ignore(std::numeric_limits<std::streamsize>::max(), '\n');    
+    }
+        
+    return s;
+}
+
+std::istream& 
+operator>>(std::istream& s, BDATA::PMVS::Patch& p)
 {
     assert(s.good());
     
@@ -88,14 +141,16 @@ BDATA::PMVS::Camera::world2im(const Eigen::Vector3d &w, Eigen::Vector2d &im) con
     im[1] = imh[1] / imh[2];
 }
 
-BDATA::PMVS::PMVSData::PMVSData(const char *pmvsFileName)
+BDATA::PMVS::PMVSData::PMVSData(const char *pmvsFileName, bool tryLoadOptionsFile)
 {
-    init(pmvsFileName);
+    init(pmvsFileName, tryLoadOptionsFile);
 }
 
 void
-BDATA::PMVS::PMVSData::init(const char *pmvsFileName)
+BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
 {
+    using namespace boost::filesystem;
+
     _maxNCameras = 0;
     _patchesFName = pmvsFileName;
     
@@ -132,6 +187,41 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName)
     _goodCamStats.finish();
     _badCamStats.finish();
     assert(_patches.size() == nPatches);
+
+    // Load options file and fix camera indexes
+    if(tryLoadOptionsFile) {
+        path pathPatches(_patchesFName);
+
+        std::string basename = pathPatches.leaf().string();
+        std::string basenameNoExt(basename.begin(), basename.end() - strlen(".patch"));        
+
+        path optionsPath(pathPatches.parent_path() / path("..") / basenameNoExt);
+
+        LOG("Looking for options file " << optionsPath.string());
+        if(exists(optionsPath)) {
+            std::ifstream optF(optionsPath.string().c_str());
+            BDATA::PMVS::Options opt;
+            optF >> opt;
+
+            if(opt.oimages.size() != 0) {
+                throw sfmf::Error("Do not know how act when the size of oimages is not 0");
+            }
+
+            LOG("Remapping indexes");
+            for(Patch::Vector::iterator p = _patches.begin(); p != _patches.end(); p++) {
+                for(std::vector<uint32_t>::iterator cam = p->goodCameras.begin(); cam != p->goodCameras.end(); cam++) {
+                    *cam = opt.timages[*cam];
+                }
+                // not entirelly sure about this part, maybe should use oimages here
+                for(std::vector<uint32_t>::iterator cam = p->badCameras.begin(); cam != p->badCameras.end(); cam++) {
+                    *cam = opt.timages[*cam];
+                }
+            }
+
+        } else {
+            LOG("Options file does not exist, moving along");
+        }
+    }
 }
 
 static
@@ -164,45 +254,58 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames()
     path pathPatches(_patchesFName);
     path camerasDir(pathPatches.parent_path() / path("../txt/"));
     path imagesDir(pathPatches.parent_path() / path("../visualize/"));
-    
-    boost::progress_display* showProgress = NULL;
-    if(_maxNCameras > 1000) {
-        showProgress = new boost::progress_display(_maxNCameras, std::cout, "Loading cameras and images:\n", "", "");
-    }
-    
+        
     if(!exists(camerasDir)) {
-        std::cout << "Camera directory " << camerasDir << "does not seem to exist" << std::endl;
+        LOG("Camera directory " << camerasDir << "does not seem to exist");
     } else {        
-        for(int i = 0;; i++) {
+
+        std::set<uint32_t> allCams;
+        for(Patch::Vector::iterator p = _patches.begin(); p != _patches.end(); p++) {
+            for(std::vector<uint32_t>::iterator cam = p->goodCameras.begin(); cam != p->goodCameras.end(); cam++) {
+                allCams.insert(*cam);
+            }
+            // not entirelly sure about this part, maybe should use oimages here
+            for(std::vector<uint32_t>::iterator cam = p->badCameras.begin(); cam != p->badCameras.end(); cam++) {
+                allCams.insert(*cam);
+            }
+        }
+
+        boost::progress_display* showProgress = NULL;
+        if(allCams.size() > 1000) {
+            showProgress = new boost::progress_display(_maxNCameras, std::cout, "Loading cameras and images:\n", "", "");
+        }
+
+        for(std::set<uint32_t>::iterator cam = allCams.begin(); cam != allCams.end(); cam++) {
             if(showProgress) ++(*showProgress);
 
             char camFName[128];
-            sprintf(camFName, "%08d.txt", i);
+            sprintf(camFName, "%08d.txt", *cam);
             path camPath = camerasDir / path(camFName);
 
             char imgFName[128];
-            sprintf(imgFName, "%08d.jpg", i);
+            sprintf(imgFName, "%08d.jpg", *cam);
             path imgPath = imagesDir / path(imgFName);
-            
-            if(!exists(camPath) && i > 0) break;
-            
+
+            if(!exists(camPath)) {
+                throw sfmf::Error("Could not load camera file");
+            }
+                        
             Camera P;
             loadCamera(camPath.c_str(), P);
-            _cameras.push_back(P);
+            _cameras[*cam] = P;
 
             //if(exists(imgPath)) {
-	    _imageFNames.push_back(imgPath.string());
-	    //}
+    	    _imageFNames[*cam] = imgPath.string();
+	       //}
         }
     }
 }
 
 BDATA::PMVS::PMVSData::Ptr
-BDATA::PMVS::PMVSData::New(const char *pmvsFileName)
+BDATA::PMVS::PMVSData::New(const char *pmvsFileName, bool tryLoadOptionsFile)
 {
-    return PMVSData::Ptr(new PMVSData(pmvsFileName));
+    return PMVSData::Ptr(new PMVSData(pmvsFileName, tryLoadOptionsFile));
 }
-
 
 void 
 BDATA::PMVS::PMVSData::printStats() const

@@ -26,6 +26,7 @@
 // std
 #include <vector>
 #include <map>
+#include <set>
 #include <iostream>
 
 // Eigen3
@@ -42,10 +43,32 @@ namespace BDATA
 {    
     namespace PMVS
     {
+        /// Class that stores the information inside option files
+        class Options
+        {
+        public:
+            std::vector<uint32_t> timages;
+            std::vector<uint32_t> oimages;
+
+            uint32_t level;
+            uint32_t csize;
+            float threshold;
+            uint32_t wsize;
+            uint32_t minImageNum;
+            uint32_t CPU;
+            uint32_t setEdge;
+            bool useBound;
+            bool useVisData;
+            int sequence;
+            float maxAngle;
+            float quad;
+        };
+
         class Camera: public Eigen::Matrix<double, 3, 4>
         {
         public:
             typedef std::vector<Camera, Eigen::aligned_allocator<Camera> > Vector;      
+            typedef std::map<uint32_t, Camera, std::less<int>, Eigen::aligned_allocator<std::pair<const uint32_t, Camera> > > Map;      
             
             // Coordinate transforms
             void world2im(const Eigen::Vector3d &w, Eigen::Vector2d &im) const;
@@ -90,16 +113,16 @@ namespace BDATA
             }
         };
         
-        //! Class that loads .patch files produced by PMVS
+        /// Class that loads .patch files produced by PMVS
         class PMVSData
         {
         private:
             Patch::Vector _patches;
             std::string _patchesFName; // Name of file containing patches data
             
-            std::vector<std::string> _imageFNames;
+            std::map<uint32_t, std::string> _imageFNames;
             
-            Camera::Vector _cameras;
+            Camera::Map _cameras;
             uint32_t _maxNCameras; // Highest camera index that shows up in the patch file
             
             class Stats
@@ -123,19 +146,21 @@ namespace BDATA
             
             // Statistics about the file
             Stats _goodCamStats, _badCamStats;
+
         public:
             typedef boost::shared_ptr<PMVSData> Ptr;
-            static PMVSData::Ptr New(const char* pmvsFileName);
+            static PMVSData::Ptr New(const char* pmvsFileName, bool tryLoadOptionsFile = true);
             
             PMVSData() {};
-            PMVSData(const char* pmvsFileName);
-            void init(const char* pmvsFileName);
+            PMVSData(const char* pmvsFileName, bool tryLoadOptionsFile = true);
+
+            void init(const char* pmvsFileName, bool tryLoadOptionsFile = true);
                                 
-            //! Loads cameras and image filenames. Expects .patch file to be inside the directory
-            //! structure created by PMVS. That is, the .patch file should be within
-            //! root/models/. The function will then try to read camera files
-            //! from root/txt, it will also read the image filenames from
-            //! root/visualize.
+            /// Loads cameras and image filenames. Expects .patch file to be inside the directory
+            /// structure created by PMVS. That is, the .patch file should be within
+            /// root/models/. The function will then try to read camera files
+            /// from root/txt, it will also read the image filenames from
+            /// root/visualize.
             void loadCamerasAndImageFilenames();
 
             int getNPatches() const { return _patches.size(); }
@@ -144,10 +169,11 @@ namespace BDATA
             // Accessors
             const Patch::Vector& getPatches() const { return _patches; }
             Patch::Vector& getPatches() { return _patches; }
-            const std::vector<std::string>& getImageFileNames() const { return _imageFNames; };
-            std::vector<std::string>& getImageFileNames() { return _imageFNames; };
-            const Camera::Vector& getCameras() const { return _cameras; };
-            Camera::Vector& getCameras() { return _cameras; };
+            const std::map<uint32_t, std::string>& getImageFileNames() const { return _imageFNames; };
+            std::map<uint32_t, std::string>& getImageFileNames() { return _imageFNames; };
+            
+            const Camera::Map& getCameras() const { return _cameras; };
+            Camera::Map& getCameras() { return _cameras; };
             
             void printStats() const;
         };
