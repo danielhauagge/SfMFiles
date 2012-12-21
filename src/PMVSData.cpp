@@ -176,11 +176,11 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames()
         for(int i = 0;; i++) {
             if(showProgress) ++(*showProgress);
 
-            char camFName[1024];
+            char camFName[128];
             sprintf(camFName, "%08d.txt", i);
             path camPath = camerasDir / path(camFName);
 
-            char imgFName[1024];
+            char imgFName[128];
             sprintf(imgFName, "%08d.jpg", i);
             path imgPath = imagesDir / path(imgFName);
             
@@ -190,9 +190,9 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames()
             loadCamera(camPath.c_str(), P);
             _cameras.push_back(P);
 
-            if(exists(imgPath)) {
-                _imageFNames.push_back(imgPath.string());
-            }
+            //if(exists(imgPath)) {
+	    _imageFNames.push_back(imgPath.string());
+	    //}
         }
     }
 }
