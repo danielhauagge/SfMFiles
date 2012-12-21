@@ -151,7 +151,7 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
 {
     using namespace boost::filesystem;
 
-    _maxNCameras = 0;
+    _maxCamIdx = 0;
     _patchesFName = pmvsFileName;
     
     boost::progress_display* showProgress = NULL;
@@ -175,10 +175,10 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
         f >> _patches[i];
         
         for(int j = 0; j < _patches[i].goodCameras.size(); j++) {
-            _maxNCameras = std::max(_patches[i].goodCameras[j], _maxNCameras);
+            _maxCamIdx = std::max(_patches[i].goodCameras[j], _maxCamIdx);
         }
         for(int j = 0; j < _patches[i].badCameras.size(); j++) {
-            _maxNCameras = std::max(_patches[i].badCameras[j], _maxNCameras);
+            _maxCamIdx = std::max(_patches[i].badCameras[j], _maxCamIdx);
         }
         
         _goodCamStats.accumulate(_patches[i].goodCameras.size());
@@ -206,7 +206,7 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
             if(opt.oimages.size() != 0) {
                 throw sfmf::Error("Do not know how act when the size of oimages is not 0");
             }
-
+#if 0
             LOG("Remapping indexes");
             for(Patch::Vector::iterator p = _patches.begin(); p != _patches.end(); p++) {
                 for(std::vector<uint32_t>::iterator cam = p->goodCameras.begin(); cam != p->goodCameras.end(); cam++) {
@@ -217,9 +217,12 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
                     *cam = opt.timages[*cam];
                 }
             }
-
+#endif
+            _camIndexMapping = opt.timages;
         } else {
             LOG("Options file does not exist, moving along");
+            _camIndexMapping.resize(_maxCamIdx + 1);
+            for(int i = 0; i < _maxCamIdx + 1; i++) _camIndexMapping[i] = i;
         }
     }
 }
@@ -272,24 +275,27 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames()
 
         boost::progress_display* showProgress = NULL;
         if(allCams.size() > 1000) {
-            showProgress = new boost::progress_display(_maxNCameras, std::cout, "Loading cameras and images:\n", "", "");
+            showProgress = new boost::progress_display(_maxCamIdx + 1, std::cout, "Loading cameras and images:\n", "", "");
         }
+        
+        _cameras.resize(_maxCamIdx + 1);
+        _imageFNames.resize(_maxCamIdx + 1);
 
         for(std::set<uint32_t>::iterator cam = allCams.begin(); cam != allCams.end(); cam++) {
             if(showProgress) ++(*showProgress);
 
             char camFName[128];
-            sprintf(camFName, "%08d.txt", *cam);
+            sprintf(camFName, "%08d.txt", _camIndexMapping[*cam]);
             path camPath = camerasDir / path(camFName);
 
             char imgFName[128];
-            sprintf(imgFName, "%08d.jpg", *cam);
+            sprintf(imgFName, "%08d.jpg", _camIndexMapping[*cam]);
             path imgPath = imagesDir / path(imgFName);
 
             if(!exists(camPath)) {
                 throw sfmf::Error("Could not load camera file");
             }
-                        
+                    
             Camera P;
             loadCamera(camPath.c_str(), P);
             _cameras[*cam] = P;
