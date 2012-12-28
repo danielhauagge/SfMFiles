@@ -46,7 +46,7 @@ if __name__=='__main__':
   --skip: Resumes an interrupted operation by skipping lines;
           it does not verify that the existing lines are valid!
 '''
-  sys.exit(1)
+    sys.exit(1)
 
   skip=False
   while '--skip' in args:
