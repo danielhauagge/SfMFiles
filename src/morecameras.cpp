@@ -51,13 +51,14 @@ main(int argc, const char* argv[])
     using namespace BDATA;
     
     if(argc == 1) {
-        std::cout << "Usage:\n\t" << argv[0] << " <bundle.out> <list.txt> <cam index>" << std::endl;
+        std::cout << "Usage:\n\t" << argv[0] << " <bundle.out> <list.txt> <cam index> <list.sizes.txt>" << std::endl;
         return EXIT_FAILURE;
     }
     
     const char* bundleFName = argv[1];
     const char* listFName = argv[2];
     int camNum = atoi(argv[3]);
+    const char* sizes_fname = argv[4];
     
     LOG("Loading bundle file");
     BDATA::BundlerData bundler(bundleFName);
@@ -115,7 +116,7 @@ main(int argc, const char* argv[])
     printf(">>\t   featPosCI = [%3.2f, %3.2f]\n", featPosCI(0), featPosCI(1));
     printf(">>\t         err = %f\n", (featPosCI - featPos).norm());
     
-  vector<sizeentry> sizelist=read_sizes("/home/paulu/statue/list.geo.sizes.txt");
+  vector<sizeentry> sizelist=read_sizes(sizes_fname);
   {
     int n=sizelist.size();
     printf("sizelist: Read %d entries.\n",sizelist.size());
