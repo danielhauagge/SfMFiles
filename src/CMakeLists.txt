@@ -36,39 +36,10 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 INCLUDE_DIRECTORIES(".")
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  # Build a universal binary
-  SET( CMAKE_OSX_ARCHITECTURES x86_64)#;i386 )
-
-  # The framework
-  ADD_LIBRARY( SfMFiles 
-    SHARED 
-    BundlerData.cpp  PMVSData.cpp
-    BundlerData.hpp PMVSData.hpp)
-
-  # MacOS Framework
-  SET_TARGET_PROPERTIES( SfMFiles PROPERTIES
-    FRAMEWORK TRUE
-    FRAMEWORK_VERSION none
-    PUBLIC_HEADER "BundlerData.hpp;PMVSData.hpp" 
-    DEBUG_POSTIFX -d
-    )
-  
-  INSTALL( TARGETS SfMFiles
-    FRAMEWORK DESTINATION Library/Frameworks
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    )
-ELSE()
-  ADD_LIBRARY(SfMFiles SHARED
-    BundlerData.cpp  PMVSData.cpp BundlerData.hpp PMVSData.hpp)
-  
-  INSTALL_FILES(/include/SfMFiles .hpp BundlerData.hpp PMVSData.hpp)
-  INSTALL_TARGETS(/lib SfMFiles)
-  #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
-ENDIF()
-
-MESSAGE(STATUS ${Boost_LIBRARIES})
+ADD_LIBRARY( SfMFiles 
+  SHARED 
+  BundlerData.cpp  PMVSData.cpp
+  BundlerData.hpp PMVSData.hpp)
 
 TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES})
 
@@ -87,3 +58,29 @@ TARGET_LINK_LIBRARIES(pmvs_info SfMFiles ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(pmvs_merge pmvs_merge.cpp)
 TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles ${Boost_LIBRARIES})
+
+# How to package and where to install stuff
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+  # Build a universal binary
+  SET( CMAKE_OSX_ARCHITECTURES x86_64)#;i386 )
+
+  # MacOS Framework
+  SET_TARGET_PROPERTIES( SfMFiles PROPERTIES
+    FRAMEWORK TRUE
+    FRAMEWORK_VERSION none
+    PUBLIC_HEADER "BundlerData.hpp;PMVSData.hpp" 
+    DEBUG_POSTIFX -d
+    )
+  
+  INSTALL( TARGETS SfMFiles
+    FRAMEWORK DESTINATION Library/Frameworks
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    )
+ELSE()  
+  INSTALL_FILES(/include/SfMFiles .hpp BundlerData.hpp PMVSData.hpp)
+  INSTALL_TARGETS(/lib SfMFiles)
+  INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info)
+  #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
+ENDIF()
