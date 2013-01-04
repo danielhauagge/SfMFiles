@@ -84,3 +84,6 @@ TARGET_LINK_LIBRARIES(testPMVSData SfMFiles ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(pmvs_info pmvs_info.cpp)
 TARGET_LINK_LIBRARIES(pmvs_info SfMFiles ${Boost_LIBRARIES})
+
+ADD_EXECUTABLE(pmvs_merge pmvs_merge.cpp)
+TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles ${Boost_LIBRARIES})

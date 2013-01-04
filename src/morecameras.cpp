@@ -9,9 +9,16 @@ using namespace std;
 
 typedef struct { char name[256]; int w,h; } sizeentry;
 
-static inline double degrees(double a) { return(a*360.0/2.0/M_PI); }
+static inline 
+double 
+degrees(double a) 
+{ 
+  return(a*360.0/2.0/M_PI); 
+}
 
-const char *check_output(const char *cmd) {
+const char *
+check_output(const char *cmd) 
+{
   char buf[128];
   FILE *pipe=popen(cmd,"r"); // BUG! matching pclose may not be called if an exception is thrown
   if(!pipe) return("ERROR");
@@ -23,7 +30,9 @@ const char *check_output(const char *cmd) {
   return(result.c_str());
 }
 
-static vector<sizeentry> read_sizes(const char *fname) {
+static vector<sizeentry> 
+read_sizes(const char *fname) 
+{
   FILE *fp=fopen(fname,"r");
   sizeentry se;
   vector<sizeentry> sizelist;
@@ -37,7 +46,10 @@ static vector<sizeentry> read_sizes(const char *fname) {
   return(sizelist);
 }
 
-static int __contains__camera(BDATA::PointEntry::Vector &self, int cid) {
+static 
+int 
+__contains__camera(BDATA::PointEntry::Vector &self, int cid) 
+{
   int nc=self.size();
   for(int c=0;c<nc;c++) {
     if(cid==self[c].camera) return(1);

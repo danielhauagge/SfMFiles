@@ -28,6 +28,7 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <stdint.h>
 
 // Eigen3
 #include <Eigen/Core>
@@ -68,7 +69,7 @@ namespace BDATA
         {
         public:
             typedef std::vector<Camera, Eigen::aligned_allocator<Camera> > Vector;      
-            //typedef std::map<uint32_t, Camera, std::less<int>, Eigen::aligned_allocator<std::pair<const uint32_t, Camera> > > Map;      
+            typedef std::map<uint32_t, Camera, std::less<int>, Eigen::aligned_allocator<std::pair<const uint32_t, Camera> > > Map;      
             
             // Coordinate transforms
             void world2im(const Eigen::Vector3d &w, Eigen::Vector2d &im) const;
@@ -117,14 +118,14 @@ namespace BDATA
         class PMVSData
         {
         private:
-            std::vector<uint32_t> _camIndexMapping;
+            //std::vector<uint32_t> _camIndexMapping;
             
             Patch::Vector _patches;
             std::string _patchesFName; // Name of file containing patches data
             
-            std::vector<std::string> _imageFNames;
+            std::map<uint32_t, std::string> _imageFNames;
             
-            Camera::Vector _cameras;
+            Camera::Map _cameras;
             uint32_t _maxCamIdx; // Highest camera index that shows up in the patch file
             
             class Stats
@@ -158,6 +159,8 @@ namespace BDATA
 
             void init(const char* pmvsFileName, bool tryLoadOptionsFile = true);
                                 
+            void writeFile(const char* patchesFileName) const;
+
             /// Loads cameras and image filenames. Expects .patch file to be inside the directory
             /// structure created by PMVS. That is, the .patch file should be within
             /// root/models/. The function will then try to read camera files
@@ -171,13 +174,16 @@ namespace BDATA
             // Accessors
             const Patch::Vector& getPatches() const { return _patches; }
             Patch::Vector& getPatches() { return _patches; }
-            const std::vector<std::string>& getImageFileNames() const { return _imageFNames; };
-            std::vector<std::string>& getImageFileNames() { return _imageFNames; };
+
+            const std::map<uint32_t, std::string>& getImageFileNames() const { return _imageFNames; };
+            std::map<uint32_t, std::string>& getImageFileNames() { return _imageFNames; };
             
-            const Camera::Vector& getCameras() const { return _cameras; };
-            Camera::Vector& getCameras() { return _cameras; };
+            const Camera::Map& getCameras() const { return _cameras; };
+            Camera::Map& getCameras() { return _cameras; };
             
             void printStats() const;
+
+            void mergeWith(const PMVSData& other);
         };
     }
 }

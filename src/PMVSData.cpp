@@ -131,6 +131,27 @@ operator>>(std::istream& s, BDATA::PMVS::Patch& p)
     return s;
 }
 
+std::ostream& 
+operator<<(std::ostream& s, const BDATA::PMVS::Patch& p)
+{
+    s << "PATCHPS\n";
+    s << p.position(0) << " " << p.position(1) << " " << p.position(2) << " " << p.position(3) << "\n";
+    s << p.normal(0) << " " << p.normal(1) << " " << p.normal(2) << " " << p.normal(3) << "\n";
+    s << p.color(0) << " " << p.color(1) << " " << p.color(2) << "\n";
+    s << p.score << " " << p.debug1 << " " << p.debug2 << "\n";
+    s << p.reconstructionAccuracy << " " << p.reconstructionSLevel << "\n";
+
+    s << p.goodCameras.size();
+    for(int i = 0; i < p.goodCameras.size(); i++) s << " " << p.goodCameras[i];
+    s << "\n";
+
+    s << p.badCameras.size();
+    for(int i = 0; i < p.badCameras.size(); i++) s << " " << p.badCameras[i];
+    s << "\n";
+
+    return s;
+}
+
 void 
 BDATA::PMVS::Camera::world2im(const Eigen::Vector3d &w, Eigen::Vector2d &im) const
 {
@@ -165,7 +186,9 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
     f >> nPatches;
     
     if(nPatches > 1000000) {
-        showProgress = new boost::progress_display(nPatches, std::cout, "Loading patches:\n", "", "");
+        std::stringstream progMsg;
+        progMsg << "Loading " << pmvsFileName << ":\n";
+        showProgress = new boost::progress_display(nPatches, std::cout, progMsg.str().c_str(), "", "");
     }
     
     _patches.resize(nPatches);
@@ -204,9 +227,9 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
             optF >> opt;
 
             if(opt.oimages.size() != 0) {
-                throw sfmf::Error("Do not know how act when the size of oimages is not 0");
+                throw sfmf::Error("Do not know what to do when the size of oimages is not 0");
             }
-#if 0
+#if 1
             LOG("Remapping indexes");
             for(Patch::Vector::iterator p = _patches.begin(); p != _patches.end(); p++) {
                 for(std::vector<uint32_t>::iterator cam = p->goodCameras.begin(); cam != p->goodCameras.end(); cam++) {
@@ -218,13 +241,19 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
                 }
             }
 #endif
+
+#if 1
+        }
+    }
+#else            
             _camIndexMapping = opt.timages;
-        } else {
+        } 
+        else {
             LOG("Options file does not exist, moving along");
             _camIndexMapping.resize(_maxCamIdx + 1);
             for(int i = 0; i < _maxCamIdx + 1; i++) _camIndexMapping[i] = i;
         }
-    }
+#endif
 }
 
 static
@@ -277,25 +306,27 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames()
         if(allCams.size() > 1000) {
             showProgress = new boost::progress_display(_maxCamIdx + 1, std::cout, "Loading cameras and images:\n", "", "");
         }
-        
-        _cameras.resize(_maxCamIdx + 1);
-        _imageFNames.resize(_maxCamIdx + 1);
+
+        //_cameras.resize(_maxCamIdx + 1);
+        //_imageFNames.resize(_maxCamIdx + 1);
 
         for(std::set<uint32_t>::iterator cam = allCams.begin(); cam != allCams.end(); cam++) {
             if(showProgress) ++(*showProgress);
 
             char camFName[128];
-            sprintf(camFName, "%08d.txt", _camIndexMapping[*cam]);
+            //sprintf(camFName, "%08d.txt", _camIndexMapping[*cam]);
+            sprintf(camFName, "%08d.txt", *cam);
             path camPath = camerasDir / path(camFName);
 
             char imgFName[128];
-            sprintf(imgFName, "%08d.jpg", _camIndexMapping[*cam]);
+            //sprintf(imgFName, "%08d.jpg", _camIndexMapping[*cam]);
+            sprintf(imgFName, "%08d.jpg", *cam);
             path imgPath = imagesDir / path(imgFName);
 
             if(!exists(camPath)) {
                 throw sfmf::Error("Could not load camera file");
             }
-                    
+
             Camera P;
             loadCamera(camPath.c_str(), P);
             _cameras[*cam] = P;
@@ -305,6 +336,27 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames()
 	       //}
         }
     }
+}
+
+void 
+BDATA::PMVS::PMVSData::writeFile(const char* patchesFileName) const
+{
+    std::ofstream patchesF(patchesFileName);
+
+    patchesF << "PATCHES\n" << this->getNPatches() << "\n";
+
+    for(Patch::Vector::const_iterator p = _patches.begin(); p != _patches.end(); p++) {
+        patchesF << *p << "\n";
+    }
+}
+
+void 
+BDATA::PMVS::PMVSData::mergeWith(const PMVSData& other)
+{
+    this->_patchesFName = "";
+    std::copy(other._patches.begin(), other._patches.end(), std::back_inserter(this->_patches));
+    this->_cameras.insert(other._cameras.begin(), other._cameras.end());
+    this->_imageFNames.insert(other._imageFNames.begin(), other._imageFNames.end());
 }
 
 BDATA::PMVS::PMVSData::Ptr
@@ -348,8 +400,3 @@ BDATA::PMVS::PMVSData::Stats::finish()
     medianVal = _samples[_samples.size()/2];
     avgVal /= _samples.size();
 }
-
-
-
-
-
