@@ -63,15 +63,17 @@ main(int argc, const char* argv[])
     using namespace BDATA;
     
     if(argc == 1) {
-        std::cout << "Usage:\n\t" << argv[0] << " <bundle.out> <list.txt> <cam index> <list.sizes.txt>" << std::endl;
-        return EXIT_FAILURE;
+      std::cout << "Usage:\n\t" << argv[0] << " <in:bundle.out> <in:list.txt> <in:list.sizes.txt> <out:visibility.dat>" << std::endl;
+      return EXIT_FAILURE;
     }
     
     const char* bundleFName = argv[1];
     const char* listFName = argv[2];
-    int camNum = atoi(argv[3]);
-    const char* sizes_fname = argv[4];
+    //int camNum = atoi(argv[3]);
+    const char* sizes_fname = argv[3];
+    const char* visibilityListFName = argv[4];
     
+
     LOG("Loading bundle file");
     BDATA::BundlerData bundler(bundleFName);
     PRINT_VAR(bundler.getNCameras());
@@ -89,8 +91,8 @@ main(int argc, const char* argv[])
         LOG(" WHAT: " << e.what());
     }  
     
-    PRINT_VAR(bundler.getListFileName());
-    PRINT_VAR(bundler.getImageFileNames()[camNum]);
+    //PRINT_VAR(bundler.getListFileName());
+    //PRINT_VAR(bundler.getImageFileNames()[camNum]);
     
     // Test transforms
     PointInfo& pntInfo = bundler.getPointInfo()[0];
@@ -237,9 +239,9 @@ main(int argc, const char* argv[])
     int64_t work_units=(int64_t)np*nc; int64_t work_done=0; double work_t0=time(0);
     double rlprint_t0=0,rlprint_dt=15;
     unsigned char *is_original=new unsigned char[nc];
-    const char *oname="expansion.dat";
-    FILE *fp=fopen(oname,"wb");
-    if(fp==0) { perror(oname); exit(1); }
+    //const char *oname = visibilityListFName;//"expansion.dat";
+    FILE *fp=fopen(visibilityListFName, "wb");
+    if(fp==0) { perror(visibilityListFName); exit(1); }
     for(int p=0;p<np;p++) {
       PointInfo& pi=bundler.getPointInfo()[p];
       Eigen::Vector3d p_ww=pi.position;
@@ -299,12 +301,12 @@ main(int argc, const char* argv[])
         for(int e=0;e<ne && nemit<maxe;e++) {
           if(e % m) continue;
           int32_t cid=expansion[e].camera;
-          if(fwrite(&cid,sizeof(cid),1,fp)!=1) { perror(oname); exit(1); }
+          if(fwrite(&cid,sizeof(cid),1,fp)!=1) { perror(visibilityListFName); exit(1); }
           nemit++;
         }
         for(int e=nemit;e<maxe;e++) {
           int32_t pad=(-1);
-          if(fwrite(&pad,sizeof(pad),1,fp)!=1) { perror(oname); exit(1); }
+          if(fwrite(&pad,sizeof(pad),1,fp)!=1) { perror(visibilityListFName); exit(1); }
         }
       }
       //if(p>200) break;

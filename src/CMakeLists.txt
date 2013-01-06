@@ -59,7 +59,7 @@ TARGET_LINK_LIBRARIES(pmvs_info SfMFiles ${Boost_LIBRARIES})
 ADD_EXECUTABLE(pmvs_merge pmvs_merge.cpp)
 TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles ${Boost_LIBRARIES})
 
-ADD_EXECUTABLE(bundler_morecameras morecameras.cpp)
+ADD_EXECUTABLE(bundler_morecameras bundler_morecameras.cpp)
 TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles ${Boost_LIBRARIES})
 
 # How to package and where to install stuff
