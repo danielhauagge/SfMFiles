@@ -278,33 +278,47 @@ loadCamera(const char* fname, BDATA::PMVS::Camera& cam)
 }
 
 void
-BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames()
+BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames(const char *basedir, bool loadOnlyUsedCameras)
 {
     using namespace boost::filesystem;
     assert(_patchesFName.size());
-    
-    path pathPatches(_patchesFName);
-    path camerasDir(pathPatches.parent_path() / path("../txt/"));
-    path imagesDir(pathPatches.parent_path() / path("../visualize/"));
+
+    path basepath;
+    if(strlen(basedir) == 0) {
+      LOG("No basedir give, assuming that .patch file is within directory structure created by PMVS");
+      path pathPatches(_patchesFName);
+      basepath = pathPatches.parent_path() / path("../");
+    } else {
+      basepath = path(basedir);
+    }
+
+    path camerasDir(basepath / path("txt"));
+    path imagesDir(basepath / path("visualize"));
         
     if(!exists(camerasDir)) {
-        LOG("Camera directory " << camerasDir << "does not seem to exist");
+        LOG("Camera directory " << camerasDir << " does not seem to exist");
     } else {        
-
         std::set<uint32_t> allCams;
-        for(Patch::Vector::iterator p = _patches.begin(); p != _patches.end(); p++) {
+
+	if(loadOnlyUsedCameras) {
+	  for(Patch::Vector::iterator p = _patches.begin(); p != _patches.end(); p++) {
             for(std::vector<uint32_t>::iterator cam = p->goodCameras.begin(); cam != p->goodCameras.end(); cam++) {
-                allCams.insert(*cam);
+	      allCams.insert(*cam);
             }
             // not entirelly sure about this part, maybe should use oimages here
             for(std::vector<uint32_t>::iterator cam = p->badCameras.begin(); cam != p->badCameras.end(); cam++) {
-                allCams.insert(*cam);
+	      allCams.insert(*cam);
             }
-        }
+	  }
+	} else {
+	  for(int i = 0; i < _maxCamIdx; i++) {
+	    allCams.insert(i);
+	  }
+	}
 
         boost::progress_display* showProgress = NULL;
         if(allCams.size() > 1000) {
-            showProgress = new boost::progress_display(_maxCamIdx + 1, std::cout, "Loading cameras and images:\n", "", "");
+	  showProgress = new boost::progress_display(allCams.size(), std::cout, "Loading cameras and images:\n", "", "");
         }
 
         //_cameras.resize(_maxCamIdx + 1);

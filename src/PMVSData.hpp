@@ -166,7 +166,7 @@ namespace BDATA
             /// root/models/. The function will then try to read camera files
             /// from root/txt, it will also read the image filenames from
             /// root/visualize.
-            void loadCamerasAndImageFilenames();
+	  void loadCamerasAndImageFilenames(const char* basedir = NULL, bool loadOnlyUsedCameras = true);
 
             size_t getNPatches() const { return _patches.size(); }
             size_t getNCameras() const { return _cameras.size(); }
