@@ -61,7 +61,7 @@ main(int argc, const char* argv[])
     int maxCamerasPerPoint = 1024;
 
     if(argc == 1) {
-        std::cout << "Usage:\n\t" << argv[0] << " <in:bundle.out> <in:list.txt> <in:list.sizes.txt> <out:visibility.dat> [<in:selected_cams.txt>]" << std::endl;
+        std::cout << "Usage:\n\t" << argv[0] << " <in:bundle.out> <in:list.txt> <in:list.sizes.txt> <out:visibility.camviz> [<in:selected_cams.txt>]" << std::endl;
         std::cout << "\nselected_cams.txt: a file containing the indexes of the cameras the user wishes to use, only\n"
                   <<   "\tthese cameras will be considered for visibility expansion." << std::endl;
         return EXIT_FAILURE;
