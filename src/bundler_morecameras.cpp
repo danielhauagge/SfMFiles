@@ -28,7 +28,7 @@ read_sizes(const char* fname)
     sizeentry se;
     vector<sizeentry> sizelist;
     char fmt[256];
-    sprintf(fmt,"%%%ds %%d %%d\n",sizeof(se.name));
+    sprintf(fmt,"%%%zds %%d %%d\n",sizeof(se.name));
     while(fscanf(fp,fmt,se.name,&se.w,&se.h)==3) {
         se.name[sizeof(se.name)-1]=0;
         //printf("%s %d %d\n",se.name,se.w,se.h);
@@ -113,7 +113,7 @@ main(int argc, const char* argv[])
     vector<sizeentry> sizelist=read_sizes(sizes_fname);
     {
         int n = sizelist.size();
-        printf("sizelist: Read %d entries.\n", sizelist.size());
+        printf("sizelist: Read %lu entries.\n", sizelist.size());
         //printf("%s %d %d\n",sizelist[0].name,sizelist[0].w,sizelist[0].h);
         //printf("%s %d %d\n",sizelist[n-1].name,sizelist[n-1].w,sizelist[n-1].h);
     }
