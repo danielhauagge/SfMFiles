@@ -295,7 +295,7 @@ main(int argc, const char* argv[])
                 }
             }
             //if((p % 100)==0) printf("%d became %d (%d culled)\n", nvc, expansion.size(), ncull);
-            if(0) pi.viewList=expansion;
+            if(0) pi.viewList = expansion;
             if(1) {
                 // >>> struct.unpack('<1000i',f.read(4000))
                 int ne = expansion.size();
@@ -311,7 +311,7 @@ main(int argc, const char* argv[])
                     nemit++;
                 }
                 for(int e = nemit; e < maxCamerasPerPoint; e++) {
-                    int32_t pad=(-1);
+                    int32_t pad = -1;
                     if(fwrite(&pad, sizeof(pad), 1, fp) != 1) {
                         perror(visibilityListFName);
                         exit(EXIT_FAILURE);

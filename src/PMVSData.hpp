@@ -101,6 +101,9 @@ namespace BDATA
                 this->normal = p.normal;
                 this->goodCameras = p.goodCameras;
                 this->badCameras = p.badCameras;
+		this->color = p.color;
+		this->reconstructionAccuracy = p.reconstructionAccuracy;
+		this->reconstructionSLevel = p.reconstructionSLevel;
             }
             
             Patch(Patch &p) {
@@ -111,6 +114,9 @@ namespace BDATA
                 this->normal = p.normal;
                 this->goodCameras = p.goodCameras;
                 this->badCameras = p.badCameras;
+		this->color = p.color;
+		this->reconstructionAccuracy = p.reconstructionAccuracy;
+		this->reconstructionSLevel = p.reconstructionSLevel;
             }
         };
         
