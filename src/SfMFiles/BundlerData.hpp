@@ -23,7 +23,7 @@
 #ifndef __BUNDLER_DATA_HPP__
 #define __BUNDLER_DATA_HPP__
 
-#include <sfmfiles>
+#include <SfMFiles/sfmfiles>
 
 // Author: Daniel Cabrini Hauagge <hauagge@cs.cornell.edu>
 //   Date: 2011-04-03

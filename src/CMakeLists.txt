@@ -23,6 +23,8 @@ PROJECT(SfMFiles)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
+INCLUDE_DIRECTORIES(".")
+
 FIND_PACKAGE(PkgConfig REQUIRED)
 
 # Eigen3
@@ -37,7 +39,6 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 # OptParse
 SET(IS_APPLE ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 IF(APPLE)
-  MESSAGE(STATUS "Is apple and will check for optparse framework")
   # OptParser
   SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/danielcabrinihauagge/Projects/OptParser/build )
   FIND_LIBRARY(OPTPARSER_LIBRARY OptParser)
@@ -51,14 +52,12 @@ ELSE()
   SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
 ENDIF (APPLE)
 
-INCLUDE_DIRECTORIES(".")
-
 ADD_DEFINITIONS( -DSFMF_COMPILING )
 
 ADD_LIBRARY( SfMFiles 
   SHARED 
   BundlerData.cpp  PMVSData.cpp
-  sfmfiles)
+  SfMFiles/sfmfiles)
 
 TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES})
 
@@ -110,8 +109,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     ARCHIVE DESTINATION lib
     )
 ELSE()  
-  INSTALL_FILES(/include/SfMFiles/ sfmfiles)
-  INSTALL_FILES(/include/SfMFiles .hpp BundlerData.hpp PMVSData.hpp)
+  INSTALL_FILES(/include/SfMFiles FILES SfMFiles/sfmfiles)
+  INSTALL_FILES(/include/SfMFiles .hpp SfMFiles/BundlerData.hpp SfMFiles/PMVSData.hpp)
   INSTALL_TARGETS(/lib SfMFiles)
   INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info bundler_morecameras pmvs_filter pmvs2ply pmvs2bundler) 
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)

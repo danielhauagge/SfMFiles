@@ -62,7 +62,7 @@ namespace sfmf
   };
 }
 
-#include <BundlerData.hpp>
-#include <PMVSData.hpp>
+#include <SfMFiles/BundlerData.hpp>
+#include <SfMFiles/PMVSData.hpp>
 
 #endif // __SFMFILES__

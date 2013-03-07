@@ -1,4 +1,4 @@
-#include <sfmfiles>
+#include <SfMFiles/sfmfiles>
 
 #include <OptParser/optparser>
 

@@ -1,4 +1,4 @@
-#include <sfmfiles>
+#include <SfMFiles/sfmfiles>
 
 int
 main(int argc, const char* argv[])

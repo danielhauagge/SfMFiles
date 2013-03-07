@@ -23,7 +23,7 @@
 #ifndef __PMVSDATA_HPP__
 #define __PMVSDATA_HPP__
 
-#include <sfmfiles>
+#include <SfMFiles/sfmfiles>
 
 // File format reference: 
 // http://grail.cs.washington.edu/software/pmvs/documentation.html

@@ -4,7 +4,7 @@
 #include <inttypes.h>
 #include <set>
 
-#include <sfmfiles>
+#include <SfMFiles/sfmfiles>
 
 using namespace std;
 
