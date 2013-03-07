@@ -270,7 +270,7 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
     if(!file) {
         std::stringstream err;
         err << "Could not read file " << bundlerFileName;
-        throw BadFileException(err.str());
+        throw sfmf::Error(err.str());
         return;
     }
     
@@ -280,7 +280,7 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
     if (nread>0) { sig[nread] = '\0'; }
     if (strcmp(sig, ASCII_SIGNATURE) != 0) {
         PRINT_MSG("ERROR: Bad signature in ASCII file: " << sig);
-        throw BadFileException("Bad signature in binary file");
+        throw sfmf::Error("Bad signature in binary file");
         return;
     }
     
@@ -293,7 +293,7 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
         std::stringstream err;
         err << "Unsupported version " << version; 
         PRINT_MSG("ERROR: " << err.str());
-        throw BadFileException(err.str());
+        throw sfmf::Error(err.str());
         return;
     }
     
@@ -363,7 +363,7 @@ BDATA::BundlerData::_readFileBinary(const char *bundlerFileName)
     if(!file) {
         std::stringstream err;
         err << "Could not read file " << bundlerFileName;
-        throw BadFileException(err.str());
+        throw sfmf::Error(err.str());
         return;
     }
     
@@ -372,7 +372,7 @@ BDATA::BundlerData::_readFileBinary(const char *bundlerFileName)
     fread(sig, sizeof(char), strlen(BINARY_SIGNATURE), file);
     sig[strlen(BINARY_SIGNATURE) + 1] = '\0';
     if (strcmp(sig, BINARY_SIGNATURE) != 0) {
-        throw BadFileException("Bad signature in binary file");
+        throw sfmf::Error("Bad signature in binary file");
         return;
     }
     
@@ -383,7 +383,7 @@ BDATA::BundlerData::_readFileBinary(const char *bundlerFileName)
         std::stringstream err;
         err << "Unsupported version " << version; 
         PRINT_MSG("ERROR: " << err.str());
-        throw BadFileException(err.str());
+        throw sfmf::Error(err.str());
         return;
     }
     
@@ -458,7 +458,7 @@ BDATA::BundlerData::readFile(const char* bundlerFileName, bool computeCamIndex)
     } else if(strcmp(fileType, "# ") == 0) {
         _readFileASCII(bundlerFileName);        
     } else {
-        throw BadFileException("File does not seem to be a bundle file.");
+        throw sfmf::Error("File does not seem to be a bundle file.");
     }
     
     _bundleFName = std::string(bundlerFileName);
@@ -638,7 +638,7 @@ BDATA::BundlerData::loadListFile(const char *listFName)
             _imageFNames.resize(0);
             std::stringstream errMsg;
             errMsg << "Bad list file: number of filenames exceeds the number of cameras";
-            throw BadFileException(errMsg.str());
+            throw sfmf::Error(errMsg.str());
         }
         
         std::istringstream lineStream(line);
@@ -651,7 +651,7 @@ BDATA::BundlerData::loadListFile(const char *listFName)
         _imageFNames.resize(0);
         std::stringstream errMsg;
         errMsg << "Bad list file: number of filenames smaller than number of cameras (" << i << " vs " << this->getNCameras() << ")";
-        throw BadFileException(errMsg.str());
+        throw sfmf::Error(errMsg.str());
     }
     
     _listFName = std::string(listFName);
@@ -698,7 +698,7 @@ BDATA::BundlerData::New(const char* bundleFileName, bool computeCam2PointIndex)
     BDATA::BundlerData::Ptr result;
     try {
         result = BundlerData::Ptr(new BundlerData(bundleFileName, computeCam2PointIndex));
-    } catch (BadFileException e) {
+    } catch (sfmf::Error e) {
         PRINT_MSG("Caught exception");
         PRINT_MSG("What: " << e.what());
         result = BDATA::BundlerData::Ptr();

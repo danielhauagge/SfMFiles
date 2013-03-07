@@ -108,7 +108,7 @@ operator>>(std::istream& s, BDATA::PMVS::Patch& p)
         std::stringstream err;
         err << "Cannot handle patch of type " << patchType; 
         PRINT_MSG("ERROR: " << err.str());
-        throw BDATA::BadFileException(err.str());
+        throw sfmf::Error(err.str());
     }
 
     int nGoodCameras = 0;

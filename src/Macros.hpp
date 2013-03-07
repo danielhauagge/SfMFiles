@@ -40,16 +40,4 @@ namespace sfmf
   };
 }
 
-// FIXME: Get rid of this, use sfmf::Error instead
-namespace BDATA
-{
-  class BadFileException: public std::runtime_error
-  {
-  public:
-    explicit BadFileException(const std::string what): std::runtime_error(what)
-    {}
-  };
-  
-}
-
 #endif
