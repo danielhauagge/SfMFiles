@@ -72,6 +72,9 @@ TARGET_LINK_LIBRARIES(pmvs_filter SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRAR
 ADD_EXECUTABLE(pmvs2ply pmvs2ply.cpp)
 TARGET_LINK_LIBRARIES(pmvs2ply SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
 
+ADD_EXECUTABLE(pmvs2bundler pmvs2bundler.cpp)
+TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
+
 ADD_EXECUTABLE(bundler_morecameras bundler_morecameras.cpp)
 TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles ${Boost_LIBRARIES})
 
@@ -97,6 +100,6 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 ELSE()  
   INSTALL_FILES(/include/SfMFiles .hpp BundlerData.hpp PMVSData.hpp)
   INSTALL_TARGETS(/lib SfMFiles)
-  INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info bundler_morecameras pmvs_filter pmvs2ply) 
+  INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info bundler_morecameras pmvs_filter pmvs2ply pmvs2bundler) 
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
 ENDIF()
