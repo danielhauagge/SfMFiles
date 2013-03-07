@@ -1,5 +1,4 @@
-#include "BundlerData.hpp"
-#include "Macros.hpp"
+#include <sfmfiles>
 
 int
 main(int argc, const char* argv[])

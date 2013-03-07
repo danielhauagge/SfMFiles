@@ -3,9 +3,7 @@
 
 #include <OptParser/optparser>
 
-#include <Macros.hpp>
-#include <PMVSData.hpp>
-#include <BundlerData.hpp>
+#include <sfmfiles>
 
 int
 main(int argc, const char* argv[])
@@ -41,21 +39,14 @@ main(int argc, const char* argv[])
   PRINT_MSG("Loading the bundle file");
   BDATA::BundlerData::Ptr bundle = BDATA::BundlerData::New(inBundleFName.c_str());
 
-  //PRINT_MSG("Loading the pmvs file");
-  //PMVS::PMVSData::Ptr pmvs = PMVS::PMVSData::New(pmvsFName.c_str(), tryLoadOptions);
-  //PRINT_MSG("Done loading stuff");
-
-
-  BDATA::PointInfo::Vector x(1000);
-#if 0
-  //x.resize(0);
-
-  //bundle->getPointInfo().resize(0);
-
-
-  PMVS::Patch::Vector::iterator patch = pmvs->getPatches().begin();
+  PRINT_MSG("Loading the pmvs file");
+  PMVS::PMVSData::Ptr pmvs = PMVS::PMVSData::New(pmvsFName.c_str(), tryLoadOptions);
 
   PRINT_MSG("Adding patches to bundle file");
+  PMVS::Patch::Vector::iterator patch = pmvs->getPatches().begin();
+
+  bundle->getPointInfo().resize(0);
+
   for(int i = 0; i < pmvs->getNPatches(); i++, patch++) {
     BDATA::PointInfo pinfo;
 
@@ -88,6 +79,6 @@ main(int argc, const char* argv[])
 
   PRINT_MSG("Writing " << outBundleFName);
   bundle->writeFile(outBundleFName.c_str());
-#endif
+
   return EXIT_SUCCESS;
 }

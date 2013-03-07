@@ -53,10 +53,12 @@ ENDIF (APPLE)
 
 INCLUDE_DIRECTORIES(".")
 
+ADD_DEFINITIONS( -DSFMF_COMPILING )
+
 ADD_LIBRARY( SfMFiles 
   SHARED 
   BundlerData.cpp  PMVSData.cpp
-  BundlerData.hpp PMVSData.hpp)
+  sfmfiles)
 
 TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES})
 
@@ -98,7 +100,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   SET_TARGET_PROPERTIES( SfMFiles PROPERTIES
     FRAMEWORK TRUE
     FRAMEWORK_VERSION none
-    PUBLIC_HEADER "BundlerData.hpp;PMVSData.hpp" 
+    PUBLIC_HEADER "sfmfiles" 
     DEBUG_POSTIFX -d
     )
   
@@ -108,7 +110,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     ARCHIVE DESTINATION lib
     )
 ELSE()  
-  INSTALL_FILES(/include/SfMFiles .hpp BundlerData.hpp PMVSData.hpp)
+  INSTALL_FILES(/include/SfMFiles sfmfiles BundlerData.hpp PMVSData.hpp)
   INSTALL_TARGETS(/lib SfMFiles)
   INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info bundler_morecameras pmvs_filter pmvs2ply pmvs2bundler) 
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)

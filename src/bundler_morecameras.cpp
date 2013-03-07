@@ -4,8 +4,7 @@
 #include <inttypes.h>
 #include <set>
 
-#include "BundlerData.hpp"
-#include "Macros.hpp"
+#include <sfmfiles>
 
 using namespace std;
 

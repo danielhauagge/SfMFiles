@@ -23,23 +23,7 @@
 #ifndef __BUNDLER_DATA_HPP__
 #define __BUNDLER_DATA_HPP__
 
-// STD
-#include <vector>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <stdexcept>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-// Eigen3
-#include <Eigen/Core>
-#include <Eigen/LU>
-
-// Boost libs
-#include <boost/shared_ptr.hpp>
+#include <sfmfiles>
 
 // Author: Daniel Cabrini Hauagge <hauagge@cs.cornell.edu>
 //   Date: 2011-04-03

@@ -20,7 +20,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "PMVSData.hpp"
-#include <Macros.hpp>
 
 // STD
 #include <fstream>

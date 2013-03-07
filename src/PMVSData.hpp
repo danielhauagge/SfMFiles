@@ -23,19 +23,7 @@
 #ifndef __PMVSDATA_HPP__
 #define __PMVSDATA_HPP__
 
-// std
-#include <vector>
-#include <map>
-#include <set>
-#include <iostream>
-#include <stdint.h>
-
-// Eigen3
-#include <Eigen/Core>
-#include <Eigen/LU>
-
-// Boost libs
-#include <boost/shared_ptr.hpp>
+#include <sfmfiles>
 
 // File format reference: 
 // http://grail.cs.washington.edu/software/pmvs/documentation.html

@@ -21,8 +21,6 @@
 
 #include "BundlerData.hpp"
 
-#include <Macros.hpp>
-
 //static inline
 std::istream& 
 operator>>(std::istream &s, Eigen::Matrix3d &m)

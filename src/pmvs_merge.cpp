@@ -1,5 +1,4 @@
-#include <Macros.hpp>
-#include <PMVSData.hpp>
+#include <sfmfiles>
 
 #include <iostream>
 
