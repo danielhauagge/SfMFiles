@@ -19,14 +19,36 @@
 // OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#ifndef __SFMFILES__
+#define __SFMFILES__
 
-#ifndef __MACROS_HPP__
-#define __MACROS_HPP__
+// STD
+#include <stdint.h>
+#include <vector>
+#include <map>
+#include <set>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <stdexcept>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+// Eigen3
+#include <Eigen/Core>
+#include <Eigen/LU>
+
+// Boost libs
+#include <boost/shared_ptr.hpp>
+
+
+#ifdef SFMF_COMPILING
 #define EIGEN_DONT_ALIGN
-
 #define PRINT_MSG(msg) std::cout << ">> " << msg << std::endl
 #define PRINT_EXPR(var) std::cout << ">> " << #var << " = " << (var) << std::endl;
+#endif
 
 #include <stdexcept>
 
@@ -40,4 +62,7 @@ namespace sfmf
   };
 }
 
-#endif
+#include <BundlerData.hpp>
+#include <PMVSData.hpp>
+
+#endif // __SFMFILES__
