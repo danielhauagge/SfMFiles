@@ -41,11 +41,11 @@ namespace BDATA
     class Camera
     {
     public:
-        typedef std::vector<Camera, Eigen::aligned_allocator<Camera> > Vector;
+        typedef std::vector<Camera> Vector;
         
         // Indexes of visible points, not stored in bundle file and only 
         // computed if extra flag is passed to BundlerData constructor.
-        std::vector<int, Eigen::aligned_allocator<unsigned int> > visiblePoints; 
+        std::vector<int> visiblePoints; 
         
         // Extrinsic parameters
         Eigen::Vector3d translation;
@@ -68,14 +68,12 @@ namespace BDATA
         void invIntrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d &invK) const;
         
         bool isValid() const;
-        
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
     };
     
     class PointEntry // TODO Find a better name for this class
     {
     public:
-        typedef std::vector<PointEntry, Eigen::aligned_allocator<PointEntry> > Vector;
+        typedef std::vector<PointEntry> Vector;
         
         int camera, key; // Camera and keypoint indexes
         Eigen::Vector2d keyPosition; // Keypoint position in image
@@ -83,21 +81,17 @@ namespace BDATA
         PointEntry();
         PointEntry(int camera, int key, Eigen::Vector2d keyPosition);
         PointEntry(const PointEntry& other);
-        
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
     };
     
     // Stores point location, color and list of cameras that can view this point
     class PointInfo
     {
     public:
-        typedef std::vector<PointInfo, Eigen::aligned_allocator<PointInfo> > Vector;
+        typedef std::vector<PointInfo> Vector;
         
         Eigen::Vector3d position;
         Color color;
-        PointEntry::Vector viewList;
-        
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+        PointEntry::Vector viewList;        
     };
     
     // Class that represents bundler output, encapsulating
@@ -143,9 +137,7 @@ namespace BDATA
         PointInfo::Vector& getPointInfo() { return _points; };    
         Camera::Vector& getCameras() { return _cameras; };
         std::vector<std::string>& getImageFileNames() { return _imageFNames; };
-        
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-        
+
     private:
         Camera::Vector _cameras;
         PointInfo::Vector _points;

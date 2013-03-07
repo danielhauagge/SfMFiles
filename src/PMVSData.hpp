@@ -56,8 +56,8 @@ namespace BDATA
         class Camera: public Eigen::Matrix<double, 3, 4>
         {
         public:
-            typedef std::vector<Camera, Eigen::aligned_allocator<Camera> > Vector;      
-            typedef std::map<uint32_t, Camera, std::less<int>, Eigen::aligned_allocator<std::pair<const uint32_t, Camera> > > Map;      
+            typedef std::vector<Camera> Vector;      
+            typedef std::map<uint32_t, Camera, std::less<int> > Map;      
             
             // Coordinate transforms
             void world2im(const Eigen::Vector3d &w, Eigen::Vector2d &im) const;
@@ -66,7 +66,7 @@ namespace BDATA
         class Patch
         {
         public:            
-            typedef std::vector<Patch, Eigen::aligned_allocator<Patch> > Vector;
+            typedef std::vector<Patch> Vector;
 
             Eigen::Vector4d position, normal;
             double score; // Photometric consistency score, stays within -1 and 1 (good score)
