@@ -15,30 +15,30 @@ main(int argc, const char* argv[])
     const char* listFName = argv[2];
     int camNum = atoi(argv[3]);
     
-    LOG("Loading bundle file");
+    PRINT_MSG("Loading bundle file");
     BDATA::BundlerData bundler(bundleFName);
-    PRINT_VAR(bundler.getNCameras());
-    PRINT_VAR(bundler.getNValidCameras());
-    PRINT_VAR(bundler.getNPoints());
+    PRINT_EXPR(bundler.getNCameras());
+    PRINT_EXPR(bundler.getNValidCameras());
+    PRINT_EXPR(bundler.getNPoints());
     
-    LOG("Building camera to point index");
+    PRINT_MSG("Building camera to point index");
     bundler.buildCam2PointIndex();
     
     try {
-        LOG("Loading list file");
+        PRINT_MSG("Loading list file");
         bundler.loadListFile(listFName);
     } catch (BDATA::BadFileException e) {
-        LOG("ERROR: Caught exception");
-        LOG(" WHAT: " << e.what());
+        PRINT_MSG("ERROR: Caught exception");
+        PRINT_MSG(" WHAT: " << e.what());
     }  
     
-    PRINT_VAR(bundler.getListFileName());
-    PRINT_VAR(bundler.getImageFileNames()[camNum]);
+    PRINT_EXPR(bundler.getListFileName());
+    PRINT_EXPR(bundler.getImageFileNames()[camNum]);
     
     // Test transforms
     PointInfo& pntInfo = bundler.getPointInfo()[0];
 
-    PRINT_VAR(pntInfo.position.transpose());
+    PRINT_EXPR(pntInfo.position.transpose());
     const int pntIdx = 0;
     Eigen::Vector2d featPos = pntInfo.viewList[pntIdx].keyPosition;
     

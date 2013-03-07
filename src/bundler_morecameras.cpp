@@ -75,15 +75,15 @@ main(int argc, const char* argv[])
 
     std::set<int> selectedCams;
     if(selectedCamerasFName != NULL) {
-        LOG("Loading selected cameras from " << selectedCamerasFName);
+        PRINT_MSG("Loading selected cameras from " << selectedCamerasFName);
         loadSelectedCameras(selectedCamerasFName, selectedCams);
     }
 
-    LOG("Loading bundle file");
+    PRINT_MSG("Loading bundle file");
     BDATA::BundlerData bundler(bundleFName);
-    PRINT_VAR(bundler.getNCameras());
-    PRINT_VAR(bundler.getNValidCameras());
-    PRINT_VAR(bundler.getNPoints());
+    PRINT_EXPR(bundler.getNCameras());
+    PRINT_EXPR(bundler.getNValidCameras());
+    PRINT_EXPR(bundler.getNPoints());
 
     if(selectedCamerasFName == NULL) {
         //selectedCams.resize(bundler.getNCameras());
@@ -92,21 +92,21 @@ main(int argc, const char* argv[])
         }
     }
 
-    LOG("Building camera to point index");
+    PRINT_MSG("Building camera to point index");
     bundler.buildCam2PointIndex();
 
     try {
-        LOG("Loading list file");
+        PRINT_MSG("Loading list file");
         bundler.loadListFile(listFName);
     } catch (BDATA::BadFileException e) {
-        LOG("ERROR: Caught exception");
-        LOG(" WHAT: " << e.what());
+        PRINT_MSG("ERROR: Caught exception");
+        PRINT_MSG(" WHAT: " << e.what());
     }
 
     // Test transforms
     PointInfo& pntInfo = bundler.getPointInfo()[0];
 
-    PRINT_VAR(pntInfo.position.transpose());
+    PRINT_EXPR(pntInfo.position.transpose());
     const int pntIdx = 0;
     Eigen::Vector2d featPos = pntInfo.viewList[pntIdx].keyPosition;
 
@@ -193,7 +193,7 @@ main(int argc, const char* argv[])
         }
 
 
-        LOG("Calculating minV ...");
+        PRINT_MSG("Calculating minV ...");
         vector<double> minVlist;
         for(int p = 0; p < np; p++) {
             PointInfo& pi=bundler.getPointInfo()[p];
@@ -221,7 +221,7 @@ main(int argc, const char* argv[])
             }
         }
 
-        LOG("Calculating viewList ...");
+        PRINT_MSG("Calculating viewList ...");
         int64_t work_units = (int64_t) np * nc;
         int64_t work_done = 0;
         double work_t0 = time(0);

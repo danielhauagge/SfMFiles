@@ -217,10 +217,10 @@ BDATA::PointEntry::PointEntry(const BDATA::PointEntry& other)
 //BDATA::BundlerData::init(const char *bundlerFileName)
 //{
 //#if 0
-//    LOG("Old read from file");
+//    PRINT_MSG("Old read from file");
 //    std::ifstream f(bundlerFileName);
 //#else
-//    LOG("New read, buffers contente before parsing");
+//    PRINT_MSG("New read, buffers contente before parsing");
 //    std::ifstream file(bundlerFileName);
 //    
 //    struct stat filestatus;
@@ -230,7 +230,7 @@ BDATA::PointEntry::PointEntry(const BDATA::PointEntry& other)
 //    
 //    std::stringstream f;
 //    f.rdbuf()->pubsetbuf(&buffer[0], filestatus.st_size);    
-//    //LOG("stopping before parsing data"); exit(1);
+//    //PRINT_MSG("stopping before parsing data"); exit(1);
 //#endif    
 //    // Discard the first line
 //    // TODO check the header to make sure this is a bundler file
@@ -279,7 +279,7 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
     size_t nread = fread(sig, sizeof(char), strlen(ASCII_SIGNATURE), file);
     if (nread>0) { sig[nread] = '\0'; }
     if (strcmp(sig, ASCII_SIGNATURE) != 0) {
-        LOG("ERROR: Bad signature in ASCII file: " << sig);
+        PRINT_MSG("ERROR: Bad signature in ASCII file: " << sig);
         throw BadFileException("Bad signature in binary file");
         return;
     }
@@ -292,7 +292,7 @@ BDATA::BundlerData::_readFileASCII(const char *bundlerFileName)
     if (version != 0.3) {
         std::stringstream err;
         err << "Unsupported version " << version; 
-        LOG("ERROR: " << err.str());
+        PRINT_MSG("ERROR: " << err.str());
         throw BadFileException(err.str());
         return;
     }
@@ -382,7 +382,7 @@ BDATA::BundlerData::_readFileBinary(const char *bundlerFileName)
     if (version != 0.3) {
         std::stringstream err;
         err << "Unsupported version " << version; 
-        LOG("ERROR: " << err.str());
+        PRINT_MSG("ERROR: " << err.str());
         throw BadFileException(err.str());
         return;
     }
@@ -562,7 +562,7 @@ BDATA::BundlerData::_writeFileBinary(const char *bundlerFileName) const
 {
     FILE* file = fopen(bundlerFileName, "wb");
     if(!file) {
-        LOG("ERROR: Could not open file for writing " << bundlerFileName);
+        PRINT_MSG("ERROR: Could not open file for writing " << bundlerFileName);
         return;
     }
     
@@ -699,8 +699,8 @@ BDATA::BundlerData::New(const char* bundleFileName, bool computeCam2PointIndex)
     try {
         result = BundlerData::Ptr(new BundlerData(bundleFileName, computeCam2PointIndex));
     } catch (BadFileException e) {
-        LOG("Caught exception");
-        LOG("What: " << e.what());
+        PRINT_MSG("Caught exception");
+        PRINT_MSG("What: " << e.what());
         result = BDATA::BundlerData::Ptr();
     }
     return result;

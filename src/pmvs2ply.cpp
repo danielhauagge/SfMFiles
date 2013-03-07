@@ -39,7 +39,7 @@ main(int argc, const char* argv[])
   fprintf(plyF, "property float x\nproperty float y\nproperty float z\n");
   fprintf(plyF, "property float red\nproperty float green\nproperty float blue\nend_header\n");
 
-  LOG("Processing data");
+  PRINT_MSG("Processing data");
   PMVS::Patch::Vector::iterator patch = pmvs.getPatches().begin();;
   for(int i = 0; i < pmvs.getNPatches(); i++, patch++) {
     for(int j = 0; j < 3; j++) {

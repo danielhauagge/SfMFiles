@@ -34,8 +34,8 @@ main(int argc, char **argv)
     
     pmvsData.loadCamerasAndImageFilenames();
     
-    PRINT_VAR(pmvsData.getNPatches());
-    PRINT_VAR(pmvsData.getNCameras());
+    PRINT_EXPR(pmvsData.getNPatches());
+    PRINT_EXPR(pmvsData.getNCameras());
     
     return EXIT_SUCCESS;
 }

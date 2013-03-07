@@ -34,20 +34,20 @@ main(int argc, char **argv)
     const char *outMode = (argc > 2)?argv[2]:NULL;
     const char *outBundleFName = (argc > 2)?argv[3]:NULL;
     
-    LOG("Loading data");
+    PRINT_MSG("Loading data");
     BDATA::BundlerData bundle(inBundleFName);
     
     if (outMode == NULL)
         return EXIT_SUCCESS;
     
     if(strcmp(outMode, "b") == 0) {
-        LOG("Writing binary file");
+        PRINT_MSG("Writing binary file");
         bundle.writeFile(outBundleFName, false);
     } else if(strcmp(outMode, "a") == 0) {
-        LOG("Writing ASCII file");
+        PRINT_MSG("Writing ASCII file");
         bundle.writeFile(outBundleFName, true);
     } else {
-        LOG("ERROR: Unrecognized mode " << outMode << ". Run command with no argments for usage");
+        PRINT_MSG("ERROR: Unrecognized mode " << outMode << ". Run command with no argments for usage");
         return EXIT_FAILURE;
     }
     

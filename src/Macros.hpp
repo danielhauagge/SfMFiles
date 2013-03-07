@@ -23,12 +23,10 @@
 #ifndef __MACROS_HPP__
 #define __MACROS_HPP__
 
-// FIXME Go to this page http://goo.gl/KFoAp to figure out
-//       the right way to get rid of that runtime error.
-#define EIGEN_DONT_ALIGN_STATICALLY
+#define EIGEN_DONT_ALIGN
 
-#define LOG(msg) std::cout << ">> " << msg << std::endl
-#define PRINT_VAR(var) std::cout << ">> " << #var << " = " << (var) << std::endl;
+#define PRINT_MSG(msg) std::cout << ">> " << msg << std::endl
+#define PRINT_EXPR(var) std::cout << ">> " << #var << " = " << (var) << std::endl;
 
 #include <stdexcept>
 

@@ -34,16 +34,16 @@ main(int argc, const char* argv[])
   bool tryLoadOptions = !atoi(opts["dontLoadOption"].c_str());
   bool includeBadCameras = atoi(opts["includeBadCameras"].c_str());
 
-  PRINT_VAR(outBundleFName);
-  PRINT_VAR(inBundleFName);
-  PRINT_VAR(pmvsFName);
+  PRINT_EXPR(outBundleFName);
+  PRINT_EXPR(inBundleFName);
+  PRINT_EXPR(pmvsFName);
 
-  LOG("Loading the bundle file");
+  PRINT_MSG("Loading the bundle file");
   BDATA::BundlerData::Ptr bundle = BDATA::BundlerData::New(inBundleFName.c_str());
 
-  //LOG("Loading the pmvs file");
+  //PRINT_MSG("Loading the pmvs file");
   //PMVS::PMVSData::Ptr pmvs = PMVS::PMVSData::New(pmvsFName.c_str(), tryLoadOptions);
-  //LOG("Done loading stuff");
+  //PRINT_MSG("Done loading stuff");
 
 
   BDATA::PointInfo::Vector x(1000);
@@ -55,7 +55,7 @@ main(int argc, const char* argv[])
 
   PMVS::Patch::Vector::iterator patch = pmvs->getPatches().begin();
 
-  LOG("Adding patches to bundle file");
+  PRINT_MSG("Adding patches to bundle file");
   for(int i = 0; i < pmvs->getNPatches(); i++, patch++) {
     BDATA::PointInfo pinfo;
 
@@ -86,7 +86,7 @@ main(int argc, const char* argv[])
     bundle->getPointInfo().push_back(pinfo);
   }
 
-  LOG("Writing " << outBundleFName);
+  PRINT_MSG("Writing " << outBundleFName);
   bundle->writeFile(outBundleFName.c_str());
 #endif
   return EXIT_SUCCESS;

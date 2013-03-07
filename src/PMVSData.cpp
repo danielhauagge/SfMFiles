@@ -107,7 +107,7 @@ operator>>(std::istream& s, BDATA::PMVS::Patch& p)
     } else {
         std::stringstream err;
         err << "Cannot handle patch of type " << patchType; 
-        LOG("ERROR: " << err.str());
+        PRINT_MSG("ERROR: " << err.str());
         throw BDATA::BadFileException(err.str());
     }
 
@@ -220,7 +220,7 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
 
         path optionsPath(pathPatches.parent_path() / path("..") / basenameNoExt);
 
-        LOG("Looking for options file " << optionsPath.string());
+        PRINT_MSG("Looking for options file " << optionsPath.string());
         if(exists(optionsPath)) {
             std::ifstream optF(optionsPath.string().c_str());
             BDATA::PMVS::Options opt;
@@ -230,7 +230,7 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
                 throw sfmf::Error("Do not know what to do when the size of oimages is not 0");
             }
 #if 1
-            LOG("Remapping indexes");
+            PRINT_MSG("Remapping indexes");
             for(Patch::Vector::iterator p = _patches.begin(); p != _patches.end(); p++) {
                 for(std::vector<uint32_t>::iterator cam = p->goodCameras.begin(); cam != p->goodCameras.end(); cam++) {
                     *cam = opt.timages[*cam];
@@ -249,7 +249,7 @@ BDATA::PMVS::PMVSData::init(const char *pmvsFileName, bool tryLoadOptionsFile)
             _camIndexMapping = opt.timages;
         } 
         else {
-            LOG("Options file does not exist, moving along");
+            PRINT_MSG("Options file does not exist, moving along");
             _camIndexMapping.resize(_maxCamIdx + 1);
             for(int i = 0; i < _maxCamIdx + 1; i++) _camIndexMapping[i] = i;
         }
@@ -285,18 +285,20 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames(const char *basedir, bool lo
 
     path basepath;
     if(strlen(basedir) == 0) {
-      LOG("No basedir give, assuming that .patch file is within directory structure created by PMVS");
+      PRINT_MSG("No basedir give, assuming that .patch file is within directory structure created by PMVS");
       path pathPatches(_patchesFName);
       basepath = pathPatches.parent_path() / path("../");
     } else {
       basepath = path(basedir);
     }
 
+    PRINT_EXPR(__LINE__);
+
     path camerasDir(basepath / path("txt"));
     path imagesDir(basepath / path("visualize"));
         
     if(!exists(camerasDir)) {
-        LOG("Camera directory " << camerasDir << " does not seem to exist");
+        PRINT_MSG("Camera directory " << camerasDir << " does not seem to exist");
     } else {        
         std::set<uint32_t> allCams;
 

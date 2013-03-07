@@ -18,7 +18,7 @@ main(int argc, const char** argv)
 	const char** inFNames = &argv[2];
 	int nFiles = argc - 2;
 
-	PRINT_VAR(nFiles);
+	PRINT_EXPR(nFiles);
 
 	PMVSData merged;
 
@@ -28,7 +28,7 @@ main(int argc, const char** argv)
 		merged.mergeWith(pmvs);
 	}
 
-	LOG("Writing file " << outFName);
+	PRINT_MSG("Writing file " << outFName);
 	merged.writeFile(outFName);
 
 	return EXIT_SUCCESS;
