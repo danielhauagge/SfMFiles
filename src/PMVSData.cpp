@@ -284,14 +284,12 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames(const char *basedir, bool lo
 
     path basepath;
     if(strlen(basedir) == 0) {
-      PRINT_MSG("No basedir give, assuming that .patch file is within directory structure created by PMVS");
+      PRINT_MSG("No basedir given, assuming that .patch file is within directory structure created by PMVS");
       path pathPatches(_patchesFName);
       basepath = pathPatches.parent_path() / path("../");
     } else {
       basepath = path(basedir);
     }
-
-    PRINT_EXPR(__LINE__);
 
     path camerasDir(basepath / path("txt"));
     path imagesDir(basepath / path("visualize"));
