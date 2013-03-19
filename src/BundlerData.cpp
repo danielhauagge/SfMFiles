@@ -719,3 +719,40 @@ BDATA::BundlerData::buildCam2PointIndex()
     _cam2PointIndexInitialized = true;
 }
 
+void
+BDATA::loadCameraVisibility(const char* fname, BDATA::CameraVisibility& camviz)
+{
+    FILE* f = fopen(fname, "rb");
+    if(f == 0) {
+        std::stringstream err;
+        err << "Could not open " << fname;
+        throw std::runtime_error(err.str());
+    }
+
+    const int buffSize = 1024;
+    char buff[buffSize];
+    fgets(buff, buffSize, f);
+    if(strcmp(buff, "#camviz\n") != 0) {
+        std::stringstream err;
+        err << "Unexpected header \"" << buff << "\"";
+        throw std::runtime_error(err.str());
+    }
+
+    int nPoints, maxCamerasPerPoint;
+    fscanf(f, "%d %d", &nPoints, &maxCamerasPerPoint);
+    fgets(buff, buffSize, f);
+
+    camviz.resize(nPoints);
+    for(int i = 0; i < nPoints; i++) {
+        int32_t camIdxs[maxCamerasPerPoint];
+        fread(camIdxs, sizeof(int32_t), maxCamerasPerPoint, f);
+
+        int nGoodCams = 0;
+        for(; nGoodCams < maxCamerasPerPoint && camIdxs[nGoodCams] >= 0; nGoodCams++);
+
+        camviz[i].resize(nGoodCams);
+        memcpy(&camviz[i][0], camIdxs, sizeof(int32_t) * nGoodCams);
+    }
+}
+
+

@@ -56,10 +56,35 @@ ADD_DEFINITIONS( -DSFMF_COMPILING )
 
 ADD_LIBRARY( SfMFiles 
   SHARED 
-  BundlerData.cpp  PMVSData.cpp
-  SfMFiles/sfmfiles)
+  BundlerData.cpp  PMVSData.cpp )
 
 TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES})
+
+# How to package and where to install stuff
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  MESSAGE(STATUS "Making framework")
+
+  # Build a universal binary
+  SET( CMAKE_OSX_ARCHITECTURES x86_64) #;i386 ) # Have to leave out i386 because boost is compiled only in 64 bits
+
+  # MacOS Framework
+  SET_TARGET_PROPERTIES( SfMFiles PROPERTIES
+    FRAMEWORK TRUE
+    FRAMEWORK_VERSION none
+    PUBLIC_HEADER "SfMFiles/sfmfiles;SfMFiles/BundlerData.hpp;SfMFiles/PMVSData.hpp"
+    DEBUG_POSTIFX -d
+    )
+  
+  INSTALL(TARGETS SfMFiles
+          FRAMEWORK DESTINATION "/Library/Frameworks" COMPONENT bin)
+
+ELSE()  
+  INSTALL_FILES(/include/SfMFiles FILES SfMFiles/sfmfiles)
+  INSTALL_FILES(/include/SfMFiles .hpp SfMFiles/BundlerData.hpp SfMFiles/PMVSData.hpp)
+  INSTALL_TARGETS(/lib SfMFiles)
+  INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info bundler_morecameras pmvs_filter pmvs2ply pmvs2bundler) 
+  #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
+ENDIF()
 
 # Some utilities
 ADD_EXECUTABLE(bundler_file_converter bundler_file_converter.cpp)
@@ -88,30 +113,3 @@ TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRA
 
 ADD_EXECUTABLE(bundler_morecameras bundler_morecameras.cpp)
 TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles ${Boost_LIBRARIES})
-
-# How to package and where to install stuff
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
-  # Build a universal binary
-  SET( CMAKE_OSX_ARCHITECTURES x86_64)#;i386 )
-
-  # MacOS Framework
-  SET_TARGET_PROPERTIES( SfMFiles PROPERTIES
-    FRAMEWORK TRUE
-    FRAMEWORK_VERSION none
-    PUBLIC_HEADER "sfmfiles" 
-    DEBUG_POSTIFX -d
-    )
-  
-  INSTALL( TARGETS SfMFiles
-    FRAMEWORK DESTINATION Library/Frameworks
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    )
-ELSE()  
-  INSTALL_FILES(/include/SfMFiles FILES SfMFiles/sfmfiles)
-  INSTALL_FILES(/include/SfMFiles .hpp SfMFiles/BundlerData.hpp SfMFiles/PMVSData.hpp)
-  INSTALL_TARGETS(/lib SfMFiles)
-  INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info bundler_morecameras pmvs_filter pmvs2ply pmvs2bundler) 
-  #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
-ENDIF()
