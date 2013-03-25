@@ -1,4 +1,4 @@
-// Copyright (C) 2011 by Daniel Cabrini Hauagge
+// Copyright (C) 2011 by Daniel Hauagge
 //
 // Permission is hereby granted, free  of charge, to any person obtaining
 // a  copy  of this  software  and  associated  documentation files  (the
@@ -25,7 +25,7 @@
 
 #include <SfMFiles/sfmfiles>
 
-// Author: Daniel Cabrini Hauagge <hauagge@cs.cornell.edu>
+// Author: Daniel Hauagge <hauagge@cs.cornell.edu>
 //   Date: 2011-04-03
 
 // Reference for file format:
@@ -45,7 +45,8 @@ public:
     typedef std::vector<Camera> Vector;
     
     // Indexes of visible points, not stored in bundle file and only 
-    // computed if extra flag is passed to BundlerData constructor.
+    // computed if extra flag is passed to BundlerData constructor or 
+    // function buildCam2PointIndex is called.
     std::vector<int> visiblePoints; 
     
     // Extrinsic parameters
@@ -80,7 +81,7 @@ public:
     Eigen::Vector2d keyPosition; // Keypoint position in image
     
     PointEntry();
-    PointEntry(int camera, int key, Eigen::Vector2d keyPosition);
+    PointEntry(int camera, int key = -1, Eigen::Vector2d keyPosition = Eigen::Vector2d(0,0));
     PointEntry(const PointEntry& other);
 };
 
