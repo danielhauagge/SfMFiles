@@ -1,4 +1,4 @@
-# Copyright (C) 2011 by Daniel Cabrini Hauagge
+# Copyright (C) 2011 by Daniel Hauagge
 #
 # Permission is hereby granted, free  of charge, to any person obtaining
 # a  copy  of this  software  and  associated  documentation files  (the
@@ -82,7 +82,7 @@ ELSE()
   INSTALL_FILES(/include/SfMFiles FILES SfMFiles/sfmfiles)
   INSTALL_FILES(/include/SfMFiles .hpp SfMFiles/BundlerData.hpp SfMFiles/PMVSData.hpp)
   INSTALL_TARGETS(/lib SfMFiles)
-  INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info bundler_morecameras pmvs_filter pmvs2ply pmvs2bundler) 
+  INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info bundler_morecameras bundler_merge pmvs_filter pmvs2ply pmvs2bundler) 
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
 ENDIF()
 
@@ -104,6 +104,9 @@ TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(pmvs_filter pmvs_filter.cpp)
 TARGET_LINK_LIBRARIES(pmvs_filter SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
+
+ADD_EXECUTABLE(bundler_merge bundler_merge.cpp)
+TARGET_LINK_LIBRARIES(bundler_merge SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
 
 ADD_EXECUTABLE(pmvs2ply pmvs2ply.cpp)
 TARGET_LINK_LIBRARIES(pmvs2ply SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
