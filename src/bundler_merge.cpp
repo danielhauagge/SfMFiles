@@ -49,6 +49,13 @@ main(int argc, char const *argv[])
 {
 	using namespace BDATA;
 
+
+	if(argc == 1) {
+		std::cout << "Usage:\n\t" << argv[0] << " <out:bundle.out> <out:list.txt> <in:bundle1.out> <in:list1.txt> <in:bundle2.out> <in:list2.txt> ..." << std::endl;
+		std::cout << "\nDescription:\n\tThis command merges bundle files that have the same number of points\n\tbut different number of cameras." << std::endl;
+		return EXIT_FAILURE;
+	}
+
 	const char* outBundleFName = argv[1];
 	const char* outListFName = argv[2];
 
