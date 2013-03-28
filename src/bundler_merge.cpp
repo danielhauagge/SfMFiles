@@ -83,13 +83,14 @@ main(int argc, char const *argv[])
   std::set<std::string> imgsSeen;
   
   for(int bun = 0, nPoints = -1; bun < inBundleFNames.size(); bun++) {
-    PRINT_MSG("Loading " << inBundleFNames[bun]);
+    PRINT_MSG("[" << std::setw(4) << bun << "/" << inBundleFNames.size() << "] Loading " << inBundleFNames[bun]);
     BundlerData bundle(inBundleFNames[bun].c_str());
     bundle.loadListFile(inListFNames[bun].c_str());
     
-    PRINT_MSG("Building index camera -> visible points");
-    bundle.buildCam2PointIndex();
-    
+    if(updateVizList) {
+      PRINT_MSG("Building index camera -> visible points");
+      bundle.buildCam2PointIndex();
+    }
 
     if(bun == 0) { 
       nPoints = bundle.getNPoints();
