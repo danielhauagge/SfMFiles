@@ -100,7 +100,7 @@ ADD_EXECUTABLE(pmvs_info pmvs_info.cpp)
 TARGET_LINK_LIBRARIES(pmvs_info SfMFiles ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(pmvs_merge pmvs_merge.cpp)
-TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES}) 
 
 ADD_EXECUTABLE(pmvs_filter pmvs_filter.cpp)
 TARGET_LINK_LIBRARIES(pmvs_filter SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})

@@ -19,37 +19,45 @@
 // OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// Other projects
 #include <SfMFiles/sfmfiles>
+#include <OptParser/optparser>
 
+// STD
 #include <iostream>
+#include <iomanip>
 
 int
 main(int argc, const char** argv)
 {
-	using namespace BDATA::PMVS;
+    using namespace BDATA::PMVS;
 
-	if(argc == 1) {
-		std::cout << "Usage:\n\t" << argv[0] << " <out:merged.patch> <in:file1.patch> <in:file2.patch> ..." << std::endl;
-		return EXIT_FAILURE;
-	}
+    std::vector<std::string> args;
+    std::map<std::string, std::string> opts;
 
-	const char* outFName = argv[1];
+    OptionParser optParser(&args, &opts);
+    optParser.addUsage("[OPTIONS] <out:model.patch> <in:model1.patch> <in:model2.patch>...");
+    optParser.addDescription("Merge multiple PMVS patch files into a larger one.");
+    optParser.addFlag("dontLoadOption", "-p", "--dont-load-options", "Do not try to load options file for the reconstruction (used to remap camera indexes)");
+    optParser.parse(argc, argv);
 
-	const char** inFNames = &argv[2];
-	int nFiles = argc - 2;
+    std::string outFName = args[0];
+    bool tryLoadOptions = !atoi(opts["dontLoadOption"].c_str());
 
-	PRINT_EXPR(nFiles);
+    std::vector<std::string> inFNames;
+    for (int i = 1; i < args.size(); i++) {
+        inFNames.push_back(args[i]);
+    }
 
-	PMVSData merged;
+    PMVSData merged;
+    for (int i = 0; i < inFNames.size(); i++) {
+        std::cout << "Processing " << std::setw(4) << i << " of " << inFNames.size() << " files" << std::endl;
+        PMVSData pmvs(inFNames[i].c_str(), tryLoadOptions);
+        merged.mergeWith(pmvs);
+    }
 
-	for(int i = 0; i < nFiles; i++) {
-		PMVSData pmvs(inFNames[i]);
+    PRINT_MSG("Writing file " << outFName);
+    merged.writeFile(outFName.c_str());
 
-		merged.mergeWith(pmvs);
-	}
-
-	PRINT_MSG("Writing file " << outFName);
-	merged.writeFile(outFName);
-
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
