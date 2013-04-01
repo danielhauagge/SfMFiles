@@ -51,7 +51,7 @@ main(int argc, const char** argv)
 
     PMVSData merged;
     for (int i = 0; i < inFNames.size(); i++) {
-        std::cout << "Processing " << std::setw(4) << i << " of " << inFNames.size() << " files" << std::endl;
+        std::cout << "[" << std::setw(4) << i << "/" << inFNames.size() << "] " << inFNames[i] << std::endl;
         PMVSData pmvs(inFNames[i].c_str(), tryLoadOptions);
         merged.mergeWith(pmvs);
     }
