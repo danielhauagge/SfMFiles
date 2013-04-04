@@ -82,7 +82,8 @@ ELSE()
   INSTALL_FILES(/include/SfMFiles FILES SfMFiles/sfmfiles)
   INSTALL_FILES(/include/SfMFiles .hpp SfMFiles/BundlerData.hpp SfMFiles/PMVSData.hpp)
   INSTALL_TARGETS(/lib SfMFiles)
-  INSTALL_PROGRAMS(/bin FILES pmvs_merge pmvs_info bundler_morecameras bundler_merge pmvs_filter pmvs2ply pmvs2bundler) 
+  INSTALL_PROGRAMS(/bin FILES bundler_morecameras bundler_merge  bundler_info
+                              pmvs_merge pmvs_info pmvs_filter pmvs2ply pmvs2bundler) 
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
 ENDIF()
 
