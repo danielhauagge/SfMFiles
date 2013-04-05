@@ -30,7 +30,6 @@
 // Boost
 #include <boost/filesystem.hpp>
 
-
 #define PRINT_MSG(msg) std::cout << ">> " << msg << std::endl
 
 std::string

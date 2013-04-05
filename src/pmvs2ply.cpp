@@ -26,6 +26,35 @@
 #include <iostream>
 #include <cstdio>
 
+void
+recolorByScore(BDATA::PMVS::PMVSData& patches)
+{
+  using namespace BDATA;
+
+  // Color scheme
+  // from 0 to  1: white to green
+  // from 0 to -1: white to red
+
+  for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
+    float score = patch->score;
+    
+    float r, g, b;
+    if(score <= 0) {
+      r = 1.0;
+      g = 1.0 + score;
+      b = 1.0 + score;
+    } else {
+      r = 1.0 - score;
+      g = 1.0;
+      b = 1.0 - score;
+    }
+    
+    patch->color[0] = r;
+    patch->color[1] = g;
+    patch->color[2] = b;
+  }
+}
+
 int
 main(int argc, const char* argv[])
 {
@@ -38,14 +67,18 @@ main(int argc, const char* argv[])
   optParser.addUsage("[OPTIONS] <in:model.patch> <out:model.ply>");
   optParser.addDescription("Utility for converting from PMVS's .patch file format to a .ply");
   optParser.addFlag("dontLoadOption", "-p", "--dont-load-options", "Do not try to load options file for the reconstruction (used to remap camera indexes)");      
+  optParser.addFlag("colorByScore", "-s", "--colorScore", "Change patches color to show the quality score.");      
   optParser.parse(argc, argv);
 
   std::string pmvsFName = args[0];
   std::string plyFName = args[1];
 	
   bool tryLoadOptions = !atoi(opts["dontLoadOption"].c_str());
+  bool colorByScore = atoi(opts["colorByScore"].c_str());
 
   PMVS::PMVSData pmvs(pmvsFName.c_str(), tryLoadOptions);
+
+  if(colorByScore) recolorByScore(pmvs);
 
   // Write PLY header
   FILE* plyF = fopen(plyFName.c_str(), "wb");
@@ -55,7 +88,7 @@ main(int argc, const char* argv[])
   }
   fprintf(plyF, "ply\n");
   fprintf(plyF, "format binary_little_endian 1.0\n");
-  fprintf(plyF, "element vertex %d\n", pmvs.getNPatches());
+  fprintf(plyF, "element vertex %d\n", int(pmvs.getNPatches()));
   fprintf(plyF, "property float x\nproperty float y\nproperty float z\n");
   fprintf(plyF, "property float red\nproperty float green\nproperty float blue\nend_header\n");
 
