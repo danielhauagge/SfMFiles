@@ -29,88 +29,88 @@
 void
 recolorByScore(BDATA::PMVS::PMVSData& patches)
 {
-  using namespace BDATA;
+    using namespace BDATA;
 
-  // Color scheme
-  // from 0 to  1: white to green
-  // from 0 to -1: white to red
+    // Color scheme
+    // from 0 to  1: white to green
+    // from 0 to -1: white to red
 
-  for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
-    float score = patch->score;
-    
-    float r, g, b;
-    if(score <= 0) {
-      r = 1.0;
-      g = 1.0 + score;
-      b = 1.0 + score;
-    } else {
-      r = 1.0 - score;
-      g = 1.0;
-      b = 1.0 - score;
+    for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
+        float score = patch->score;
+
+        float r, g, b;
+        if(score <= 0) {
+            r = 1.0;
+            g = 1.0 + score;
+            b = 1.0 + score;
+        } else {
+            r = 1.0 - score;
+            g = 1.0;
+            b = 1.0 - score;
+        }
+
+        patch->color[0] = r;
+        patch->color[1] = g;
+        patch->color[2] = b;
     }
-    
-    patch->color[0] = r;
-    patch->color[1] = g;
-    patch->color[2] = b;
-  }
 }
 
 int
 main(int argc, const char* argv[])
 {
-  using namespace BDATA;
+    using namespace BDATA;
 
-  std::vector<std::string> args;
-  std::map<std::string, std::string> opts;
+    std::vector<std::string> args;
+    std::map<std::string, std::string> opts;
 
-  OptionParser optParser(&args, &opts);
-  optParser.addUsage("[OPTIONS] <in:model.patch> <out:model.ply>");
-  optParser.addDescription("Utility for converting from PMVS's .patch file format to a .ply");
-  optParser.addFlag("dontLoadOption", "-p", "--dont-load-options", "Do not try to load options file for the reconstruction (used to remap camera indexes)");      
-  optParser.addFlag("colorByScore", "-s", "--colorScore", "Change patches color to show the quality score.");      
-  optParser.parse(argc, argv);
+    OptionParser optParser(&args, &opts);
+    optParser.addUsage("[OPTIONS] <in:model.patch> <out:model.ply>");
+    optParser.addDescription("Utility for converting from PMVS's .patch file format to a .ply");
+    optParser.addFlag("dontLoadOption", "-p", "--dont-load-options", "Do not try to load options file for the reconstruction (used to remap camera indexes)");
+    optParser.addFlag("colorByScore", "-s", "--colorScore", "Change patches color to show the quality score.");
+    optParser.parse(argc, argv);
 
-  std::string pmvsFName = args[0];
-  std::string plyFName = args[1];
-	
-  bool tryLoadOptions = !atoi(opts["dontLoadOption"].c_str());
-  bool colorByScore = atoi(opts["colorByScore"].c_str());
+    std::string pmvsFName = args[0];
+    std::string plyFName = args[1];
 
-  PMVS::PMVSData pmvs(pmvsFName.c_str(), tryLoadOptions);
+    bool tryLoadOptions = !atoi(opts["dontLoadOption"].c_str());
+    bool colorByScore = atoi(opts["colorByScore"].c_str());
 
-  if(colorByScore) recolorByScore(pmvs);
+    PMVS::PMVSData pmvs(pmvsFName.c_str(), tryLoadOptions);
 
-  // Write PLY header
-  FILE* plyF = fopen(plyFName.c_str(), "wb");
-  if(plyF == NULL) {
-    std::cout << "ERROR: Could not open file " << plyFName << " for writing" << std::endl;
-    return EXIT_FAILURE;
-  }
-  fprintf(plyF, "ply\n");
-  fprintf(plyF, "format binary_little_endian 1.0\n");
-  fprintf(plyF, "element vertex %d\n", int(pmvs.getNPatches()));
-  fprintf(plyF, "property float x\nproperty float y\nproperty float z\n");
-  fprintf(plyF, "property float red\nproperty float green\nproperty float blue\nend_header\n");
+    if(colorByScore) recolorByScore(pmvs);
 
-  PRINT_MSG("Processing data");
-  PMVS::Patch::Vector::iterator patch = pmvs.getPatches().begin();;
-  for(int i = 0; i < pmvs.getNPatches(); i++, patch++) {
-    for(int j = 0; j < 3; j++) {
-      float coord = patch->position[j];
-      fwrite(&coord, sizeof(float), 1, plyF);
-      //fprintf(plyF, "%f ", coord);
+    // Write PLY header
+    FILE* plyF = fopen(plyFName.c_str(), "wb");
+    if(plyF == NULL) {
+        std::cout << "ERROR: Could not open file " << plyFName << " for writing" << std::endl;
+        return EXIT_FAILURE;
+    }
+    fprintf(plyF, "ply\n");
+    fprintf(plyF, "format binary_little_endian 1.0\n");
+    fprintf(plyF, "element vertex %d\n", int(pmvs.getNPatches()));
+    fprintf(plyF, "property float x\nproperty float y\nproperty float z\n");
+    fprintf(plyF, "property float red\nproperty float green\nproperty float blue\nend_header\n");
+
+    PRINT_MSG("Processing data");
+    PMVS::Patch::Vector::iterator patch = pmvs.getPatches().begin();;
+    for(int i = 0; i < pmvs.getNPatches(); i++, patch++) {
+        for(int j = 0; j < 3; j++) {
+            float coord = patch->position[j];
+            fwrite(&coord, sizeof(float), 1, plyF);
+            //fprintf(plyF, "%f ", coord);
+        }
+
+        for(int j = 0; j < 3; j++) {
+            float color = patch->color[j];
+            //LOG(color);
+            fwrite(&color, sizeof(float), 1, plyF);
+        }
+
+        //fprintf(plyF, "\n");
     }
 
-    for(int j = 0; j < 3; j++) {
-      float color = patch->color[j];
-      //LOG(color);
-      fwrite(&color, sizeof(float), 1, plyF);
-    }
+    fclose(plyF);
 
-    //fprintf(plyF, "\n");
-  }
-
-  fclose(plyF);
-
-  return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

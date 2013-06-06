@@ -25,16 +25,16 @@
 #include <iostream>
 
 int
-main(int argc, char **argv)
+main(int argc, char** argv)
 {
-    const char *patchFName = argv[1];
-    
+    const char* patchFName = argv[1];
+
     BDATA::PMVS::PMVSData pmvsData(patchFName);
-    
+
     pmvsData.loadCamerasAndImageFilenames();
-    
+
     PRINT_EXPR(pmvsData.getNPatches());
     PRINT_EXPR(pmvsData.getNCameras());
-    
+
     return EXIT_SUCCESS;
 }
