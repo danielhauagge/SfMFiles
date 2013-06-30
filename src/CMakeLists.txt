@@ -31,8 +31,7 @@ FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(EIGEN3 REQUIRED eigen3)
 INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIRS})
 
-# Boost
-# http://goo.gl/xEHzb
+# Boost (http://goo.gl/xEHzb)
 FIND_PACKAGE(Boost 1.33 COMPONENTS system filesystem REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
@@ -120,3 +119,7 @@ TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRA
 
 ADD_EXECUTABLE(bundler_morecameras bundler_morecameras.cpp)
 TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles ${Boost_LIBRARIES})
+
+# Generating the .pc file for pkg-config
+CONFIGURE_FILE("sfmfiles.pc.in" "${CMAKE_BINARY_DIR}/sfmfiles.pc" @ONLY IMMEDIATE)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/sfmfiles.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
