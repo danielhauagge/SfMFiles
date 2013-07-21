@@ -171,7 +171,7 @@ main(int argc, const char* argv[])
     fprintf(plyF, "\n");
   }
 
-  fclose(plyF);
+    fclose(plyF);
 
-  return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

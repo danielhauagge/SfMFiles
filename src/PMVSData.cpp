@@ -96,7 +96,12 @@ operator>>(std::istream& s, BDATA::PMVS::Patch& p)
         s >> p.normal(0)   >> p.normal(1)   >> p.normal(2)   >> p.normal(3);
         if (strcmp(patchType.c_str(), "PATCHPS") == 0) {
             s >> p.color(0) >> p.color(1) >> p.color(2);
-        }
+        } else {
+	  p.color(0) = 0;
+	  p.color(1) = 0;
+	  p.color(2) = 0;
+	}
+	
         s >> p.score >> p.debug1 >> p.debug2;
 
         if (strcmp(patchType.c_str(), "PATCHPS") == 0) {
