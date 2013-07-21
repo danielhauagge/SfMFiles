@@ -25,35 +25,92 @@
 
 #include <iostream>
 #include <cstdio>
+#include <cmath>
+
+#define LOG(msg) std::cout << ">> " << msg << std::endl;
+//#define PRINT_EXPR(expr) LOG(#expr << " = " << (expr))
 
 void
-recolorByScore(BDATA::PMVS::PMVSData& patches)
+recolorByScore(BDATA::PMVS::PMVSData& patches, bool stretchValues = false)
 {
   using namespace BDATA;
 
-  // Color scheme
-  // from 0 to  1: white to green
-  // from 0 to -1: white to red
+  stretchValues = true;
+  
+  double minScore = -1.0, maxScore = 1.0;
+  if(stretchValues) {
+    minScore = 2.0, maxScore = -2.0;
+    for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
+      minScore = std::min(minScore, patch->score);
+      maxScore = std::max(maxScore, patch->score);
+    }
+  }
 
   for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
     float score = patch->score;
-    
+    score -= minScore;
+    score /= (maxScore - minScore);
+    //PRINT_EXPR(score);
+  
     float r, g, b;
-    if(score <= 0) {
-      r = 1.0;
-      g = 1.0 + score;
-      b = 1.0 + score;
-    } else {
-      r = 1.0 - score;
-      g = 1.0;
-      b = 1.0 - score;
-    }
+    r = score;
+    g = 1.0 - score;
+    b = 0.0;
     
     patch->color[0] = r;
     patch->color[1] = g;
     patch->color[2] = b;
   }
 }
+
+void
+recolorByNumberOfCameras(BDATA::PMVS::PMVSData& patches)
+{
+  using namespace BDATA;
+
+  size_t minNCams = 1000000, maxNCams = 0;
+  for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
+    minNCams = std::min(minNCams, patch->goodCameras.size());
+    maxNCams = std::max(maxNCams, patch->goodCameras.size());
+  }
+  std::cout << "min # cams: " << minNCams << std::endl;
+  std::cout << "max # cams: " << maxNCams << std::endl;
+
+
+  for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
+    int nCams = patch->goodCameras.size();
+    float score = nCams;
+    score -= minNCams;
+    score /= (maxNCams - minNCams);
+    //PRINT_EXPR(score);
+  
+    float r, g, b;
+    if(nCams < 10) {
+      r = 1; g = 0; b = 0;
+    } else if(nCams < 20) {
+      r = 0; g = 1; b = 0;
+    } else {
+      r = 0; g = 0; b = 1;
+    }
+
+    //float r, g, b;
+    //r = score;
+    //g = 1.0 - score;
+    //b = 0.0;
+    
+    patch->color[0] = r;
+    patch->color[1] = g;
+    patch->color[2] = b;
+  }
+}
+
+#if 0
+int
+round(double x)
+{
+  return int(x + 0.5);
+}
+#endif
 
 int
 main(int argc, const char* argv[])
@@ -67,7 +124,8 @@ main(int argc, const char* argv[])
   optParser.addUsage("[OPTIONS] <in:model.patch> <out:model.ply>");
   optParser.addDescription("Utility for converting from PMVS's .patch file format to a .ply");
   optParser.addFlag("dontLoadOption", "-p", "--dont-load-options", "Do not try to load options file for the reconstruction (used to remap camera indexes)");      
-  optParser.addFlag("colorByScore", "-s", "--colorScore", "Change patches color to show the quality score.");      
+  optParser.addFlag("colorByScore", "-s", "--color-score", "Change patches color to show the quality score.");      
+  optParser.addFlag("colorByNCams", "-c", "--color-n-cams", "Change patches color to show the number of cameras a point sees.");      
   optParser.parse(argc, argv);
 
   std::string pmvsFName = args[0];
@@ -75,39 +133,42 @@ main(int argc, const char* argv[])
 	
   bool tryLoadOptions = !atoi(opts["dontLoadOption"].c_str());
   bool colorByScore = atoi(opts["colorByScore"].c_str());
+  bool colorByNCams = atoi(opts["colorByNCams"].c_str());
 
   PMVS::PMVSData pmvs(pmvsFName.c_str(), tryLoadOptions);
 
   if(colorByScore) recolorByScore(pmvs);
+  if(colorByNCams) recolorByNumberOfCameras(pmvs);
 
   // Write PLY header
-  FILE* plyF = fopen(plyFName.c_str(), "wb");
+  //FILE* plyF = fopen(plyFName.c_str(), "wb");
+  FILE* plyF = fopen(plyFName.c_str(), "w");
   if(plyF == NULL) {
     std::cout << "ERROR: Could not open file " << plyFName << " for writing" << std::endl;
     return EXIT_FAILURE;
   }
   fprintf(plyF, "ply\n");
-  fprintf(plyF, "format binary_little_endian 1.0\n");
+  //fprintf(plyF, "format binary_little_endian 1.0\n");
+  fprintf(plyF, "format ascii 1.0\n");
   fprintf(plyF, "element vertex %d\n", int(pmvs.getNPatches()));
   fprintf(plyF, "property float x\nproperty float y\nproperty float z\n");
-  fprintf(plyF, "property float red\nproperty float green\nproperty float blue\nend_header\n");
+  fprintf(plyF, "property uchar diffuse_red\nproperty uchar diffuse_green\nproperty uchar diffuse_blue\nend_header\n");
 
   PRINT_MSG("Processing data");
   PMVS::Patch::Vector::iterator patch = pmvs.getPatches().begin();;
   for(int i = 0; i < pmvs.getNPatches(); i++, patch++) {
     for(int j = 0; j < 3; j++) {
       float coord = patch->position[j];
-      fwrite(&coord, sizeof(float), 1, plyF);
-      //fprintf(plyF, "%f ", coord);
+      //fwrite(&coord, sizeof(float), 1, plyF);
+      fprintf(plyF, "%f ", coord);
     }
 
     for(int j = 0; j < 3; j++) {
-      float color = patch->color[j];
-      //LOG(color);
-      fwrite(&color, sizeof(float), 1, plyF);
+      double color = patch->color[j];
+      //fwrite(&color, sizeof(float), 1, plyF);
+      fprintf(plyF, "%d ", (int)round(color * 255.0));
     }
-
-    //fprintf(plyF, "\n");
+    fprintf(plyF, "\n");
   }
 
   fclose(plyF);
