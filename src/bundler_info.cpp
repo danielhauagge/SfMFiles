@@ -32,8 +32,8 @@
 
 int
 mainCameraMode(const BDATA::BundlerData bundle,
-               const std::vector<std::string>& args,
-               const std::map<std::string, std::string>& opts)
+               const OptionParser::Arguments& args,
+               const OptionParser::Options& opts)
 {
     using namespace BDATA;
 
@@ -57,8 +57,8 @@ mainCameraMode(const BDATA::BundlerData bundle,
 
 int
 mainPointMode(const BDATA::BundlerData bundle,
-              const std::vector<std::string>& args,
-              const std::map<std::string, std::string>& opts)
+              const OptionParser::Arguments& args,
+              const OptionParser::Options& opts)
 {
     return EXIT_FAILURE;
 }
@@ -68,8 +68,8 @@ main(int argc, const char** argv)
 {
     using namespace BDATA;
 
-    std::vector<std::string> args;
-    std::map<std::string, std::string> opts;
+    OptionParser::Arguments args;
+    OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
     optParser.addUsage("[OPTIONS] <in:bundle.out> CAM <field>");

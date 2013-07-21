@@ -43,8 +43,8 @@ main(int argc, const char** argv)
 {
     using namespace BDATA;
 
-    std::vector<std::string> args;
-    std::map<std::string, std::string> opts;
+    OptionParser::Arguments args;
+    OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
     optParser.addUsage("[OPTIONS] <in:bundle.out> <in:list.txt> <out:bundle.out> <out:list.txt>");

@@ -53,8 +53,8 @@ main(int argc, const char* argv[])
 {
     using namespace BDATA;
 
-    std::vector<std::string> args;
-    std::map<std::string, std::string> opts;
+    OptionParser::Arguments args;
+    OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
     optParser.addUsage("[OPTIONS] <in:old.patch> <out:new.patch>");
@@ -68,9 +68,9 @@ main(int argc, const char* argv[])
     std::string inPmvsFName = args[0];
     std::string outPmvsFName = args[1];
 
-    float frac = atof(opts["subsampleFraction"].c_str());
+    float frac = opts["subsampleFraction"].asFloat();
 
-    bool tryLoadOptions = !atoi(opts["dontLoadOption"].c_str());
+    bool tryLoadOptions = !opts["dontLoadOption"].asBool();
 
     bool useBoundingSphere = 0;
     Eigen::Vector4d spherePos;

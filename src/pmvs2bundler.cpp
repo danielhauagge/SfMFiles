@@ -29,14 +29,10 @@
 int
 main(int argc, const char* argv[])
 {
-    //BDATA::PointInfo::Vector x(1000);
-    //x.resize(0);
-
-
     using namespace BDATA;
 
-    std::vector<std::string> args;
-    std::map<std::string, std::string> opts;
+    OptionParser::Arguments args;
+    OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
     optParser.addUsage("[OPTIONS] <in:model.patch> <in:model.out> <out:model.out>");
@@ -50,8 +46,8 @@ main(int argc, const char* argv[])
     std::string inBundleFName = args[1];
     std::string outBundleFName = args[2];
 
-    bool tryLoadOptions = !atoi(opts["dontLoadOption"].c_str());
-    bool includeBadCameras = atoi(opts["includeBadCameras"].c_str());
+    bool tryLoadOptions = opts["dontLoadOption"].asBool();
+    bool includeBadCameras = opts["includeBadCameras"].asBool();
 
     PRINT_EXPR(outBundleFName);
     PRINT_EXPR(inBundleFName);

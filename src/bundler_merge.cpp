@@ -46,8 +46,8 @@ main(int argc, char const* argv[])
 {
     using namespace BDATA;
 
-    std::vector<std::string> args;
-    std::map<std::string, std::string> opts;
+    OptionParser::Arguments args;
+    OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
     optParser.addUsage("[OPTIONS] <out:bundle.out> <out:list.txt> <in:bundle1.out> <in:list1.txt> <in:bundle2.out> <in:list2.txt> ...");
@@ -59,7 +59,7 @@ main(int argc, char const* argv[])
     std::string outBundleFName = args[0];
     std::string outListFName = args[1];
 
-    bool updateVizList = !atoi(opts["dontUpdateVizList"].c_str());
+    bool updateVizList = !opts["dontUpdateVizList"].asBool();
 
     std::vector<std::string> inBundleFNames;
     std::vector<std::string> inListFNames;

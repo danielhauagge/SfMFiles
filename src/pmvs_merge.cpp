@@ -32,8 +32,8 @@ main(int argc, const char** argv)
 {
     using namespace BDATA::PMVS;
 
-    std::vector<std::string> args;
-    std::map<std::string, std::string> opts;
+    OptionParser::Arguments args;
+    OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
     optParser.addUsage("[OPTIONS] <out:model.patch> <in:model1.patch> <in:model2.patch>...");
@@ -42,7 +42,7 @@ main(int argc, const char** argv)
     optParser.parse(argc, argv);
 
     std::string outFName = args[0];
-    bool tryLoadOptions = !atoi(opts["dontLoadOption"].c_str());
+    bool tryLoadOptions = !opts["dontLoadOption"].asBool();
 
     std::vector<std::string> inFNames;
     for (int i = 1; i < args.size(); i++) {
