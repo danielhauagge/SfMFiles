@@ -118,7 +118,9 @@ public:
     void init(const Camera::Vector& cameras, const PointInfo::Vector& points);
 
     //! Load file with image filenames
-    void loadListFile(const char* listFName);
+    void readListFile(const char* listFName);
+    void writeListFile(const char* listFName) const;
+
     const char* getListFileName() const;
     const char* getBundleFileName() const {
         return _bundleFName.c_str();

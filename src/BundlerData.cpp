@@ -491,7 +491,7 @@ BDATA::BundlerData::init(const char* bundlerFileName, const char* listFileName, 
 {
     _cam2PointIndexInitialized = false;
     init(bundlerFileName, computeCamIndex);
-    loadListFile(listFileName);
+    readListFile(listFileName);
 }
 
 void
@@ -623,7 +623,7 @@ BDATA::BundlerData::_writeFileBinary(const char* bundlerFileName) const
 }
 
 void
-BDATA::BundlerData::loadListFile(const char* listFName)
+BDATA::BundlerData::readListFile(const char* listFName)
 {
     _imageFNames.resize(this->getNCameras());
 
@@ -655,6 +655,21 @@ BDATA::BundlerData::loadListFile(const char* listFName)
     }
 
     _listFName = std::string(listFName);
+}
+
+void
+BDATA::BundlerData::writeListFile(const char* listFName) const
+{
+    std::ofstream listF(listFName);
+    if(!listF.good()) {
+        std::stringstream errMsg;
+        errMsg << "Could not open file " << listFName << " for writting";
+        throw sfmf::Error(errMsg.str());
+    }
+
+    for(std::vector<std::string>::const_iterator fname = _imageFNames.begin(); fname != _imageFNames.end(); fname++ ) {
+        listF << (*fname) << "\n";
+    }
 }
 
 BDATA::BundlerData::BundlerData(const char* bundlerFileName, const char* listFileName, bool computeCam2PointIndex):

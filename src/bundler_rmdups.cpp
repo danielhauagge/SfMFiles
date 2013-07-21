@@ -30,39 +30,12 @@
 // Boost
 #include <boost/filesystem.hpp>
 
-#define PRINT_MSG(msg) std::cout << ">> " << msg << std::endl
-
-int
-mainCameraMode(const BDATA::BundlerData bundle,
-               const std::vector<std::string>& args,
-               const std::map<std::string, std::string>& opts)
+std::string
+getBasename(const std::string& fname)
 {
-    using namespace BDATA;
-
-    std::string fieldName = args[2];
-
-    if (strcasecmp(fieldName.c_str(), "center") == 0) {
-        Camera::Vector cams = bundle.getCameras();
-        Camera::Vector::iterator cam = cams.begin();
-        Eigen::Vector3d origCam = Eigen::Vector3d::Zero();
-        for (; cam != cams.end(); cam++) {
-            Eigen::Vector3d camCenter;
-            cam->cam2world(origCam, camCenter);
-            std::cout <<        std::setw(10) << camCenter[0]
-                      << " " << std::setw(10) << camCenter[1]
-                      << " " << std::setw(10) << camCenter[2] << std::endl;
-        }
-    }
-
-    return EXIT_SUCCESS;
-}
-
-int
-mainPointMode(const BDATA::BundlerData bundle,
-              const std::vector<std::string>& args,
-              const std::map<std::string, std::string>& opts)
-{
-    return EXIT_FAILURE;
+    namespace fs = boost::filesystem;
+    fs::path p(fname);
+    return p.filename().string();
 }
 
 int
@@ -74,22 +47,63 @@ main(int argc, const char** argv)
     std::map<std::string, std::string> opts;
 
     OptionParser optParser(&args, &opts);
-    optParser.addUsage("[OPTIONS] <in:bundle.out> CAM <field>");
-    optParser.addUsage("[OPTIONS] <in:bundle.out> PNT <field>");
-    optParser.addDescription("Prints miscelaneous information about a bundle file.");
+    optParser.addUsage("[OPTIONS] <in:bundle.out> <in:list.txt> <out:bundle.out> <out:list.txt>");
+    optParser.addDescription("Removes duplicated cameras from bundler reconstruction (based on image filename).");
+    optParser.setNArguments(4, 4);
     optParser.parse(argc, argv);
 
-    std::string bundleFName = args[0];
-    std::string mode = args[1];
+    std::string inBundleFName  = args[0];
+    std::string inListFName    = args[1];
+    std::string outBundleFName = args[2];
+    std::string outListFName   = args[3];
 
-    BundlerData bundle(bundleFName.c_str());
+    BundlerData bundle(inBundleFName.c_str());
+    bundle.readListFile(inListFName.c_str());
 
-    if (strcasecmp(mode.c_str(), "cam") == 0) return mainCameraMode(bundle, args, opts);
-    else if (strcasecmp(mode.c_str(), "pnt") == 0) return mainPointMode(bundle, args, opts);
-    else {
-        PRINT_MSG("ERROR: Incorrect usage, run with -h for help");
-        return EXIT_FAILURE;
+    // Find out which are the repeated images
+    std::set<std::string> imageBNames; // Stores image basenames
+    std::set<int> camIdxsToRemove; // indexes of the cameras that will be remomoved
+    std::map<int, int> newCamMapping; // mapping old to new camera indexes
+    std::vector<std::string> newImageList;
+    Camera::Vector newCameras;
+    for(int camIdx = 0; camIdx < bundle.getNCameras(); camIdx++) {
+        std::string bname = getBasename(bundle.getImageFileNames()[camIdx]);
+
+        if(imageBNames.count(bname) != 0) {
+            camIdxsToRemove.insert(camIdx);
+            continue;
+        }
+
+        imageBNames.insert(bname);
+        newImageList.push_back(bundle.getImageFileNames()[camIdx]);
+        newCameras.push_back(bundle.getCameras()[camIdx]);
+        newCamMapping[camIdx] = newImageList.size() - 1;
     }
+
+    PRINT_MSG("Removing " << camIdxsToRemove.size() << " of " << bundle.getNCameras() << " cameras");
+
+    PointInfo::Vector newPoints;
+    for(int pntIdx = 0; pntIdx < bundle.getNPoints(); pntIdx++) {
+        const PointInfo& pntInfo = bundle.getPointInfo()[pntIdx];
+        PointInfo newPntInfo(pntInfo);
+
+        newPntInfo.viewList.resize(0);
+
+        for(int i = 0; i < pntInfo.viewList.size(); i++) {
+            if( camIdxsToRemove.count( pntInfo.viewList[i].camera ) ) continue;
+            PointEntry pntEntry = pntInfo.viewList[i];
+            pntEntry.camera = newCamMapping[pntEntry.camera];
+
+            newPntInfo.viewList.push_back( pntEntry );
+        }
+
+        newPoints.push_back(newPntInfo);
+    }
+
+    BundlerData outBundle(newCameras, newPoints);
+    outBundle.getImageFileNames() = newImageList;
+    outBundle.writeFile(outBundleFName.c_str());
+    outBundle.writeListFile(outListFName.c_str());
 
     return EXIT_SUCCESS;
 }

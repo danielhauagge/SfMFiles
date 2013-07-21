@@ -46,20 +46,20 @@
 
 #ifdef SFMF_COMPILING
 #define EIGEN_DONT_ALIGN
-#define PRINT_MSG(msg) std::cout << ">> " << msg << std::endl
-#define PRINT_EXPR(var) std::cout << ">> " << #var << " = " << (var) << std::endl;
+#define PRINT_MSG(msg) std::cout << "[sfmfiles] " << msg << std::endl
+#define PRINT_EXPR(var) std::cout << "[sfmfiles] " << #var << " = " << (var) << std::endl;
 #endif
 
 #include <stdexcept>
 
 namespace sfmf
 {
-  class Error: public std::runtime_error
-  {
-  public:
-    explicit Error(const std::string what): std::runtime_error(what)
-    {}
-  };
+class Error: public std::runtime_error
+{
+public:
+    explicit Error(const std::string what): std::runtime_error(what) {
+    }
+};
 }
 
 #include <SfMFiles/BundlerData.hpp>

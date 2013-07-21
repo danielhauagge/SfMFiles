@@ -25,8 +25,6 @@
 
 #include <iostream>
 
-#define PRINT_MSG(msg) std::cout << ">> " << msg << std::endl
-
 // http://stackoverflow.com/questions/10051679/c-tokenize-string
 std::vector<std::string> inline
 splitString(const std::string& source, const char* delimiter = " ", bool keepEmpty = false)

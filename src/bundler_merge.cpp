@@ -30,8 +30,6 @@
 // Boost
 #include <boost/filesystem.hpp>
 
-#define PRINT_MSG(msg) std::cout << ">> " << msg << std::endl
-
 std::string
 basename(const std::string& fname)
 {
@@ -84,7 +82,7 @@ main(int argc, char const* argv[])
     for (int bun = 0, nPoints = -1; bun < inBundleFNames.size(); bun++) {
         PRINT_MSG("[" << std::setw(4) << bun << "/" << inBundleFNames.size() << "] Loading " << inBundleFNames[bun]);
         BundlerData bundle(inBundleFNames[bun].c_str());
-        bundle.loadListFile(inListFNames[bun].c_str());
+        bundle.readListFile(inListFNames[bun].c_str());
 
         if (updateVizList) {
             PRINT_MSG("Building index camera -> visible points");

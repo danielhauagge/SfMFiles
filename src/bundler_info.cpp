@@ -30,8 +30,6 @@
 // Boost
 #include <boost/filesystem.hpp>
 
-#define PRINT_MSG(msg) std::cout << ">> " << msg << std::endl
-
 int
 mainCameraMode(const BDATA::BundlerData bundle,
                const std::vector<std::string>& args,

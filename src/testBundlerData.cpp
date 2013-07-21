@@ -46,7 +46,7 @@ main(int argc, const char* argv[])
 
     try {
         PRINT_MSG("Loading list file");
-        bundler.loadListFile(listFName);
+        bundler.readListFile(listFName);
     } catch (sfmf::Error e) {
         PRINT_MSG("ERROR: Caught exception");
         PRINT_MSG(" WHAT: " << e.what());
