@@ -49,10 +49,19 @@ mainCameraMode(const BDATA::BundlerData bundle,
 
 
     Camera::Vector cams = bundle.getCameras();
+
     Camera::Vector::iterator cam = cams.begin();
-    Eigen::Vector3d origCam = Eigen::Vector3d::Zero();
+    Camera::Vector::iterator camEnd = cams.end();
+    int camIdx = 0;
+
+    if(opts.count("selIdx")) {
+        camIdx  = opts.at("selIdx").asInt();
+        cam = cams.begin() + camIdx;
+        camEnd = cam + 1;
+    }
+
     std::string sep = "";
-    for (int camIdx = 0; cam != cams.end(); cam++, camIdx++) {
+    for (; cam != camEnd; cam++, camIdx++) {
         std::cout << sep << "Camera " << camIdx << std::endl;
         sep = "\n";
 
@@ -61,9 +70,9 @@ mainCameraMode(const BDATA::BundlerData bundle,
             std::cout << std::setw(w) << "Image: " << bundle.getImageFileNames()[camIdx] << std::endl;
         }
 
-
         // Camera center in world coordinates
         if ( selFields.count("center") || selFields.count("all") ) {
+            Eigen::Vector3d origCam = Eigen::Vector3d::Zero();
             std::cout << std::setw(w) << "Center: ";
             Eigen::Vector3d camCenter;
             cam->cam2world(origCam, camCenter);
@@ -92,6 +101,7 @@ mainPointMode(const BDATA::BundlerData bundle,
               const OptionParser::Arguments& args,
               const OptionParser::Options& opts)
 {
+    std::cerr << "Not implemented yet" << std::endl;
     return EXIT_FAILURE;
 }
 
