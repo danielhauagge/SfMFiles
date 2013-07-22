@@ -23,9 +23,11 @@
 #include <SfMFiles/sfmfiles>
 #include <OptParser/optparser>
 
-// STD
+// Standard library
 #include <iostream>
 #include <iomanip>
+#include <set>
+#include <string>
 
 // Boost
 #include <boost/filesystem.hpp>
@@ -37,19 +39,49 @@ mainCameraMode(const BDATA::BundlerData bundle,
 {
     using namespace BDATA;
 
-    std::string fieldName = args[2];
+    int w = 15;
 
-    if (strcasecmp(fieldName.c_str(), "center") == 0) {
-        Camera::Vector cams = bundle.getCameras();
-        Camera::Vector::iterator cam = cams.begin();
-        Eigen::Vector3d origCam = Eigen::Vector3d::Zero();
-        for (; cam != cams.end(); cam++) {
+    std::set<std::string> selFields;
+    for(int i = 2; i < args.size(); i++) {
+        selFields.insert(args[i]);
+    }
+    if(selFields.size() == 0) selFields.insert("all");
+
+
+    Camera::Vector cams = bundle.getCameras();
+    Camera::Vector::iterator cam = cams.begin();
+    Eigen::Vector3d origCam = Eigen::Vector3d::Zero();
+    std::string sep = "";
+    for (int camIdx = 0; cam != cams.end(); cam++, camIdx++) {
+        std::cout << sep << "Camera " << camIdx << std::endl;
+        sep = "\n";
+
+        // Focal length
+        if ( (selFields.count("im") || selFields.count("all") ) && bundle.listFileLoaded() ) {
+            std::cout << std::setw(w) << "Image: " << bundle.getImageFileNames()[camIdx] << std::endl;
+        }
+
+
+        // Camera center in world coordinates
+        if ( selFields.count("center") || selFields.count("all") ) {
+            std::cout << std::setw(w) << "Center: ";
             Eigen::Vector3d camCenter;
             cam->cam2world(origCam, camCenter);
-            std::cout <<        std::setw(10) << camCenter[0]
-                      << " " << std::setw(10) << camCenter[1]
-                      << " " << std::setw(10) << camCenter[2] << std::endl;
+            std::cout << "(" << camCenter[0]
+                      << ", " << camCenter[1]
+                      << ", " << camCenter[2] << ")" << std::endl;
         }
+
+        // Camera radial distortion parameters
+        if ( selFields.count("rd") || selFields.count("all") ) {
+            std::cout << std::setw(w) << "Radial dist: " << "k1 = " << cam->k1 << ", k2 = " << cam->k2 << std::endl;
+        }
+
+        // Focal length
+        if ( selFields.count("fl") || selFields.count("all") ) {
+            std::cout << std::setw(w) << "Focal length: " << cam->focalLength << std::endl;
+        }
+
     }
 
     return EXIT_SUCCESS;
@@ -72,16 +104,26 @@ main(int argc, const char** argv)
     OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
+    optParser.setNArguments(2, -1);
+    optParser.addDescription("Prints miscelaneous information about a bundle file.");
     optParser.addUsage("[OPTIONS] <in:bundle.out> CAM <field>");
     optParser.addUsage("[OPTIONS] <in:bundle.out> PNT <field>");
-    optParser.addDescription("Prints miscelaneous information about a bundle file.");
+
+    optParser.addOption("listFName", "-l", "F", "--list", "Bundler list filename");
+    optParser.addOption("selIdx", "-i", "IDX", "--sel-idx", "Only print information from selected camera or point");
+
     optParser.parse(argc, argv);
 
     std::string bundleFName = args[0];
     std::string mode = args[1];
 
+    // Load bundle file
     BundlerData bundle(bundleFName.c_str());
+    if(opts.count("listFName")) {
+        bundle.readListFile(opts["listFName"].c_str());
+    }
 
+    // Print requested info
     if (strcasecmp(mode.c_str(), "cam") == 0) return mainCameraMode(bundle, args, opts);
     else if (strcasecmp(mode.c_str(), "pnt") == 0) return mainPointMode(bundle, args, opts);
     else {

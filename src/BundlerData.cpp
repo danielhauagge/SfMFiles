@@ -672,6 +672,12 @@ BDATA::BundlerData::writeListFile(const char* listFName) const
     }
 }
 
+bool
+BDATA::BundlerData::listFileLoaded() const
+{
+    return _imageFNames.size() != 0;
+}
+
 BDATA::BundlerData::BundlerData(const char* bundlerFileName, const char* listFileName, bool computeCam2PointIndex):
     _nValidCams(0)
 {

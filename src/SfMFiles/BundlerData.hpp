@@ -120,6 +120,7 @@ public:
     //! Load file with image filenames
     void readListFile(const char* listFName);
     void writeListFile(const char* listFName) const;
+    bool listFileLoaded() const;
 
     const char* getListFileName() const;
     const char* getBundleFileName() const {
