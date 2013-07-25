@@ -18,6 +18,7 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# ----------------------------------------------------------------------
 
 PROJECT(SfMFiles)
 
@@ -25,6 +26,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 INCLUDE_DIRECTORIES(".")
 
+ADD_DEFINITIONS( -DSFMF_COMPILING )
+
+# ----------------------------------------------------------------------
+# Dependencies
+# ----------------------------------------------------------------------
 FIND_PACKAGE(PkgConfig REQUIRED)
 
 # Eigen3
@@ -48,10 +54,8 @@ ELSE()
   PKG_CHECK_MODULES(OPTPARSER REQUIRED optparser)
   INCLUDE_DIRECTORIES(${OPTPARSER_INCLUDE_DIRS})
   LINK_DIRECTORIES(${OPTPARSER_LIBRARY_DIRS})
-  SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
+  # SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
 ENDIF (APPLE)
-
-ADD_DEFINITIONS( -DSFMF_COMPILING )
 
 ADD_LIBRARY( SfMFiles 
   SHARED 
@@ -59,7 +63,10 @@ ADD_LIBRARY( SfMFiles
 
 TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES})
 
+# ----------------------------------------------------------------------
 # How to package and where to install stuff
+# ----------------------------------------------------------------------
+
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   MESSAGE(STATUS "Making framework")
 
@@ -86,15 +93,26 @@ ELSE()
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
 ENDIF()
 
+# ----------------------------------------------------------------------
+# Optimization flags
+# ----------------------------------------------------------------------
+
+SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -msse -msse2")
+SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -msse -msse2")
+
+# ----------------------------------------------------------------------
+# Executables
+# ----------------------------------------------------------------------
+
 # Some utilities
 ADD_EXECUTABLE(bundler_file_converter bundler_file_converter.cpp)
 TARGET_LINK_LIBRARIES(bundler_file_converter SfMFiles ${Boost_LIBRARIES})
 
-ADD_EXECUTABLE(testBundlerData testBundlerData.cpp)
-TARGET_LINK_LIBRARIES(testBundlerData SfMFiles ${Boost_LIBRARIES})
+ADD_EXECUTABLE(test_bundler_data test_bundler_data.cpp)
+TARGET_LINK_LIBRARIES(test_bundler_data SfMFiles ${Boost_LIBRARIES})
 
-ADD_EXECUTABLE(testPMVSData testPMVSData.cpp)
-TARGET_LINK_LIBRARIES(testPMVSData SfMFiles ${Boost_LIBRARIES})
+ADD_EXECUTABLE(test_pmvs_data test_pmvs_data.cpp)
+TARGET_LINK_LIBRARIES(test_pmvs_data SfMFiles ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(pmvs_info pmvs_info.cpp)
 TARGET_LINK_LIBRARIES(pmvs_info SfMFiles ${Boost_LIBRARIES})
@@ -123,6 +141,13 @@ TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRA
 ADD_EXECUTABLE(bundler_morecameras bundler_morecameras.cpp)
 TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles ${Boost_LIBRARIES})
 
+# Only for debug
+ADD_EXECUTABLE(test_speed test_speed.cpp)
+TARGET_LINK_LIBRARIES(test_speed SfMFiles ${Boost_LIBRARIES})
+
+# ----------------------------------------------------------------------
 # Generating the .pc file for pkg-config
+# ----------------------------------------------------------------------
+
 CONFIGURE_FILE("sfmfiles.pc.in" "${CMAKE_BINARY_DIR}/sfmfiles.pc" @ONLY IMMEDIATE)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/sfmfiles.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)

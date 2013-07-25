@@ -118,9 +118,9 @@ BDATA::Camera::im2world(const Eigen::Vector2d& im, Eigen::Vector3d& w,
 void
 BDATA::Camera::im2cam(const Eigen::Vector2d& im, Eigen::Vector3d& c, int imWidth, int imHeight) const
 {
-    c[0] = (  imWidth / 2.0 - im[0]) / focalLength;
-    c[1] = ( imHeight / 2.0 - im[1]) / focalLength;
-    c[2] = 1;
+    c[0] = (  imWidth / 2 - im[0]) / focalLength;
+    c[1] = ( imHeight / 2 - im[1]) / focalLength;
+    c[2] = 1.0;
 }
 
 void
@@ -128,16 +128,17 @@ BDATA::Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d& im,
                       bool applyRadialDistortion,
                       int imWidth, int imHeight) const
 {
-    c /= c[2];
+    c /= -c[2];
 
     double r = 1.0;
 
-    if(applyRadialDistortion) {
+    if(applyRadialDistortion && (k1 != 0.0 || k2 != 0.0)) {
         double cNorm2 = std::pow(c[0], 2.0) + std::pow(c[1], 2.0);
         r = 1.0 + k1 * cNorm2 + k2 * std::pow(cNorm2, 2.0);
     }
-    im[0] = imWidth / 2.0 - r * c[0] * focalLength;
-    im[1] = imHeight / 2.0 - r * c[1] * focalLength;
+
+    im[0] = imWidth / 2 + r * c[0] * focalLength;
+    im[1] = imHeight / 2 + r * c[1] * focalLength;
 }
 
 void
@@ -148,6 +149,24 @@ BDATA::Camera::world2im(const Eigen::Vector3d& w, Eigen::Vector2d& im,
     Eigen::Vector3d c;
     world2cam(w, c);
     cam2im(c, im, applyRadialDistortion, imWidth, imHeight);
+}
+
+void
+BDATA::Camera::cam2imPmvs(Eigen::Vector3d c, Eigen::Vector2d& im,
+                          bool applyRadialDistortion,
+                          int imWidth, int imHeight) const
+{
+    cam2im(c, im, applyRadialDistortion, imWidth, imHeight);
+    im[1] = imHeight - im[1] - 0.5;
+    im[0] -= 0.5;
+}
+
+void
+BDATA::Camera::world2imPmvs(const Eigen::Vector3d& w, Eigen::Vector2d& im, bool applyRadialDistortion, int imWidth, int imHeight) const
+{
+    Eigen::Vector3d c;
+    world2cam(w, c);
+    cam2imPmvs(c, im, applyRadialDistortion, imWidth, imHeight);
 }
 
 void
@@ -447,6 +466,11 @@ void
 BDATA::BundlerData::readFile(const char* bundlerFileName, bool computeCamIndex)
 {
     FILE* file = fopen(bundlerFileName, "rb");
+    if(file == NULL) {
+        std::stringstream errMsg;
+        errMsg << "Could not open " << bundlerFileName << " for reading";
+        throw sfmf::Error(errMsg.str().c_str());
+    }
 
     // Read the first two bites
     char fileType[3];

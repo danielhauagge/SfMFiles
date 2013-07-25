@@ -65,6 +65,10 @@ public:
     void cam2world(const Eigen::Vector3d& c, Eigen::Vector3d& w) const;
     void world2cam(const Eigen::Vector3d& w, Eigen::Vector3d& c) const;
 
+    // Outputs image coordinates that agree with PMVS (origin at upper left of image, x points right, y points down, pixel centered at (0.5, 0.5))
+    void world2imPmvs(const Eigen::Vector3d& w, Eigen::Vector2d& im, bool applyRadialDistortion, int imWidth, int imHeight) const;
+    void cam2imPmvs(Eigen::Vector3d c, Eigen::Vector2d& im, bool applyRadialDistortion, int imWidth, int imHeight) const;
+
     // Intrinsic matrix given image width and height
     void intrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d& K) const;
     void invIntrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d& invK) const;
@@ -78,7 +82,8 @@ class PointEntry // TODO Find a better name for this class
 public:
     typedef std::vector<PointEntry> Vector;
 
-    int camera, key; // Camera and keypoint indexes
+    int camera; /// Camera index
+    int key; /// Keypoint index (into the .key file)
     Eigen::Vector2d keyPosition; // Keypoint position in image
 
     PointEntry();
@@ -126,7 +131,6 @@ public:
     const char* getBundleFileName() const {
         return _bundleFName.c_str();
     };
-    //const char* getImageFileName(int camIdx) const;
 
     //! Input/Output
     void readFile(const char* bundlerFileName, bool computeCam2PointIndex = false);

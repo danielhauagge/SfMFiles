@@ -83,7 +83,7 @@ mainCameraMode(const BDATA::BundlerData bundle,
 
         // Camera radial distortion parameters
         if ( selFields.count("rd") || selFields.count("all") ) {
-            std::cout << std::setw(w) << "Radial dist: " << "k1 = " << cam->k1 << ", k2 = " << cam->k2 << std::endl;
+            std::cout << std::setw(w) << "Radial coeffs: " << "k1 = " << cam->k1 << ", k2 = " << cam->k2 << std::endl;
         }
 
         // Focal length

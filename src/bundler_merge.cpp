@@ -51,7 +51,7 @@ main(int argc, char const* argv[])
 
     OptionParser optParser(&args, &opts);
     optParser.addUsage("[OPTIONS] <out:bundle.out> <out:list.txt> <in:bundle1.out> <in:list1.txt> <in:bundle2.out> <in:list2.txt> ...");
-    optParser.addDescription("This command merges bundle files and update the visibility lists for bundle files that the same number of points");
+    optParser.addDescription("Merge bundle files and update the visibility lists for bundle files that the same number of points");
     optParser.addFlag("dontUpdateVizList", "-d", "--no-viz-update",
                       "Do not update the point visibility lists (if bundle files have different number of point this must be enabled)");
     optParser.parse(argc, argv);

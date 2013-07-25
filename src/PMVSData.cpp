@@ -97,11 +97,11 @@ operator>>(std::istream& s, BDATA::PMVS::Patch& p)
         if (strcmp(patchType.c_str(), "PATCHPS") == 0) {
             s >> p.color(0) >> p.color(1) >> p.color(2);
         } else {
-	  p.color(0) = 0;
-	  p.color(1) = 0;
-	  p.color(2) = 0;
-	}
-	
+            p.color(0) = 0;
+            p.color(1) = 0;
+            p.color(2) = 0;
+        }
+
         s >> p.score >> p.debug1 >> p.debug2;
 
         if (strcmp(patchType.c_str(), "PATCHPS") == 0) {
@@ -166,6 +166,12 @@ BDATA::PMVS::Camera::world2im(const Eigen::Vector3d& w, Eigen::Vector2d& im) con
     im[1] = imh[1] / imh[2];
 }
 
+bool
+BDATA::PMVS::Camera::isValid() const
+{
+    return this->block<3, 3>(0, 0).determinant() != 0;
+}
+
 BDATA::PMVS::PMVSData::PMVSData(const char* pmvsFileName, bool tryLoadOptionsFile)
 {
     init(pmvsFileName, tryLoadOptionsFile);
@@ -211,6 +217,7 @@ BDATA::PMVS::PMVSData::init(const char* pmvsFileName, bool tryLoadOptionsFile)
         _goodCamStats.accumulate(_patches[i].goodCameras.size());
         _badCamStats.accumulate(_patches[i].badCameras.size());
     }
+
     _goodCamStats.finish();
     _badCamStats.finish();
     assert(_patches.size() == nPatches);

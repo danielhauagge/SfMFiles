@@ -61,6 +61,8 @@ public:
 
     // Coordinate transforms
     void world2im(const Eigen::Vector3d& w, Eigen::Vector2d& im) const;
+
+    bool isValid() const;
 };
 
 class Patch
@@ -137,8 +139,8 @@ private:
 
         Stats():
             maxVal(0.0), minVal(std::numeric_limits<float>::max()),
-            avgVal(0.0), medianVal(0.0)
-        {}
+            avgVal(0.0), medianVal(0.0) {
+        }
 
         void accumulate(uint32_t sample);
         void finish();
@@ -163,7 +165,7 @@ public:
     /// root/models/. The function will then try to read camera files
     /// from root/txt, it will also read the image filenames from
     /// root/visualize.
-    void loadCamerasAndImageFilenames(const char* basedir = NULL, bool loadOnlyUsedCameras = true);
+    void loadCamerasAndImageFilenames(const char* basedir = "", bool loadOnlyUsedCameras = true);
 
     size_t getNPatches() const {
         return _patches.size();
