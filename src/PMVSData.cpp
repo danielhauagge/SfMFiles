@@ -231,8 +231,8 @@ BDATA::PMVS::PMVSData::init(const char* pmvsFileName, bool tryLoadOptionsFile)
 
         path optionsPath(pathPatches.parent_path() / path("..") / basenameNoExt);
 
-        PRINT_MSG("Looking for options file " << optionsPath.string());
         if (exists(optionsPath)) {
+            PRINT_MSG("Found options file " << optionsPath.string());
             std::ifstream optF(optionsPath.string().c_str());
             BDATA::PMVS::Options opt;
             optF >> opt;
@@ -254,6 +254,8 @@ BDATA::PMVS::PMVSData::init(const char* pmvsFileName, bool tryLoadOptionsFile)
 #endif
 
 #if 1
+        } else {
+            PRINT_MSG("Could not find options file");
         }
     }
 #else

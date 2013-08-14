@@ -76,7 +76,6 @@ recolorByNumberOfCameras(BDATA::PMVS::PMVSData& patches)
     std::cout << "min # cams: " << minNCams << std::endl;
     std::cout << "max # cams: " << maxNCams << std::endl;
 
-
     for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
         int nCams = patch->goodCameras.size();
         float score = nCams;
@@ -127,11 +126,12 @@ main(int argc, const char* argv[])
     OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
-    optParser.addUsage("[OPTIONS] <in:model.patch> <out:model.ply>");
+    optParser.addUsage("<in:model.patch> <out:model.ply>");
     optParser.addDescription("Utility for converting from PMVS's .patch file format to a .ply");
     optParser.addFlag("dontLoadOption", "-p", "--dont-load-options", "Do not try to load options file for the reconstruction (used to remap camera indexes)");
     optParser.addFlag("colorByScore", "-s", "--color-score", "Change patches color to show the quality score.");
     optParser.addFlag("colorByNCams", "-c", "--color-n-cams", "Change patches color to show the number of cameras a point sees.");
+    optParser.setNArguments(2, 2);
     optParser.parse(argc, argv);
 
     std::string pmvsFName = args[0];
@@ -154,7 +154,7 @@ main(int argc, const char* argv[])
         return EXIT_FAILURE;
     }
     fprintf(plyF, "ply\n");
-//fprintf(plyF, "format binary_little_endian 1.0\n");
+    //fprintf(plyF, "format binary_little_endian 1.0\n");
     fprintf(plyF, "format ascii 1.0\n");
     fprintf(plyF, "element vertex %d\n", int(pmvs.getNPatches()));
     fprintf(plyF, "property float x\nproperty float y\nproperty float z\n");

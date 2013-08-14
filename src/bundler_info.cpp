@@ -73,12 +73,30 @@ mainCameraMode(const BDATA::BundlerData bundle,
         // Camera center in world coordinates
         if ( selFields.count("center") || selFields.count("all") ) {
             Eigen::Vector3d origCam = Eigen::Vector3d::Zero();
-            std::cout << std::setw(w) << "Center: ";
             Eigen::Vector3d camCenter;
             cam->cam2world(origCam, camCenter);
-            std::cout << "(" << camCenter[0]
+
+            std::cout << std::setw(w) << "Center: "
+                      << "(" << camCenter[0]
                       << ", " << camCenter[1]
                       << ", " << camCenter[2] << ")" << std::endl;
+        }
+
+        // Camera aiming direction in world coordinates
+        if ( selFields.count("lookat") || selFields.count("all") ) {
+            Eigen::Vector3d camCentC = Eigen::Vector3d::Zero();
+            Eigen::Vector3d imCentC = Eigen::Vector3d::Zero();
+            imCentC[2] = 1.0;
+
+            Eigen::Vector3d camCentW, imCentW;
+            cam->cam2world(camCentC, camCentW);
+            cam->cam2world(imCentC, imCentW);
+            Eigen::Vector3d lookAt = imCentW - camCentW;
+
+            std::cout << std::setw(w) << "LookAt: "
+                      << "(" << lookAt[0]
+                      << ", " << lookAt[1]
+                      << ", " << lookAt[2] << ")" << std::endl;
         }
 
         // Camera radial distortion parameters
@@ -116,8 +134,8 @@ main(int argc, const char** argv)
     OptionParser optParser(&args, &opts);
     optParser.setNArguments(2, -1);
     optParser.addDescription("Prints miscelaneous information about a bundle file.");
-    optParser.addUsage("[OPTIONS] <in:bundle.out> CAM <field>");
-    optParser.addUsage("[OPTIONS] <in:bundle.out> PNT <field>");
+    optParser.addUsage("<in:bundle.out> CAM <field>");
+    optParser.addUsage("<in:bundle.out> PNT <field>");
 
     optParser.addOption("listFName", "-l", "F", "--list", "Bundler list filename");
     optParser.addOption("selIdx", "-i", "IDX", "--sel-idx", "Only print information from selected camera or point");

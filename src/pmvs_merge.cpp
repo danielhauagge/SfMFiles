@@ -36,7 +36,7 @@ main(int argc, const char** argv)
     OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
-    optParser.addUsage("[OPTIONS] <out:model.patch> <in:model1.patch> <in:model2.patch>...");
+    optParser.addUsage("<out:model.patch> <in:model1.patch> <in:model2.patch>...");
     optParser.addDescription("Merge multiple PMVS patch files into a larger one.");
     optParser.addFlag("dontLoadOption", "-p", "--dont-load-options", "Do not try to load options file for the reconstruction (used to remap camera indexes)");
     optParser.parse(argc, argv);
