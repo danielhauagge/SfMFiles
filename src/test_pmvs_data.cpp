@@ -123,9 +123,6 @@ test2(int argc, char** argv)
             PMVS::Camera& pmvsCam = pmvsData.getCameras()[*camIdx];
             BDATA::Camera& bundlerCam = bundlerData.getCameras()[*camIdx];
 
-            assert(camP.isValid());
-
-
             Eigen::Vector3d w(patch->position[0], patch->position[1], patch->position[2]);
             Eigen::Vector2d im, imB;
             pmvsCam.world2im(w, im);
