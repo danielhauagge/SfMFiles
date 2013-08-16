@@ -35,8 +35,8 @@ main(int argc, const char* argv[])
     OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
-    optParser.addUsage("[OPTIONS] <in:model.patch> <in:model.out> <out:model.out>");
-    optParser.addDescription("Utility for converting from PMVS's .patch file format to the bundler file format");
+    optParser.addUsage("<in:model.patch> <in:model.out> <out:model.out>");
+    optParser.addDescription("Converts from PMVS .patch file format to the bundler file format.");
     optParser.addFlag("dontLoadOption", "-p", "--dont-load-options", "Do not try to load options file for the PMVS file (in case PMVS cameras"
                       " indexes do not map to Bundler cameras)");
     optParser.addFlag("includeBadCameras", "-b", "--include-bad-cameras", "Include in the output bundle file the PMVS cameras that were labeled as bad.");
