@@ -21,6 +21,8 @@
 
 #include "SfMFiles/BundlerData.hpp"
 
+#include <iomanip>
+
 //static inline
 std::istream&
 operator>>(std::istream& s, Eigen::Matrix3d& m)
@@ -539,6 +541,8 @@ void
 BDATA::BundlerData::_writeFileASCII(const char* bundlerFileName) const
 {
     std::ofstream f(bundlerFileName);
+    f << std::scientific;
+    f << std::setprecision(16);
 
     const int nCameras = getNCameras();
     const int nPoints = getNPoints();
@@ -556,6 +560,8 @@ BDATA::BundlerData::_writeFileASCII(const char* bundlerFileName) const
     for(int i = 0; i < nPoints; i++) {
         f
         // Position
+                << std::scientific
+                << std::setprecision(16)
                 << _points[i].position[0] << " "
                 << _points[i].position[1] << " "
                 << _points[i].position[2] << "\n"
@@ -564,6 +570,8 @@ BDATA::BundlerData::_writeFileASCII(const char* bundlerFileName) const
                 << int(_points[i].color.g) << " "
                 << int(_points[i].color.b) << "\n"
                 // View list
+                << std::fixed
+                << std::setprecision(4)
                 << _points[i].viewList.size() << " ";
 
         // The view list
