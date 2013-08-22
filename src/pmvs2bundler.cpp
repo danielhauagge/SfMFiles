@@ -22,7 +22,7 @@
 #include <iostream>
 #include <cstdio>
 
-#include <OptParser/optparser>
+#include <cmdcore/optparser>
 
 #include <SfMFiles/sfmfiles>
 
@@ -30,6 +30,8 @@ int
 main(int argc, const char* argv[])
 {
     using namespace BDATA;
+    using namespace cmdc;
+    cmdc::init();
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -49,17 +51,17 @@ main(int argc, const char* argv[])
     bool tryLoadOptions = opts["dontLoadOption"].asBool();
     bool includeBadCameras = opts["includeBadCameras"].asBool();
 
-    PRINT_EXPR(outBundleFName);
-    PRINT_EXPR(inBundleFName);
-    PRINT_EXPR(pmvsFName);
+    LOG_EXPR(outBundleFName);
+    LOG_EXPR(inBundleFName);
+    LOG_EXPR(pmvsFName);
 
-    PRINT_MSG("Loading the bundle file");
+    LOG_INFO("Loading the bundle file");
     BDATA::BundlerData::Ptr bundle = BDATA::BundlerData::New(inBundleFName.c_str());
 
-    PRINT_MSG("Loading the pmvs file");
+    LOG_INFO("Loading the pmvs file");
     PMVS::PMVSData::Ptr pmvs = PMVS::PMVSData::New(pmvsFName.c_str(), tryLoadOptions);
 
-    PRINT_MSG("Adding patches to bundle file");
+    LOG_INFO("Adding patches to bundle file");
     PMVS::Patch::Vector::iterator patch = pmvs->getPatches().begin();
 
     bundle->getPointInfo().resize(0);
@@ -94,8 +96,10 @@ main(int argc, const char* argv[])
         bundle->getPointInfo().push_back(pinfo);
     }
 
-    PRINT_MSG("Writing " << outBundleFName);
+    LOG_INFO("Writing " << outBundleFName);
     bundle->writeFile(outBundleFName.c_str());
+
+    cmdc::deinit();
 
     return EXIT_SUCCESS;
 }

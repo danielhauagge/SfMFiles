@@ -8,7 +8,7 @@ const int nPnts = 100000000;
 void
 test1_matprod_double()
 {
-    PRINT_MSG(__PRETTY_FUNCTION__);
+    LOG_INFO(__PRETTY_FUNCTION__);
     Eigen::MatrixX4d pnts = Eigen::MatrixX4d::Random(nPnts, 4);
     Eigen::MatrixXd P = Eigen::MatrixXd::Random(4, 3);
 
@@ -18,7 +18,7 @@ test1_matprod_double()
 void
 test2_matprod_float()
 {
-    PRINT_MSG(__PRETTY_FUNCTION__);
+    LOG_INFO(__PRETTY_FUNCTION__);
     Eigen::MatrixX4f pnts = Eigen::MatrixX4f::Random(nPnts, 4);
     Eigen::MatrixXf P = Eigen::MatrixXf::Random(4, 3);
 
@@ -28,7 +28,7 @@ test2_matprod_float()
 void
 test3_forloop_double()
 {
-    PRINT_MSG(__PRETTY_FUNCTION__);
+    LOG_INFO(__PRETTY_FUNCTION__);
     Eigen::MatrixX4d pnts = Eigen::MatrixX4d::Random(nPnts, 4);
     Eigen::MatrixXd P = Eigen::MatrixXd::Random(4, 3);
 
@@ -41,7 +41,7 @@ test3_forloop_double()
 void
 test4_forloop_float()
 {
-    PRINT_MSG(__PRETTY_FUNCTION__);
+    LOG_INFO(__PRETTY_FUNCTION__);
     Eigen::MatrixX4f pnts = Eigen::MatrixX4f::Random(nPnts, 4);
     Eigen::MatrixXf P = Eigen::MatrixXf::Random(4, 3);
 
@@ -54,6 +54,8 @@ test4_forloop_float()
 int
 main(int argc, char const* argv[])
 {
+    cmdc::init();
+
     int testCase = atoi(argv[1]);
 
     switch(testCase) {
@@ -70,7 +72,9 @@ main(int argc, char const* argv[])
         test4_forloop_float();
         break;
     default:
-        std::cerr << "Unknown test case " << testCase << std::endl;
+        LOG_ERROR("Unknown test case " << testCase);
     }
-    return 0;
+
+    cmdc::deinit();
+    return EXIT_SUCCESS;
 }

@@ -21,7 +21,7 @@
 
 // Other projects
 #include <SfMFiles/sfmfiles>
-#include <OptParser/optparser>
+#include <cmdcore/optparser>
 
 // STD
 #include <iostream>
@@ -42,6 +42,8 @@ int
 main(int argc, const char** argv)
 {
     using namespace BDATA;
+    using namespace cmdc;
+    cmdc::init();
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -80,7 +82,7 @@ main(int argc, const char** argv)
         newCamMapping[camIdx] = newImageList.size() - 1;
     }
 
-    PRINT_MSG("Removing " << camIdxsToRemove.size() << " of " << bundle.getNCameras() << " cameras");
+    LOG_INFO("Removing " << camIdxsToRemove.size() << " of " << bundle.getNCameras() << " cameras");
 
     PointInfo::Vector newPoints;
     for(int pntIdx = 0; pntIdx < bundle.getNPoints(); pntIdx++) {
@@ -104,6 +106,8 @@ main(int argc, const char** argv)
     outBundle.getImageFileNames() = newImageList;
     outBundle.writeFile(outBundleFName.c_str());
     outBundle.writeListFile(outListFName.c_str());
+
+    cmdc::deinit();
 
     return EXIT_SUCCESS;
 }

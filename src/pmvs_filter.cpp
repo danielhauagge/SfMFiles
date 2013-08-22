@@ -21,7 +21,7 @@
 
 #include <SfMFiles/sfmfiles>
 
-#include <OptParser/optparser>
+#include <cmdcore/optparser>
 
 #include <iostream>
 
@@ -52,6 +52,8 @@ int
 main(int argc, const char* argv[])
 {
     using namespace BDATA;
+    using namespace cmdc;
+    cmdc::init();
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -105,11 +107,11 @@ main(int argc, const char* argv[])
 
     int nOutsideSphere = 0, nDiscardedSampling = 0;
 
-    PRINT_MSG("Processing data");
+    LOG_INFO("Processing data");
     PMVS::Patch::Vector& patchFiltered = pmvsFiltered.getPatches();
     for(int i = 0; i < pmvs.getNPatches(); i++) {
         //if(i%1000 == 0) {
-        //  PRINT_MSG(i << "/" << pmvs.getNPatches());
+        //  LOG_INFO(i << "/" << pmvs.getNPatches());
         //}
 
         if(useBoundingSphere) {
@@ -129,11 +131,13 @@ main(int argc, const char* argv[])
         }
     }
 
-    PRINT_MSG(nOutsideSphere << " points discarded because they were outside the bounding sphere");
-    PRINT_MSG(nDiscardedSampling << " points discarded by sampling");
-    PRINT_MSG(patchFiltered.size() << "/" << pmvs.getNPatches() << " points kept");
+    LOG_INFO(nOutsideSphere << " points discarded because they were outside the bounding sphere");
+    LOG_INFO(nDiscardedSampling << " points discarded by sampling");
+    LOG_INFO(patchFiltered.size() << "/" << pmvs.getNPatches() << " points kept");
 
     pmvsFiltered.writeFile(outPmvsFName.c_str());
+
+    cmdc::deinit();
 
     return EXIT_SUCCESS;
 }

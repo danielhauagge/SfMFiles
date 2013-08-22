@@ -43,11 +43,26 @@
 // Boost libs
 #include <boost/shared_ptr.hpp>
 
+// Command Line Core
+#include <cmdcore/logger>
 
 #ifdef SFMF_COMPILING
 #define EIGEN_DONT_ALIGN
-#define PRINT_MSG(msg) std::cout << "[sfmfiles] " << msg << std::endl
-#define PRINT_EXPR(var) std::cout << "[sfmfiles] " << #var << " = " << (var) << std::endl;
+#define LOG_ERROR(msg) LOG_MSG(cmdc::LOGLEVEL_ERROR, msg)
+#define LOG_WARN(msg)  LOG_MSG(cmdc::LOGLEVEL_WARN, msg)
+#define LOG_INFO(msg)  LOG_MSG(cmdc::LOGLEVEL_INFO, msg)
+#define LOG_DEBUG(msg) LOG_MSG(cmdc::LOGLEVEL_DEBUG, msg)
+#define LOG_EXPR(msg)  LOG_DEBUG(#msg << " = " << (msg))
+#define LOG_MSG(level, msg) { \
+        cmdc::Logger::getInstance()->setMessage() << msg; \
+        cmdc::Logger::getInstance()->printMessage(level, "sfmf", __FILE__, __PRETTY_FUNCTION__, __LINE__); \
+    }
+#define PROGBAR_START(msg) cmdc::Logger::getInstance()->startProgressBar(cmdc::LOGLEVEL_INFO) << msg
+#define PROGBAR_UPDATE(curr, total) cmdc::Logger::getInstance()->updateProgressBar(curr, total, \
+        "sfmf", __FILE__, __PRETTY_FUNCTION__, __LINE__)
+
+#define TIMER(varname, msg) cmdc::AutoTimer varname(msg, cmdc::LOGLEVEL_INFO, "sfmf", __FILE__, __PRETTY_FUNCTION__, __LINE__)
+
 #endif
 
 #include <stdexcept>

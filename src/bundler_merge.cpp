@@ -21,7 +21,7 @@
 
 // Other projects
 #include <SfMFiles/sfmfiles>
-#include <OptParser/optparser>
+#include <cmdcore/optparser>
 
 // STD
 #include <iostream>
@@ -45,7 +45,9 @@ int
 main(int argc, char const* argv[])
 {
     using namespace BDATA;
+    using namespace cmdc;
 
+    cmdc::init();
     OptionParser::Arguments args;
     OptionParser::Options opts;
 
@@ -70,7 +72,7 @@ main(int argc, char const* argv[])
         inListFNames.push_back(args[i + 1]);
     }
 
-    PRINT_MSG("Merging " << inBundleFNames.size() << " bundle files");
+    LOG_INFO("Merging " << inBundleFNames.size() << " bundle files");
 
     std::vector<std::string> outImageList;
     Camera::Vector outCams;
@@ -81,12 +83,12 @@ main(int argc, char const* argv[])
     std::set<std::string> imgsSeen;
 
     for (int bun = 0, nPoints = -1; bun < inBundleFNames.size(); bun++) {
-        PRINT_MSG("[" << std::setw(4) << bun << "/" << inBundleFNames.size() << "] Loading " << inBundleFNames[bun]);
+        LOG_INFO("[" << std::setw(4) << bun << "/" << inBundleFNames.size() << "] Loading " << inBundleFNames[bun]);
         BundlerData bundle(inBundleFNames[bun].c_str());
         bundle.readListFile(inListFNames[bun].c_str());
 
         if (updateVizList) {
-            PRINT_MSG("Building index camera -> visible points");
+            LOG_INFO("Building index camera -> visible points");
             bundle.buildCam2PointIndex();
         }
 
@@ -104,7 +106,7 @@ main(int argc, char const* argv[])
 
         // Make sure we're not trying to merge bundle files that have different points
         if (nPoints != bundle.getNPoints() && updateVizList) {
-            PRINT_MSG("Seems like not all bundle files have the same number of points.\n>> You should only merge bundle reconstruction that have the same points but different cameras.>>I'm out!!");
+            LOG_INFO("Seems like not all bundle files have the same number of points.\n>> You should only merge bundle reconstruction that have the same points but different cameras.>>I'm out!!");
             return EXIT_FAILURE;
         }
 
@@ -136,20 +138,22 @@ main(int argc, char const* argv[])
                 }
             }
         }
-        PRINT_MSG(std::setw(8) << nAdded << "/" << bundle.getNCameras() << " cameras were added");
+        LOG_INFO(std::setw(8) << nAdded << "/" << bundle.getNCameras() << " cameras were added");
     }
 
-    PRINT_MSG("Writing bundle file to " << outBundleFName);
+    LOG_INFO("Writing bundle file to " << outBundleFName);
     BundlerData outBundle;
     outBundle.getCameras() = outCams;
     outBundle.getPointInfo() = outPoints;
     outBundle.writeFile(outBundleFName.c_str());
 
-    PRINT_MSG("Writing image list to " << outListFName);
+    LOG_INFO("Writing image list to " << outListFName);
     std::ofstream outListF(outListFName.c_str());
     for (int i = 0; i < outImageList.size(); i++) {
         outListF << outImageList[i] << std::endl;
     }
+
+    cmdc::deinit();
 
     return EXIT_SUCCESS;
 }

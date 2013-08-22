@@ -41,19 +41,19 @@ INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIRS})
 FIND_PACKAGE(Boost 1.33 COMPONENTS system filesystem REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
-# OptParse
+# Command line core
 SET(IS_APPLE ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 IF(APPLE)
-  # OptParser
-  SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/danielcabrinihauagge/Projects/OptParser/build )
-  FIND_LIBRARY(OPTPARSER_LIBRARY OptParser)
+  # Command line core
+  SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/danielcabrinihauagge/Projects/CommandLineCore/build )
+  FIND_LIBRARY(OPTPARSER_LIBRARY cmdcore)
   #SET(EXTRA_LIBS ${_LIBRARY})
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F /Users/danielcabrinihauagge/Projects/OptParser/build  -framework OptParser")
-  SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework OptParser")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F /Users/danielcabrinihauagge/Projects/CommandLineCore/build  -framework cmdcore")
+  SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework cmdcore")
 ELSE()
-  PKG_CHECK_MODULES(OPTPARSER REQUIRED optparser)
-  INCLUDE_DIRECTORIES(${OPTPARSER_INCLUDE_DIRS})
-  LINK_DIRECTORIES(${OPTPARSER_LIBRARY_DIRS})
+  PKG_CHECK_MODULES(CMDCORE REQUIRED cmdcore)
+  INCLUDE_DIRECTORIES(${CMDCORE_INCLUDE_DIRS})
+  LINK_DIRECTORIES(${CMDCORE_LIBRARY_DIRS})
   # SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
 ENDIF (APPLE)
 
@@ -61,7 +61,7 @@ ADD_LIBRARY( SfMFiles
   SHARED 
   BundlerData.cpp  PMVSData.cpp )
 
-TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES} ${CMDCORE_LIBRARIES})
 
 # ----------------------------------------------------------------------
 # How to package and where to install stuff
@@ -118,25 +118,25 @@ ADD_EXECUTABLE(pmvs_info pmvs_info.cpp)
 TARGET_LINK_LIBRARIES(pmvs_info SfMFiles ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(pmvs_merge pmvs_merge.cpp)
-TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES}) 
+TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES}) 
 
 ADD_EXECUTABLE(pmvs_filter pmvs_filter.cpp)
-TARGET_LINK_LIBRARIES(pmvs_filter SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
+TARGET_LINK_LIBRARIES(pmvs_filter SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
 
 ADD_EXECUTABLE(bundler_merge bundler_merge.cpp)
-TARGET_LINK_LIBRARIES(bundler_merge SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
+TARGET_LINK_LIBRARIES(bundler_merge SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
 
 ADD_EXECUTABLE(bundler_info bundler_info.cpp)
-TARGET_LINK_LIBRARIES(bundler_info SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
+TARGET_LINK_LIBRARIES(bundler_info SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
 
 ADD_EXECUTABLE(bundler_rmdups bundler_rmdups.cpp)
-TARGET_LINK_LIBRARIES(bundler_rmdups SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
+TARGET_LINK_LIBRARIES(bundler_rmdups SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
 
 ADD_EXECUTABLE(pmvs2ply pmvs2ply.cpp)
-TARGET_LINK_LIBRARIES(pmvs2ply SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
+TARGET_LINK_LIBRARIES(pmvs2ply SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
 
 ADD_EXECUTABLE(pmvs2bundler pmvs2bundler.cpp)
-TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles ${Boost_LIBRARIES} ${OPTPARSER_LIBRARY} ${OPTPARSER_LIBRARIES})
+TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
 
 ADD_EXECUTABLE(bundler_morecameras bundler_morecameras.cpp)
 TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles ${Boost_LIBRARIES})

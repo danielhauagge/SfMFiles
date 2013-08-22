@@ -26,6 +26,8 @@
 int
 main(int argc, char** argv)
 {
+    cmdc::init();
+
     const char* patchFName = argv[1];
 
     BDATA::PMVS::PMVSData pmvsData(patchFName);
