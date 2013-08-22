@@ -300,7 +300,7 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
         sig[nread] = '\0';
     }
     if (strcmp(sig, ASCII_SIGNATURE) != 0) {
-        PRINT_MSG("ERROR: Bad signature in ASCII file: " << sig);
+        LOG_WARN("Bad signature in ASCII file: " << sig);
         throw sfmf::Error("Bad signature in binary file");
         return;
     }
@@ -313,7 +313,7 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
     if (version != 0.3) {
         std::stringstream err;
         err << "Unsupported version " << version;
-        PRINT_MSG("ERROR: " << err.str());
+        LOG_WARN(err.str());
         throw sfmf::Error(err.str());
         return;
     }
@@ -403,7 +403,7 @@ BDATA::BundlerData::_readFileBinary(const char* bundlerFileName)
     if (version != 0.3) {
         std::stringstream err;
         err << "Unsupported version " << version;
-        PRINT_MSG("ERROR: " << err.str());
+        LOG_WARN(err.str());
         throw sfmf::Error(err.str());
         return;
     }
@@ -594,7 +594,7 @@ BDATA::BundlerData::_writeFileBinary(const char* bundlerFileName) const
 {
     FILE* file = fopen(bundlerFileName, "wb");
     if(!file) {
-        PRINT_MSG("ERROR: Could not open file for writing " << bundlerFileName);
+        LOG_ERROR("Could not open file for writing " << bundlerFileName);
         return;
     }
 
@@ -752,8 +752,8 @@ BDATA::BundlerData::New(const char* bundleFileName, bool computeCam2PointIndex)
     try {
         result = BundlerData::Ptr(new BundlerData(bundleFileName, computeCam2PointIndex));
     } catch (sfmf::Error e) {
-        PRINT_MSG("Caught exception");
-        PRINT_MSG("What: " << e.what());
+        LOG_WARN("Caught exception");
+        LOG_WARN("What: " << e.what());
         result = BDATA::BundlerData::Ptr();
     }
     return result;

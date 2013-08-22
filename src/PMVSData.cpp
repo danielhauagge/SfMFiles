@@ -27,7 +27,6 @@
 
 // Boost
 #include <boost/filesystem.hpp>
-#include <boost/progress.hpp>
 
 static
 void
@@ -111,7 +110,7 @@ operator>>(std::istream& s, BDATA::PMVS::Patch& p)
     } else {
         std::stringstream err;
         err << "Cannot handle patch of type " << patchType;
-        PRINT_MSG("ERROR: " << err.str());
+        LOG_WARN(err.str());
         throw sfmf::Error(err.str());
     }
 
@@ -185,8 +184,6 @@ BDATA::PMVS::PMVSData::init(const char* pmvsFileName, bool tryLoadOptionsFile)
     _maxCamIdx = 0;
     _patchesFName = pmvsFileName;
 
-    boost::progress_display* showProgress = NULL;
-
     std::ifstream f(pmvsFileName);
 
     // Fist line contains the string PATCHES
@@ -195,16 +192,13 @@ BDATA::PMVS::PMVSData::init(const char* pmvsFileName, bool tryLoadOptionsFile)
     unsigned int nPatches = 0;
     f >> nPatches;
 
-    if (nPatches > 1000000) {
-        std::stringstream progMsg;
-        progMsg << "Loading " << pmvsFileName << ":\n";
-        showProgress = new boost::progress_display(nPatches, std::cout, progMsg.str().c_str(), "", "");
-    }
+    LOG_INFO("PMVS file: " << pmvsFileName);
+    PROGBAR_START("Loading in progress");
 
     _patches.resize(nPatches);
     assert(_patches.size() == nPatches);
     for (unsigned int i = 0; i < nPatches; i++) {
-        if (showProgress) ++(*showProgress);
+        PROGBAR_UPDATE(i, nPatches);
         f >> _patches[i];
 
         for (int j = 0; j < _patches[i].goodCameras.size(); j++) {
@@ -232,7 +226,7 @@ BDATA::PMVS::PMVSData::init(const char* pmvsFileName, bool tryLoadOptionsFile)
         path optionsPath(pathPatches.parent_path() / path("..") / basenameNoExt);
 
         if (exists(optionsPath)) {
-            PRINT_MSG("Found options file " << optionsPath.string());
+            LOG_INFO("Found options file " << optionsPath.string());
             std::ifstream optF(optionsPath.string().c_str());
             BDATA::PMVS::Options opt;
             optF >> opt;
@@ -241,7 +235,7 @@ BDATA::PMVS::PMVSData::init(const char* pmvsFileName, bool tryLoadOptionsFile)
                 throw sfmf::Error("Do not know what to do when the size of oimages is not 0");
             }
 #if 1
-            PRINT_MSG("Remapping indexes");
+            LOG_INFO("Remapping indexes");
             for (Patch::Vector::iterator p = _patches.begin(); p != _patches.end(); p++) {
                 for (std::vector<uint32_t>::iterator cam = p->goodCameras.begin(); cam != p->goodCameras.end(); cam++) {
                     *cam = opt.timages[*cam];
@@ -255,7 +249,7 @@ BDATA::PMVS::PMVSData::init(const char* pmvsFileName, bool tryLoadOptionsFile)
 
 #if 1
         } else {
-            PRINT_MSG("Could not find options file");
+            LOG_INFO("Could not find options file");
         }
     }
 #else
@@ -299,7 +293,7 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames(const char* basedir, bool lo
 
     path basepath;
     if (strlen(basedir) == 0) {
-        PRINT_MSG("No basedir given, assuming that .patch file is within directory structure created by PMVS");
+        LOG_INFO("No basedir given, assuming that .patch file is within directory structure created by PMVS");
         path pathPatches(_patchesFName);
         basepath = pathPatches.parent_path() / path("../");
     } else {
@@ -310,7 +304,7 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames(const char* basedir, bool lo
     path imagesDir(basepath / path("visualize"));
 
     if (!exists(camerasDir)) {
-        PRINT_MSG("Camera directory " << camerasDir << " does not seem to exist");
+        LOG_INFO("Camera directory " << camerasDir << " does not seem to exist");
     } else {
         std::set<uint32_t> allCams;
 
@@ -330,16 +324,13 @@ BDATA::PMVS::PMVSData::loadCamerasAndImageFilenames(const char* basedir, bool lo
             }
         }
 
-        boost::progress_display* showProgress = NULL;
-        if (allCams.size() > 1000) {
-            showProgress = new boost::progress_display(allCams.size(), std::cout, "Loading cameras and images:\n", "", "");
-        }
-
         //_cameras.resize(_maxCamIdx + 1);
         //_imageFNames.resize(_maxCamIdx + 1);
 
-        for (std::set<uint32_t>::iterator cam = allCams.begin(); cam != allCams.end(); cam++) {
-            if (showProgress) ++(*showProgress);
+        int camCount = 0;
+        PROGBAR_START("Loading cameras and images");
+        for (std::set<uint32_t>::iterator cam = allCams.begin(); cam != allCams.end(); cam++, camCount++) {
+            PROGBAR_UPDATE(camCount, allCams.size());
 
             char camFName[128];
             //sprintf(camFName, "%08d.txt", _camIndexMapping[*cam]);

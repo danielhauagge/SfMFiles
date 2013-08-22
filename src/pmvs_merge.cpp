@@ -21,7 +21,7 @@
 
 // Other projects
 #include <SfMFiles/sfmfiles>
-#include <OptParser/optparser>
+#include <cmdcore/optparser>
 
 // STD
 #include <iostream>
@@ -31,6 +31,8 @@ int
 main(int argc, const char** argv)
 {
     using namespace BDATA::PMVS;
+    using namespace cmdc;
+    cmdc::init();
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -56,8 +58,9 @@ main(int argc, const char** argv)
         merged.mergeWith(pmvs);
     }
 
-    PRINT_MSG("Writing file " << outFName);
+    LOG_INFO("Writing file " << outFName);
     merged.writeFile(outFName.c_str());
 
+    cmdc::deinit();
     return EXIT_SUCCESS;
 }

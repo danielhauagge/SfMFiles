@@ -22,33 +22,36 @@
 #include <SfMFiles/sfmfiles>
 
 int
-main(int argc, char **argv)
+main(int argc, char** argv)
 {
+    cmdc::init();
+
     if (argc == 1) {
         std::cout << "Usage:\n\t" << argv[0] << " <in:bunle.out> <b|a> <out:bundle.out>" << std::endl;
         return EXIT_FAILURE;
     }
-    
-    const char *inBundleFName = argv[1];
-    const char *outMode = (argc > 2)?argv[2]:NULL;
-    const char *outBundleFName = (argc > 2)?argv[3]:NULL;
-    
-    PRINT_MSG("Loading data");
+
+    const char* inBundleFName = argv[1];
+    const char* outMode = (argc > 2) ? argv[2] : NULL;
+    const char* outBundleFName = (argc > 2) ? argv[3] : NULL;
+
+    LOG_INFO("Loading data");
     BDATA::BundlerData bundle(inBundleFName);
-    
+
     if (outMode == NULL)
         return EXIT_SUCCESS;
-    
+
     if(strcmp(outMode, "b") == 0) {
-        PRINT_MSG("Writing binary file");
+        LOG_INFO("Writing binary file");
         bundle.writeFile(outBundleFName, false);
     } else if(strcmp(outMode, "a") == 0) {
-        PRINT_MSG("Writing ASCII file");
+        LOG_INFO("Writing ASCII file");
         bundle.writeFile(outBundleFName, true);
     } else {
-        PRINT_MSG("ERROR: Unrecognized mode " << outMode << ". Run command with no argments for usage");
+        LOG_ERROR("Unrecognized mode " << outMode << ". Run command with no argments for usage");
         return EXIT_FAILURE;
     }
-    
+
+    cmdc::deinit();
     return EXIT_SUCCESS;
 }

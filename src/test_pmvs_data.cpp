@@ -26,7 +26,7 @@
 int
 test1(int argc, char** argv)
 {
-    PRINT_MSG("Project 3D points from bundler reconstruction");
+    LOG_INFO("Project 3D points from bundler reconstruction");
 
     using namespace BDATA;
     using namespace std;
@@ -35,16 +35,16 @@ test1(int argc, char** argv)
     const char* bundlerFName = argv[2];
     int width = atoi(argv[3]);
     int height = atoi(argv[4]);
-    PRINT_EXPR(width);
-    PRINT_EXPR(height);
+    LOG_EXPR(width);
+    LOG_EXPR(height);
 
     PMVS::PMVSData pmvsData(patchFName, false);
     BDATA::BundlerData bundlerData(bundlerFName, false);
 
     pmvsData.loadCamerasAndImageFilenames("", false);
 
-    PRINT_EXPR(pmvsData.getNPatches());
-    PRINT_EXPR(pmvsData.getNCameras());
+    LOG_EXPR(pmvsData.getNPatches());
+    LOG_EXPR(pmvsData.getNCameras());
 
     BDATA::Camera::Vector::iterator cam = bundlerData.getCameras().begin();
     for(; cam != bundlerData.getCameras().end(); cam++) {
@@ -73,13 +73,13 @@ test1(int argc, char** argv)
             //imB[1] = height - imB[1];
 
             if(isnan(imP[0]) || isnan(imP[1])) {
-                PRINT_MSG("camP = ");
-                std::cout << camP << std::endl;
+                LOG_EXPR(camP);
             }
 
-            printf("[sfmfiles] key = [%10.5f, %10.5f], bun = [%10.5f, %10.5f], pmvs = [%10.5f, %10.5f]\n",
-                   keyPos[0], keyPos[1], imB[0], imB[1], imP[0], imP[1]);
-
+            char msg[1000];
+            sprintf(msg, "key = [%10.5f, %10.5f], bun = [%10.5f, %10.5f], pmvs = [%10.5f, %10.5f]\n",
+                    keyPos[0], keyPos[1], imB[0], imB[1], imP[0], imP[1]);
+            LOG_INFO(msg);
 
         }
     }
@@ -90,7 +90,7 @@ test1(int argc, char** argv)
 int
 test2(int argc, char** argv)
 {
-    PRINT_MSG("Project 3D points from PMVS reconstruction");
+    LOG_INFO("Project 3D points from PMVS reconstruction");
 
     using namespace BDATA;
     using namespace std;
@@ -99,22 +99,22 @@ test2(int argc, char** argv)
     const char* bundlerFName = argv[2];
     int width = atoi(argv[3]);
     int height = atoi(argv[4]);
-    PRINT_EXPR(width);
-    PRINT_EXPR(height);
+    LOG_EXPR(width);
+    LOG_EXPR(height);
 
     PMVS::PMVSData pmvsData(patchFName, false);
     BDATA::BundlerData bundlerData(bundlerFName, false);
 
     pmvsData.loadCamerasAndImageFilenames();
 
-    PRINT_EXPR(pmvsData.getNPatches());
-    PRINT_EXPR(pmvsData.getNCameras());
+    LOG_EXPR(pmvsData.getNPatches());
+    LOG_EXPR(pmvsData.getNCameras());
 
-    PRINT_MSG("Verifying if points that are seen by camera project into image");
+    LOG_INFO("Verifying if points that are seen by camera project into image");
 
     PMVS::Patch::Vector::iterator patch = pmvsData.getPatches().begin();
     for(int patchIdx = 0; patch != pmvsData.getPatches().end(); patch++, patchIdx++) {
-        //PRINT_EXPR(patchIdx);
+        //LOG_EXPR(patchIdx);
 
         vector<uint32_t> camIdxs = patch->goodCameras;
         //camIdxs.insert(camIdxs.end(), patch->badCameras.begin(), patch->badCameras.end());
@@ -122,9 +122,6 @@ test2(int argc, char** argv)
         for(vector<uint32_t>::iterator camIdx = camIdxs.begin(); camIdx != camIdxs.end(); camIdx++) {
             PMVS::Camera& pmvsCam = pmvsData.getCameras()[*camIdx];
             BDATA::Camera& bundlerCam = bundlerData.getCameras()[*camIdx];
-
-            assert(camP.isValid());
-
 
             Eigen::Vector3d w(patch->position[0], patch->position[1], patch->position[2]);
             Eigen::Vector2d im, imB;
@@ -147,6 +144,7 @@ test2(int argc, char** argv)
 int
 main(int argc, char** argv)
 {
+    cmdc::init();
     if(argc == 1) {
         std::cout << "Usage:\n\t" << argv[0] << "<in: testNum> <in: option.patch> <in: bundle.out> <in: imWidth> <in: imHeight>" << std::endl;
         return EXIT_FAILURE;
@@ -161,10 +159,10 @@ main(int argc, char** argv)
         return test2(argc - 1, &argv[1]);
         break;
     default:
-        std::cerr << "ERROR: Test case " << testNum << " not recognized" << std::endl;
+        LOG_ERROR("Test case " << testNum << " not recognized");
         return EXIT_FAILURE;
     }
 
-
+    cmdc::deinit();
     return EXIT_SUCCESS;
 }

@@ -21,7 +21,8 @@
 
 // Other projects
 #include <SfMFiles/sfmfiles>
-#include <OptParser/optparser>
+#include <cmdcore/optparser>
+using namespace cmdc;
 
 // Standard library
 #include <iostream>
@@ -46,7 +47,6 @@ mainCameraMode(const BDATA::BundlerData bundle,
         selFields.insert(args[i]);
     }
     if(selFields.size() == 0) selFields.insert("all");
-
 
     Camera::Vector cams = bundle.getCameras();
 
@@ -127,6 +127,7 @@ int
 main(int argc, const char** argv)
 {
     using namespace BDATA;
+    cmdc::init();
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -155,9 +156,10 @@ main(int argc, const char** argv)
     if (strcasecmp(mode.c_str(), "cam") == 0) return mainCameraMode(bundle, args, opts);
     else if (strcasecmp(mode.c_str(), "pnt") == 0) return mainPointMode(bundle, args, opts);
     else {
-        PRINT_MSG("ERROR: Incorrect usage, run with -h for help");
+        LOG_ERROR("Incorrect usage, run with -h for help");
         return EXIT_FAILURE;
     }
 
+    cmdc::deinit();
     return EXIT_SUCCESS;
 }

@@ -21,14 +21,14 @@
 
 #include <SfMFiles/sfmfiles>
 
-#include <OptParser/optparser>
+#include <cmdcore/optparser>
 
 #include <iostream>
 #include <cstdio>
 #include <cmath>
 
-#define LOG(msg) std::cout << ">> " << msg << std::endl;
-//#define PRINT_EXPR(expr) LOG(#expr << " = " << (expr))
+//#define LOG(msg) std::cout << ">> " << msg << std::endl;
+//#define LOG_EXPR(expr) LOG(#expr << " = " << (expr))
 
 void
 recolorByScore(BDATA::PMVS::PMVSData& patches, bool stretchValues = false)
@@ -50,7 +50,7 @@ recolorByScore(BDATA::PMVS::PMVSData& patches, bool stretchValues = false)
         float score = patch->score;
         score -= minScore;
         score /= (maxScore - minScore);
-        //PRINT_EXPR(score);
+        //LOG_EXPR(score);
 
         float r, g, b;
         r = score;
@@ -81,7 +81,7 @@ recolorByNumberOfCameras(BDATA::PMVS::PMVSData& patches)
         float score = nCams;
         score -= minNCams;
         score /= (maxNCams - minNCams);
-        //PRINT_EXPR(score);
+        //LOG_EXPR(score);
 
         float r, g, b;
         if(nCams < 10) {
@@ -121,6 +121,8 @@ int
 main(int argc, const char* argv[])
 {
     using namespace BDATA;
+    using namespace cmdc;
+    cmdc::init();
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -160,7 +162,7 @@ main(int argc, const char* argv[])
     fprintf(plyF, "property float x\nproperty float y\nproperty float z\n");
     fprintf(plyF, "property uchar diffuse_red\nproperty uchar diffuse_green\nproperty uchar diffuse_blue\nend_header\n");
 
-    PRINT_MSG("Processing data");
+    LOG_INFO("Processing data");
     PMVS::Patch::Vector::iterator patch = pmvs.getPatches().begin();;
     for(int i = 0; i < pmvs.getNPatches(); i++, patch++) {
         for(int j = 0; j < 3; j++) {
@@ -178,6 +180,8 @@ main(int argc, const char* argv[])
     }
 
     fclose(plyF);
+
+    cmdc::deinit();
 
     return EXIT_SUCCESS;
 }

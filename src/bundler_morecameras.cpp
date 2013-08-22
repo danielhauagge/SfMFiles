@@ -56,6 +56,7 @@ int
 main(int argc, const char* argv[])
 {
     using namespace BDATA;
+    cmdc::init();
 
     int maxCamerasPerPoint = 1024;
 
@@ -74,15 +75,15 @@ main(int argc, const char* argv[])
 
     std::set<int> selectedCams;
     if(selectedCamerasFName != NULL) {
-        PRINT_MSG("Loading selected cameras from " << selectedCamerasFName);
+        LOG_INFO("Loading selected cameras from " << selectedCamerasFName);
         loadSelectedCameras(selectedCamerasFName, selectedCams);
     }
 
-    PRINT_MSG("Loading bundle file");
+    LOG_INFO("Loading bundle file");
     BDATA::BundlerData bundler(bundleFName);
-    PRINT_EXPR(bundler.getNCameras());
-    PRINT_EXPR(bundler.getNValidCameras());
-    PRINT_EXPR(bundler.getNPoints());
+    LOG_EXPR(bundler.getNCameras());
+    LOG_EXPR(bundler.getNValidCameras());
+    LOG_EXPR(bundler.getNPoints());
 
     if(selectedCamerasFName == NULL) {
         //selectedCams.resize(bundler.getNCameras());
@@ -91,21 +92,21 @@ main(int argc, const char* argv[])
         }
     }
 
-    PRINT_MSG("Building camera to point index");
+    LOG_INFO("Building camera to point index");
     bundler.buildCam2PointIndex();
 
     try {
-        PRINT_MSG("Loading list file");
+        LOG_INFO("Loading list file");
         bundler.readListFile(listFName);
     } catch (sfmf::Error e) {
-        PRINT_MSG("ERROR: Caught exception");
-        PRINT_MSG(" WHAT: " << e.what());
+        LOG_WARN("Caught exception");
+        LOG_INFO(" WHAT: " << e.what());
     }
 
     // Test transforms
     PointInfo& pntInfo = bundler.getPointInfo()[0];
 
-    PRINT_EXPR(pntInfo.position.transpose());
+    LOG_EXPR(pntInfo.position.transpose());
     const int pntIdx = 0;
     Eigen::Vector2d featPos = pntInfo.viewList[pntIdx].keyPosition;
 
@@ -192,7 +193,7 @@ main(int argc, const char* argv[])
         }
 
 
-        PRINT_MSG("Calculating minV ...");
+        LOG_INFO("Calculating minV ...");
         vector<double> minVlist;
         for(int p = 0; p < np; p++) {
             PointInfo& pi = bundler.getPointInfo()[p];
@@ -220,7 +221,7 @@ main(int argc, const char* argv[])
             }
         }
 
-        PRINT_MSG("Calculating viewList ...");
+        LOG_INFO("Calculating viewList ...");
         int64_t work_units = (int64_t) np * nc;
         int64_t work_done = 0;
         double work_t0 = time(0);
@@ -334,7 +335,8 @@ main(int argc, const char* argv[])
         }
     }
 
-    printf("Done.\n");
+    LOG_INFO("Done.");
+    cmdc::deinit();
     return(EXIT_SUCCESS);
 }
 
