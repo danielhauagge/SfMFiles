@@ -21,14 +21,16 @@
 
 #include <SfMFiles/sfmfiles>
 
+const char* cam1Str = "500.00000000000000000000 0.00000000000000000000 0.00000000000000000000\n"
+                      "1.00000000000000000000 -0.00000000000000000000 0.00000000000000000000 \n"
+                      "-0.00000000000000000000 -0.00000016292068494295 1.00000000000000000000 \n"
+                      "0.00000000000000000000 -1.00000000000000000000 -0.00000016292068494295 \n"
+                      "-0.00000000000000000000 -0.00000065168273977179 -4.00000000000000000000 \n";
+
 int
 test1(int argc, char const* argv[])
 {
-    const char* cam1Str = "500.00000000000000000000 0.00000000000000000000 0.00000000000000000000\n"
-                          "1.00000000000000000000 -0.00000000000000000000 0.00000000000000000000 \n"
-                          "-0.00000000000000000000 -0.00000016292068494295 1.00000000000000000000 \n"
-                          "0.00000000000000000000 -1.00000000000000000000 -0.00000016292068494295 \n"
-                          "-0.00000000000000000000 -0.00000065168273977179 -4.00000000000000000000 \n";
+    std::cout << "Taka a point that is in front of the camera to image coordinates and back and make sure that both lie on the same side of the camera" << std::endl;
     std::istringstream cam1S(cam1Str);
     BDATA::Camera cam;
     int width = 500, height = 500;
@@ -51,6 +53,26 @@ test1(int argc, char const* argv[])
     double dotProd = (pntW - center).dot(pntW2 - center);
     std::cout << "       Dot prod: " << dotProd << std::endl;
     assert(dotProd > 0); // Reconstructed point should like on the same side of the cam
+
+    return EXIT_SUCCESS;
+}
+
+int
+test2(int argc, char const* argv[])
+{
+    BDATA::Camera cam;
+
+    Eigen::Vector3d p1w( 1,  1, -1);
+    Eigen::Vector3d p2w(-1, -1, -1);
+
+    Eigen::Vector2d p1im, p2im;
+    cam.world2im(p1w, p1im);
+    cam.world2im(p2w, p2im);
+
+    std::cout << p1im << std::endl;
+    std::cout << p2im << std::endl;
+
+    return EXIT_SUCCESS;
 }
 
 int
@@ -66,6 +88,9 @@ main(int argc, char const* argv[])
     switch(testNum) {
     case 1:
         return test1(argc - 2, &argv[2]);
+        break;
+    case 2:
+        return test2(argc - 2, &argv[2]);
         break;
     default:
         LOG_WARN("Invalid number for test " << testNum);

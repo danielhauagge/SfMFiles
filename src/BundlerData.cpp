@@ -96,6 +96,14 @@ operator<<(std::ostream& s, const BDATA::Camera& cam)
     return s;
 }
 
+BDATA::Camera::Camera()
+{
+    rotation.setIdentity();
+    translation.setZero();
+    focalLength = 1;
+    k1 = k2 = 0;
+}
+
 bool
 BDATA::Camera::isValid() const
 {

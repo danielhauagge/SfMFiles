@@ -43,6 +43,8 @@ class Camera
 public:
     typedef std::vector<Camera> Vector;
 
+    Camera();
+
     // Indexes of visible points, not stored in bundle file and only
     // computed if extra flag is passed to BundlerData constructor or
     // function buildCam2PointIndex is called.
