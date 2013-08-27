@@ -33,7 +33,6 @@
 
 namespace BDATA
 {
-
 typedef struct {
     unsigned char r, g, b;
 } Color;
@@ -72,6 +71,9 @@ public:
     // Intrinsic matrix given image width and height
     void intrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d& K) const;
     void invIntrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d& invK) const;
+
+    // Camera center in world coordinates
+    Eigen::Vector3d cameraCenter() const;
 
     // Did bundler sucessfully reconstruct this camera?
     bool isValid() const;

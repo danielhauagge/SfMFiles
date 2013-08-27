@@ -75,8 +75,7 @@ operator>>(std::istream& s, BDATA::Camera& cam)
 std::ostream&
 operator<<(std::ostream& s, const BDATA::Camera& cam)
 {
-    s
-            << cam.focalLength << " " << cam.k1 << " " << cam.k2 << "\n";
+    s << cam.focalLength << " " << cam.k1 << " " << cam.k2 << "\n";
 
     for(int i = 0; i < 3; i++) {
         const char* sep = "";
@@ -213,6 +212,14 @@ BDATA::Camera::invIntrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d& in
     invK(0, 2) = -imWidth  / (focalLength * 2.0);
     invK(1, 2) =  imHeight / (focalLength * 2.0);
     invK(2, 2) = -1;
+}
+
+Eigen::Vector3d
+BDATA::Camera::cameraCenter() const
+{
+    Eigen::Vector3d center;
+    cam2world(Eigen::Vector3d::Zero(), center);
+    return center;
 }
 
 BDATA::PointEntry::PointEntry(int camera_, int key_, Eigen::Vector2d keyPosition_):
