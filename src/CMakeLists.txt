@@ -45,11 +45,12 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 SET(IS_APPLE ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 IF(APPLE)
   # Command line core
-  SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/danielcabrinihauagge/Projects/CommandLineCore/build )
-  FIND_LIBRARY(OPTPARSER_LIBRARY cmdcore)
+  #SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/danielcabrinihauagge/Projects/CommandLineCore/build )
+  FIND_LIBRARY(CMDCORE_LIBRARIES CMDCore)
+
   #SET(EXTRA_LIBS ${_LIBRARY})
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F /Users/danielcabrinihauagge/Projects/CommandLineCore/build  -framework cmdcore")
-  SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework cmdcore")
+  # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F /Users/danielcabrinihauagge/Projects/CommandLineCore/build  -framework CMDCore")
+  # SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework CMDCore")
 ELSE()
   PKG_CHECK_MODULES(CMDCORE REQUIRED cmdcore)
   INCLUDE_DIRECTORIES(${CMDCORE_INCLUDE_DIRS})
@@ -59,7 +60,9 @@ ENDIF (APPLE)
 
 ADD_LIBRARY( SfMFiles 
   SHARED 
-  BundlerData.cpp  PMVSData.cpp )
+  SfMFiles/BundlerData.hpp  BundlerData.cpp  
+  SfMFiles/PMVSData.hpp     PMVSData.cpp            
+  SfMFiles/sfmfiles )
 
 TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES} ${CMDCORE_LIBRARIES})
 
@@ -76,13 +79,15 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # MacOS Framework
   SET_TARGET_PROPERTIES( SfMFiles PROPERTIES
     FRAMEWORK TRUE
-    FRAMEWORK_VERSION none
+    FRAMEWORK_VERSION Current
     PUBLIC_HEADER "SfMFiles/sfmfiles;SfMFiles/BundlerData.hpp;SfMFiles/PMVSData.hpp"
     DEBUG_POSTIFX -d
     )
   
   INSTALL(TARGETS SfMFiles
-          FRAMEWORK DESTINATION "/Library/Frameworks" COMPONENT bin)
+          FRAMEWORK DESTINATION "/Library/Frameworks" COMPONENT bin
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib)
 
 ELSE()  
   INSTALL_FILES(/include/SfMFiles FILES SfMFiles/sfmfiles)
@@ -91,6 +96,10 @@ ELSE()
   INSTALL_PROGRAMS(/bin FILES bundler_morecameras bundler_merge  bundler_info
                               pmvs_merge pmvs_info pmvs_filter pmvs2ply pmvs2bundler) 
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
+
+  # Generating the .pc file for pkg-config
+  CONFIGURE_FILE("sfmfiles.pc.in" "${CMAKE_BINARY_DIR}/sfmfiles.pc" @ONLY IMMEDIATE)
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/sfmfiles.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
 ENDIF()
 
 # ----------------------------------------------------------------------
@@ -106,47 +115,40 @@ SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -msse -msse2")
 
 # Some utilities
 ADD_EXECUTABLE(bundler_file_converter bundler_file_converter.cpp)
-TARGET_LINK_LIBRARIES(bundler_file_converter SfMFiles ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(bundler_file_converter SfMFiles)
 
 ADD_EXECUTABLE(test_bundler_data test_bundler_data.cpp)
-TARGET_LINK_LIBRARIES(test_bundler_data SfMFiles ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(test_bundler_data SfMFiles)
 
 ADD_EXECUTABLE(test_pmvs_data test_pmvs_data.cpp)
-TARGET_LINK_LIBRARIES(test_pmvs_data SfMFiles ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(test_pmvs_data SfMFiles)
 
 ADD_EXECUTABLE(test_bundler_camera test_bundler_camera.cpp)
-TARGET_LINK_LIBRARIES(test_bundler_camera SfMFiles ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(test_bundler_camera SfMFiles)
 
 ADD_EXECUTABLE(pmvs_info pmvs_info.cpp)
-TARGET_LINK_LIBRARIES(pmvs_info SfMFiles ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(pmvs_info SfMFiles)
 
 ADD_EXECUTABLE(pmvs_merge pmvs_merge.cpp)
-TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES}) 
+TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles) 
 
 ADD_EXECUTABLE(pmvs_filter pmvs_filter.cpp)
-TARGET_LINK_LIBRARIES(pmvs_filter SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
+TARGET_LINK_LIBRARIES(pmvs_filter SfMFiles)
 
 ADD_EXECUTABLE(bundler_merge bundler_merge.cpp)
-TARGET_LINK_LIBRARIES(bundler_merge SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
+TARGET_LINK_LIBRARIES(bundler_merge SfMFiles)
 
 ADD_EXECUTABLE(bundler_info bundler_info.cpp)
-TARGET_LINK_LIBRARIES(bundler_info SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
+TARGET_LINK_LIBRARIES(bundler_info SfMFiles)
 
 ADD_EXECUTABLE(bundler_rmdups bundler_rmdups.cpp)
-TARGET_LINK_LIBRARIES(bundler_rmdups SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
+TARGET_LINK_LIBRARIES(bundler_rmdups SfMFiles)
 
 ADD_EXECUTABLE(pmvs2ply pmvs2ply.cpp)
-TARGET_LINK_LIBRARIES(pmvs2ply SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
+TARGET_LINK_LIBRARIES(pmvs2ply SfMFiles)
 
 ADD_EXECUTABLE(pmvs2bundler pmvs2bundler.cpp)
-TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRARIES})
+TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles)
 
 ADD_EXECUTABLE(bundler_morecameras bundler_morecameras.cpp)
-TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles ${Boost_LIBRARIES})
-
-# ----------------------------------------------------------------------
-# Generating the .pc file for pkg-config
-# ----------------------------------------------------------------------
-
-CONFIGURE_FILE("sfmfiles.pc.in" "${CMAKE_BINARY_DIR}/sfmfiles.pc" @ONLY IMMEDIATE)
-INSTALL(FILES ${CMAKE_BINARY_DIR}/sfmfiles.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
+TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles)
