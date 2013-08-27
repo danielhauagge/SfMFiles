@@ -114,6 +114,9 @@ TARGET_LINK_LIBRARIES(test_bundler_data SfMFiles ${Boost_LIBRARIES})
 ADD_EXECUTABLE(test_pmvs_data test_pmvs_data.cpp)
 TARGET_LINK_LIBRARIES(test_pmvs_data SfMFiles ${Boost_LIBRARIES})
 
+ADD_EXECUTABLE(test_bundler_camera test_bundler_camera.cpp)
+TARGET_LINK_LIBRARIES(test_bundler_camera SfMFiles ${Boost_LIBRARIES})
+
 ADD_EXECUTABLE(pmvs_info pmvs_info.cpp)
 TARGET_LINK_LIBRARIES(pmvs_info SfMFiles ${Boost_LIBRARIES})
 
@@ -140,10 +143,6 @@ TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles ${Boost_LIBRARIES}  ${CMDCORE_LIBRAR
 
 ADD_EXECUTABLE(bundler_morecameras bundler_morecameras.cpp)
 TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles ${Boost_LIBRARIES})
-
-# Only for debug
-ADD_EXECUTABLE(test_speed test_speed.cpp)
-TARGET_LINK_LIBRARIES(test_speed SfMFiles ${Boost_LIBRARIES})
 
 # ----------------------------------------------------------------------
 # Generating the .pc file for pkg-config

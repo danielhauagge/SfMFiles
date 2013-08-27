@@ -121,7 +121,7 @@ BDATA::Camera::im2cam(const Eigen::Vector2d& im, Eigen::Vector3d& c, int imWidth
 {
     c[0] = (  imWidth / 2 - im[0]) / focalLength;
     c[1] = ( imHeight / 2 - im[1]) / focalLength;
-    c[2] = 1.0;
+    c[2] = -1.0;
 }
 
 void
