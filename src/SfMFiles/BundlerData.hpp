@@ -31,6 +31,11 @@
 // Reference for file format:
 //     http://phototour.cs.washington.edu/bundler/bundler-v0.4-manual.html
 
+// Coordinate conventions
+//
+// Cam: camera points towards -Z, Y points up, X points right
+//  Im: Y points up, X points right, origin is lower left corner
+
 namespace BDATA
 {
 typedef struct {
@@ -75,7 +80,13 @@ public:
     void invIntrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d& invK) const;
 
     // Camera center in world coordinates
-    Eigen::Vector3d cameraCenter() const;
+    void center(Eigen::Vector3d& centerVec) const;
+
+    // Returns camera up vector in world coordinates
+    void up(Eigen::Vector3d& upVec) const;
+
+    // Returns direction in which camera is pointed at
+    void lookingAt(Eigen::Vector3d& lat) const;
 
     // Did bundler sucessfully reconstruct this camera?
     bool isValid() const;

@@ -49,8 +49,9 @@ test1(int argc, char const* argv[])
     cam.im2world(pntIm, pntW2, width, height);
     std::cout << "Point World Rec: " << pntW2[0] << ", " << pntW2[1]  << ", " << pntW2[2] << std::endl;
 
-    Eigen::Vector3d center = cam.cameraCenter();
-    double dotProd = (pntW - center).dot(pntW2 - center);
+    Eigen::Vector3d camCenter;
+    cam.center(camCenter);
+    double dotProd = (pntW - camCenter).dot(pntW2 - camCenter);
     std::cout << "       Dot prod: " << dotProd << std::endl;
     assert(dotProd > 0); // Reconstructed point should like on the same side of the cam
 
@@ -60,17 +61,34 @@ test1(int argc, char const* argv[])
 int
 test2(int argc, char const* argv[])
 {
+    LOG_INFO("Camera up vector");
     BDATA::Camera cam;
+    Eigen::Vector3d camUp;
+    cam.up(camUp);
 
-    Eigen::Vector3d p1w( 1,  1, -1);
-    Eigen::Vector3d p2w(-1, -1, -1);
+    assert((camUp - Eigen::Vector3d(0, 1, 0)).norm() < 0.001);
 
-    Eigen::Vector2d p1im, p2im;
-    cam.world2im(p1w, p1im);
-    cam.world2im(p2w, p2im);
+    Eigen::Vector2d imCenterIm(0, 0), imTopIm(0, 1);
+    Eigen::Vector3d imCenterW, imTopW;
+    cam.im2world(imCenterIm, imCenterW);
+    cam.im2world(imTopIm, imTopW);
 
-    std::cout << p1im << std::endl;
-    std::cout << p2im << std::endl;
+    Eigen::Vector3d camUpFromIm = imTopW - imCenterW;
+    camUpFromIm /= camUpFromIm.norm();
+    assert((camUpFromIm - Eigen::Vector3d(0, 1, 0)).norm() < 0.01);
+
+    return EXIT_SUCCESS;
+}
+
+int
+test3(int argc, char const* argv[])
+{
+    LOG_INFO("Camera lookAt vector");
+
+    BDATA::Camera cam;
+    Eigen::Vector3d lookAt;
+    cam.lookingAt(lookAt);
+    assert((lookAt - Eigen::Vector3d(0, 0, -1)).norm() < 0.01);
 
     return EXIT_SUCCESS;
 }
@@ -78,6 +96,9 @@ test2(int argc, char const* argv[])
 int
 main(int argc, char const* argv[])
 {
+    cmdc::init();
+    cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
+
     if(argc == 1) {
         std::cout << "Usage:\n\t" << argv[0] << " <in:testnum>" << std::endl;
         return EXIT_FAILURE;
@@ -92,9 +113,13 @@ main(int argc, char const* argv[])
     case 2:
         return test2(argc - 2, &argv[2]);
         break;
+    case 3:
+        return test3(argc - 2, &argv[2]);
+        break;
     default:
         LOG_WARN("Invalid number for test " << testNum);
     }
+    cmdc::deinit();
 
     return EXIT_SUCCESS;
 }

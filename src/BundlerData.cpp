@@ -127,8 +127,8 @@ BDATA::Camera::im2world(const Eigen::Vector2d& im, Eigen::Vector3d& w,
 void
 BDATA::Camera::im2cam(const Eigen::Vector2d& im, Eigen::Vector3d& c, int imWidth, int imHeight) const
 {
-    c[0] = (  imWidth / 2 - im[0]) / focalLength;
-    c[1] = ( imHeight / 2 - im[1]) / focalLength;
+    c[0] =  (  imWidth / 2 - im[0]) / focalLength;
+    c[1] = -( imHeight / 2 - im[1]) / focalLength;
     c[2] = -1.0;
 }
 
@@ -222,12 +222,32 @@ BDATA::Camera::invIntrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d& in
     invK(2, 2) = -1;
 }
 
-Eigen::Vector3d
-BDATA::Camera::cameraCenter() const
+void
+BDATA::Camera::center(Eigen::Vector3d& centerW) const
 {
-    Eigen::Vector3d center;
-    cam2world(Eigen::Vector3d::Zero(), center);
-    return center;
+    cam2world(Eigen::Vector3d::Zero(), centerW);
+}
+
+void
+BDATA::Camera::up(Eigen::Vector3d& upW) const
+{
+    Eigen::Vector3d upCam(0, 1, 0);
+    cam2world(upCam, upW);
+    Eigen::Vector3d centerW;
+    center(centerW);
+    upW -= centerW;
+    upW /= upW.norm();
+}
+
+void
+BDATA::Camera::lookingAt(Eigen::Vector3d& lat) const
+{
+    Eigen::Vector3d imCenterC(0, 0, -1), imCenterW, camCenterW;
+    cam2world(imCenterC, imCenterW);
+    center(camCenterW);
+
+    lat = (imCenterW - camCenterW);
+    lat /= lat.norm();
 }
 
 BDATA::PointEntry::PointEntry(int camera_, int key_, Eigen::Vector2d keyPosition_):
@@ -824,5 +844,3 @@ BDATA::loadCameraVisibility(const char* fname, BDATA::CameraVisibility& camviz)
         memcpy(&camviz[i][0], camIdxs, sizeof(int32_t) * nGoodCams);
     }
 }
-
-
