@@ -38,6 +38,7 @@
 
 namespace BDATA
 {
+
 typedef struct {
     unsigned char r, g, b;
 } Color;
@@ -122,7 +123,6 @@ public:
 class BundlerData
 {
 public:
-    static const char* BINARY_SIGNATURE;
     static const char* ASCII_SIGNATURE;
 
     typedef boost::shared_ptr<BundlerData> Ptr;
@@ -183,6 +183,12 @@ public:
         return _imageFNames;
     };
 
+protected:
+    void _readFileASCII(const char* bundlerFileName);
+    void _writeFileASCII(const char* bundlerFileName) const;
+
+    void _updateNValidCams();
+
 private:
     Camera::Vector _cameras;
     PointInfo::Vector _points;
@@ -192,27 +198,10 @@ private:
     std::string _listFName, _bundleFName;
     std::vector<std::string> _imageFNames;
 
-protected:
-    void _readFileASCII(const char* bundlerFileName);
-    void _readFileBinary(const char* bundlerFileName);
-
-    void _writeFileASCII(const char* bundlerFileName) const;
-    void _writeFileBinary(const char* bundlerFileName) const;
-
-    void _updateNValidCams();
 };
-
-// File IO for bundler_morecameras
-// Camera visibility
-class CameraVisibility : public std::vector<std::vector<int32_t> > {};
-void loadCameraVisibility(const char* fname, CameraVisibility& camviz);
 
 } // namespace BDATA
 
 std::istream& operator>> (std::istream& s, BDATA::Camera& cam);
-//std::istream& operator>> (std::istream &s, Eigen::Vector2d &p);
-//std::istream& operator>> (std::istream &s, Eigen::Vector3d &p);
-//std::istream& operator>> (std::istream &s, Eigen::Matrix3d &m);
-//std::istream& operator>> (std::istream &s, BDATA::Color &c);
 
 #endif

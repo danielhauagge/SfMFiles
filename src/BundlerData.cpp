@@ -23,7 +23,7 @@
 
 #include <iomanip>
 
-//static inline
+static
 std::istream&
 operator>>(std::istream& s, Eigen::Matrix3d& m)
 {
@@ -34,7 +34,6 @@ operator>>(std::istream& s, Eigen::Matrix3d& m)
     return s;
 }
 
-//static inline
 std::istream&
 operator>>(std::istream& s, Eigen::Vector3d& p)
 {
@@ -42,7 +41,7 @@ operator>>(std::istream& s, Eigen::Vector3d& p)
 
     return s;
 }
-//
+
 //static inline
 //std::istream&
 //operator>>(std::istream &s, BDATA::Color &c)
@@ -54,8 +53,8 @@ operator>>(std::istream& s, Eigen::Vector3d& p)
 //
 //    return s;
 //}
-//
-//static inline
+
+static
 std::istream&
 operator>>(std::istream& s, Eigen::Vector2d& p)
 {
@@ -64,7 +63,6 @@ operator>>(std::istream& s, Eigen::Vector2d& p)
     return s;
 }
 
-//static inline
 std::istream&
 operator>>(std::istream& s, BDATA::Camera& cam)
 {
@@ -115,9 +113,6 @@ BDATA::Camera::im2world(const Eigen::Vector2d& im, Eigen::Vector3d& w,
                         int imWidth, int imHeight) const
 {
     Eigen::Vector3d c;
-//    c[0] = (  imWidth/2.0 - im[0]) / focalLength;
-//    c[1] = ( imHeight/2.0 - im[1]) / focalLength;
-//    c[2] = 1;
 
     // TODO: radial distortion
     im2cam(im, c, imWidth, imHeight);
@@ -267,54 +262,6 @@ BDATA::PointEntry::PointEntry(const BDATA::PointEntry& other)
     this->keyPosition = other.keyPosition;
 }
 
-//void
-//BDATA::BundlerData::init(const char *bundlerFileName)
-//{
-//#if 0
-//    PRINT_MSG("Old read from file");
-//    std::ifstream f(bundlerFileName);
-//#else
-//    PRINT_MSG("New read, buffers contente before parsing");
-//    std::ifstream file(bundlerFileName);
-//
-//    struct stat filestatus;
-//    stat( bundlerFileName, &filestatus );
-//    std::vector<char> buffer(filestatus.st_size);
-//    file.read(&buffer[0], filestatus.st_size);
-//
-//    std::stringstream f;
-//    f.rdbuf()->pubsetbuf(&buffer[0], filestatus.st_size);
-//    //PRINT_MSG("stopping before parsing data"); exit(1);
-//#endif
-//    // Discard the first line
-//    // TODO check the header to make sure this is a bundler file
-//    f.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-//
-//    // Get the number of points and cameras
-//    int nCameras, nPoints;
-//    f >> nCameras >> nPoints;
-//
-//    // Read the camaeras
-//    _cameras.resize(nCameras);
-//    for(int i = 0; i < nCameras; i++) f >> _cameras[i];
-//
-//    // Read the points
-//    _points.resize(nPoints);
-//    for(int i = 0; i < nPoints; i++) {
-//        f >> _points[i].position >> _points[i].color;
-//
-//        // Read the view list
-//        int viewListSize;
-//        f >> viewListSize;
-//        _points[i].viewList.resize(viewListSize);
-//        for(int j = 0; j < viewListSize; j++) {
-//            f >> _points[i].viewList[j].camera >> _points[i].viewList[j].key >> _points[i].viewList[j].keyPosition;
-//        }
-//    }
-//    exit(1);
-//}
-
-const char* BDATA::BundlerData::BINARY_SIGNATURE = "#bBundle file v";
 const char* BDATA::BundlerData::ASCII_SIGNATURE = "# Bundle file v";
 
 void
@@ -413,93 +360,6 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
 }
 
 void
-BDATA::BundlerData::_readFileBinary(const char* bundlerFileName)
-{
-    FILE* file = fopen(bundlerFileName, "r");
-    if(!file) {
-        std::stringstream err;
-        err << "Could not read file " << bundlerFileName;
-        throw sfmf::Error(err.str());
-        return;
-    }
-
-    // File signature
-    char sig[200];
-    fread(sig, sizeof(char), strlen(BINARY_SIGNATURE), file);
-    sig[strlen(BINARY_SIGNATURE) + 1] = '\0';
-    if (strcmp(sig, BINARY_SIGNATURE) != 0) {
-        throw sfmf::Error("Bad signature in binary file");
-        return;
-    }
-
-    // Version
-    double version;
-    fread(&version, sizeof(double), 1, file);
-    if (version != 0.3) {
-        std::stringstream err;
-        err << "Unsupported version " << version;
-        LOG_WARN(err.str());
-        throw sfmf::Error(err.str());
-        return;
-    }
-
-    // Get the number of points and cameras
-    int nCameras, nPoints;
-    fread(&nCameras, sizeof(int), 1, file);
-    fread(&nPoints, sizeof(int), 1, file);
-
-    // Read the camaeras
-    _cameras.resize(nCameras);
-    for(int i = 0; i < nCameras; i++) {
-        Camera& cam = _cameras[i];
-
-        // Focal length and radial distortion
-        fread(&cam.focalLength, sizeof(double), 1, file);
-        fread(&cam.k1, sizeof(double), 1, file);
-        fread(&cam.k2, sizeof(double), 1, file);
-
-        // Rotation
-        double* R = &cam.rotation(0, 0);
-        fread(R, sizeof(double), 9, file);
-
-        // Translation
-        double* t = &cam.translation(0, 0);
-        fread(t, sizeof(double), 3, file);
-    }
-
-    // Read the points
-    _points.resize(nPoints);
-    PointInfo::Vector::iterator itPoint = _points.begin();
-    for(int i = 0; i < nPoints; i++, itPoint++) {
-
-        // Position
-        double* pos = &itPoint->position[0];
-        fread(pos, sizeof(double), 3, file);
-
-        // Color
-        unsigned char rgb[3];
-        fread(rgb, sizeof(unsigned char), 3, file);
-        itPoint->color.r = rgb[0];
-        itPoint->color.g = rgb[1];
-        itPoint->color.b = rgb[2];
-
-        // Read the view list
-        int viewListSize;
-        fread(&viewListSize, sizeof(int), 1, file);
-        itPoint->viewList.resize(viewListSize);
-        PointEntry::Vector::iterator itEntry = itPoint->viewList.begin();
-        for(int j = 0; j < viewListSize; j++, itEntry++) {
-            fread(&itEntry->camera, sizeof(int), 1, file);
-            fread(&itEntry->key, sizeof(int), 1, file);
-            fread(&itEntry->keyPosition(0), sizeof(double), 2, file);
-            assert(itEntry->camera < nCameras && itEntry->camera >= 0);
-        }
-    }
-
-    fclose(file);
-}
-
-void
 BDATA::BundlerData::readFile(const char* bundlerFileName, bool computeCamIndex)
 {
     FILE* file = fopen(bundlerFileName, "rb");
@@ -514,9 +374,7 @@ BDATA::BundlerData::readFile(const char* bundlerFileName, bool computeCamIndex)
     fread(fileType, sizeof(char), sizeof(fileType) - 1, file);
     fileType[2] = '\0';
     fclose(file);
-    if (strcmp(fileType, "#b") == 0) {
-        _readFileBinary(bundlerFileName);
-    } else if(strcmp(fileType, "# ") == 0) {
+    if(strcmp(fileType, "# ") == 0) {
         _readFileASCII(bundlerFileName);
     } else {
         throw sfmf::Error("File does not seem to be a bundle file.");
@@ -567,8 +425,7 @@ BDATA::BundlerData::init(const Camera::Vector& cameras, const PointInfo::Vector&
 void
 BDATA::BundlerData::writeFile(const char* bundlerFileName, bool ASCII) const
 {
-    if (ASCII) _writeFileASCII(bundlerFileName);
-    else _writeFileBinary(bundlerFileName);
+    _writeFileASCII(bundlerFileName);
 }
 
 // FIXME get rid of C++ stream operators, makes code go really slow
@@ -621,72 +478,6 @@ BDATA::BundlerData::_writeFileASCII(const char* bundlerFileName) const
     }
 
     f.close();
-}
-
-// FIXME get rid of C++ stream operators, makes code go really slow
-void
-BDATA::BundlerData::_writeFileBinary(const char* bundlerFileName) const
-{
-    FILE* file = fopen(bundlerFileName, "wb");
-    if(!file) {
-        LOG_ERROR("Could not open file for writing " << bundlerFileName);
-        return;
-    }
-
-    const int nCameras = getNCameras();
-    const int nPoints = getNPoints();
-
-    // Header
-    fwrite(BINARY_SIGNATURE, sizeof(char), strlen(BINARY_SIGNATURE), file);
-    double version = 0.3;
-    fwrite(&version, sizeof(double), 1, file);
-
-    // # of cameras and points
-    fwrite(&nCameras, sizeof(int), 1, file);
-    fwrite(&nPoints, sizeof(int), 1, file);
-
-    // Cameras
-    for(int i = 0; i < nCameras; i++) {
-        const Camera& cam = _cameras[i];
-
-        // Focal length and radial distortion
-        fwrite(&cam.focalLength, sizeof(double), 1, file);
-        fwrite(&cam.k1, sizeof(double), 1, file);
-        fwrite(&cam.k2, sizeof(double), 1, file);
-
-        // Rotation
-        const double* R = &cam.rotation(0, 0);
-        fwrite(R, sizeof(double), 9, file);
-
-        // Translation
-        const double* t = &cam.translation(0, 0);
-        fwrite(t, sizeof(double), 3, file);
-    }
-
-    // Points
-    PointInfo::Vector::const_iterator itPoint = _points.begin();
-    for(int i = 0; i < nPoints; i++, itPoint++) {
-
-        // Position
-        const double* pos = &itPoint->position[0];
-        fwrite(pos, sizeof(double), 3, file);
-
-        // Color
-        unsigned char rgb[3] = {itPoint->color.r, itPoint->color.g, itPoint->color.b};
-        fwrite(rgb, sizeof(unsigned char), 3, file);
-
-        // Write the view list
-        int viewListSize = itPoint->viewList.size();
-        fwrite(&viewListSize, sizeof(int), 1, file);
-        PointEntry::Vector::const_iterator itEntry = itPoint->viewList.begin();
-        for(int j = 0; j < viewListSize; j++, itEntry++) {
-            fwrite(&itEntry->camera, sizeof(int), 1, file);
-            fwrite(&itEntry->key, sizeof(int), 1, file);
-            fwrite(&itEntry->keyPosition(0), sizeof(double), 2, file);
-        }
-    }
-
-    fclose(file);
 }
 
 void
@@ -770,16 +561,6 @@ BDATA::BundlerData::getListFileName() const
     return NULL;
 }
 
-#if 0
-const char*
-BDATA::BundlerData::getImageFileName(int camIdx) const
-{
-    if(camIdx < 0 || camIdx >= this->getNCameras()) return NULL;
-    if(_imageFNames.size() == 0) return NULL;
-    return _imageFNames[camIdx].c_str();
-}
-#endif
-
 BDATA::BundlerData::Ptr
 BDATA::BundlerData::New(const char* bundleFileName, bool computeCam2PointIndex)
 {
@@ -807,40 +588,4 @@ BDATA::BundlerData::buildCam2PointIndex()
     }
 
     _cam2PointIndexInitialized = true;
-}
-
-void
-BDATA::loadCameraVisibility(const char* fname, BDATA::CameraVisibility& camviz)
-{
-    FILE* f = fopen(fname, "rb");
-    if(f == 0) {
-        std::stringstream err;
-        err << "Could not open " << fname;
-        throw std::runtime_error(err.str());
-    }
-
-    const int buffSize = 1024;
-    char buff[buffSize];
-    fgets(buff, buffSize, f);
-    if(strcmp(buff, "#camviz\n") != 0) {
-        std::stringstream err;
-        err << "Unexpected header \"" << buff << "\"";
-        throw std::runtime_error(err.str());
-    }
-
-    int nPoints, maxCamerasPerPoint;
-    fscanf(f, "%d %d", &nPoints, &maxCamerasPerPoint);
-    fgets(buff, buffSize, f);
-
-    camviz.resize(nPoints);
-    for(int i = 0; i < nPoints; i++) {
-        int32_t camIdxs[maxCamerasPerPoint];
-        fread(camIdxs, sizeof(int32_t), maxCamerasPerPoint, f);
-
-        int nGoodCams = 0;
-        for(; nGoodCams < maxCamerasPerPoint && camIdxs[nGoodCams] >= 0; nGoodCams++);
-
-        camviz[i].resize(nGoodCams);
-        memcpy(&camviz[i][0], camIdxs, sizeof(int32_t) * nGoodCams);
-    }
 }
