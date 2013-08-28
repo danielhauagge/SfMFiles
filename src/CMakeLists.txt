@@ -28,6 +28,8 @@ INCLUDE_DIRECTORIES(".")
 
 ADD_DEFINITIONS( -DSFMF_COMPILING )
 
+SUBDIRS(utils test)
+
 # ----------------------------------------------------------------------
 # Dependencies
 # ----------------------------------------------------------------------
@@ -109,46 +111,3 @@ ENDIF()
 SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -msse -msse2")
 SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -msse -msse2")
 
-# ----------------------------------------------------------------------
-# Executables
-# ----------------------------------------------------------------------
-
-# Some utilities
-ADD_EXECUTABLE(bundler_file_converter bundler_file_converter.cpp)
-TARGET_LINK_LIBRARIES(bundler_file_converter SfMFiles)
-
-ADD_EXECUTABLE(test_bundler_data test_bundler_data.cpp)
-TARGET_LINK_LIBRARIES(test_bundler_data SfMFiles)
-
-ADD_EXECUTABLE(test_pmvs_data test_pmvs_data.cpp)
-TARGET_LINK_LIBRARIES(test_pmvs_data SfMFiles)
-
-ADD_EXECUTABLE(test_bundler_camera test_bundler_camera.cpp)
-TARGET_LINK_LIBRARIES(test_bundler_camera SfMFiles)
-
-ADD_EXECUTABLE(pmvs_info pmvs_info.cpp)
-TARGET_LINK_LIBRARIES(pmvs_info SfMFiles)
-
-ADD_EXECUTABLE(pmvs_merge pmvs_merge.cpp)
-TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles) 
-
-ADD_EXECUTABLE(pmvs_filter pmvs_filter.cpp)
-TARGET_LINK_LIBRARIES(pmvs_filter SfMFiles)
-
-ADD_EXECUTABLE(bundler_merge bundler_merge.cpp)
-TARGET_LINK_LIBRARIES(bundler_merge SfMFiles)
-
-ADD_EXECUTABLE(bundler_info bundler_info.cpp)
-TARGET_LINK_LIBRARIES(bundler_info SfMFiles)
-
-ADD_EXECUTABLE(bundler_rmdups bundler_rmdups.cpp)
-TARGET_LINK_LIBRARIES(bundler_rmdups SfMFiles)
-
-ADD_EXECUTABLE(pmvs2ply pmvs2ply.cpp)
-TARGET_LINK_LIBRARIES(pmvs2ply SfMFiles)
-
-ADD_EXECUTABLE(pmvs2bundler pmvs2bundler.cpp)
-TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles)
-
-ADD_EXECUTABLE(bundler_morecameras bundler_morecameras.cpp)
-TARGET_LINK_LIBRARIES(bundler_morecameras SfMFiles)

@@ -1,0 +1,8 @@
+ADD_EXECUTABLE(test_bundler_data test_bundler_data.cpp)
+TARGET_LINK_LIBRARIES(test_bundler_data SfMFiles)
+
+ADD_EXECUTABLE(test_pmvs_data test_pmvs_data.cpp)
+TARGET_LINK_LIBRARIES(test_pmvs_data SfMFiles)
+
+ADD_EXECUTABLE(test_bundler_camera test_bundler_camera.cpp)
+TARGET_LINK_LIBRARIES(test_bundler_camera SfMFiles)
