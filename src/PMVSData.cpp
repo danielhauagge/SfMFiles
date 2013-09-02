@@ -387,8 +387,8 @@ BDATA::PMVS::PMVSData::New(const char* pmvsFileName, bool tryLoadOptionsFile)
 void
 BDATA::PMVS::PMVSData::printStats() const
 {
-    printf("# of cameras: %d\n", getNCameras());
-    printf("# of patches: %d\n", getNPatches());
+    printf("# of cameras: %lu\n", getNCameras());
+    printf("# of patches: %lu\n", getNPatches());
 
     printf("\nGood cameras:\n");
     printf("%10s: %5.0f\n", "Min", _goodCamStats.minVal);

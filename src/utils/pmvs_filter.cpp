@@ -21,7 +21,7 @@
 
 #include <SfMFiles/sfmfiles>
 
-#include <cmdcore/optparser>
+#include <CMDCore/optparser>
 
 #include <iostream>
 

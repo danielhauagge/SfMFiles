@@ -25,3 +25,12 @@ ADD_EXECUTABLE(bundler_rmdups bundler_rmdups.cpp)
 TARGET_LINK_LIBRARIES(bundler_rmdups SfMFiles)
 
 
+INSTALL_PROGRAMS(/bin FILES 
+                 bundler_merge 
+                 bundler_info  
+                 pmvs_merge 
+                 pmvs_info 
+                 pmvs_filter 
+                 pmvs2ply 
+                 pmvs2bundler) 
+

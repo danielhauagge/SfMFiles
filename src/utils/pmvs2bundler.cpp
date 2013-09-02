@@ -22,7 +22,7 @@
 #include <iostream>
 #include <cstdio>
 
-#include <cmdcore/optparser>
+#include <CMDCore/optparser>
 
 #include <SfMFiles/sfmfiles>
 

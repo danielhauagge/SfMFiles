@@ -21,7 +21,7 @@
 
 // Other projects
 #include <SfMFiles/sfmfiles>
-#include <cmdcore/optparser>
+#include <CMDCore/optparser>
 using namespace cmdc;
 
 // Standard library
