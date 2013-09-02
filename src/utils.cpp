@@ -112,6 +112,8 @@ getJPEGSize(const char* fname, int& width, int& height)
     }
 
     int result = scanhead(file, &width, &height);
+    fclose(file);
+
     return result;
 }
 
