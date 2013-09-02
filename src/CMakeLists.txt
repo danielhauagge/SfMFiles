@@ -47,11 +47,11 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 SET(IS_APPLE ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 IF(APPLE)
   # Command line core
-  #SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/danielcabrinihauagge/Projects/CommandLineCore/build )
+  #SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/danielhauagge/Projects/CommandLineCore/build )
   FIND_LIBRARY(CMDCORE_LIBRARIES CMDCore)
 
   #SET(EXTRA_LIBS ${_LIBRARY})
-  # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F /Users/danielcabrinihauagge/Projects/CommandLineCore/build  -framework CMDCore")
+  # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F /Users/danielhauagge/Projects/CommandLineCore/build  -framework CMDCore")
   # SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework CMDCore")
 ELSE()
   PKG_CHECK_MODULES(CMDCORE REQUIRED cmdcore)
@@ -62,6 +62,7 @@ ENDIF (APPLE)
 
 ADD_LIBRARY( SfMFiles 
   SHARED 
+  utils.hpp                 utils.cpp
   SfMFiles/BundlerData.hpp  BundlerData.cpp  
   SfMFiles/PMVSData.hpp     PMVSData.cpp            
   SfMFiles/sfmfiles )

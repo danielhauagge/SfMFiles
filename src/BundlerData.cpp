@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "SfMFiles/BundlerData.hpp"
+#include "utils.hpp"
 
 #include <iomanip>
 
@@ -42,17 +43,20 @@ operator>>(std::istream& s, Eigen::Vector3d& p)
     return s;
 }
 
-//static inline
-//std::istream&
-//operator>>(std::istream &s, BDATA::Color &c)
-//{
-//    int aux;
-//    s >> aux; c.r = aux;
-//    s >> aux; c.g = aux;
-//    s >> aux; c.b = aux;
-//
-//    return s;
-//}
+static inline
+std::istream&
+operator>>(std::istream& s, BDATA::Color& c)
+{
+    int aux;
+    s >> aux;
+    c.r = aux;
+    s >> aux;
+    c.g = aux;
+    s >> aux;
+    c.b = aux;
+
+    return s;
+}
 
 static
 std::istream&
@@ -588,4 +592,11 @@ BDATA::BundlerData::buildCam2PointIndex()
     }
 
     _cam2PointIndexInitialized = true;
+}
+
+int
+BDATA::BundlerData::getImageSizeForCamera(int camIdx, int& width, int& height) const
+{
+    assert(listFileLoaded());
+    return getImageSize(_imageFNames[camIdx].c_str(), width, height);
 }

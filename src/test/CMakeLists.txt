@@ -6,3 +6,6 @@ TARGET_LINK_LIBRARIES(test_pmvs_data SfMFiles)
 
 ADD_EXECUTABLE(test_bundler_camera test_bundler_camera.cpp)
 TARGET_LINK_LIBRARIES(test_bundler_camera SfMFiles)
+
+ADD_EXECUTABLE(test_utils test_utils.cpp)
+TARGET_LINK_LIBRARIES(test_utils SfMFiles)

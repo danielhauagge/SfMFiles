@@ -1,36 +1,15 @@
-// Copyright (C) 2011 by Daniel Hauagge
-//
-// Permission is hereby granted, free  of charge, to any person obtaining
-// a  copy  of this  software  and  associated  documentation files  (the
-// "Software"), to  deal in  the Software without  restriction, including
-// without limitation  the rights to  use, copy, modify,  merge, publish,
-// distribute,  sublicense, and/or sell  copies of  the Software,  and to
-// permit persons to whom the Software  is furnished to do so, subject to
-// the following conditions:
-//
-// The  above  copyright  notice  and  this permission  notice  shall  be
-// included in all copies or substantial portions of the Software.
-//
-// THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
-// EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
-// MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 #include <SfMFiles/sfmfiles>
-
-const char* cam1Str = "500.00000000000000000000 0.00000000000000000000 0.00000000000000000000\n"
-                      "1.00000000000000000000 -0.00000000000000000000 0.00000000000000000000 \n"
-                      "-0.00000000000000000000 -0.00000016292068494295 1.00000000000000000000 \n"
-                      "0.00000000000000000000 -1.00000000000000000000 -0.00000016292068494295 \n"
-                      "-0.00000000000000000000 -0.00000065168273977179 -4.00000000000000000000 \n";
 
 int
 test1(int argc, char const* argv[])
 {
-    std::cout << "Taka a point that is in front of the camera to image coordinates and back and make sure that both lie on the same side of the camera" << std::endl;
+    const char* cam1Str = "500.00000000000000000000 0.00000000000000000000 0.00000000000000000000\n"
+                          "1.00000000000000000000 -0.00000000000000000000 0.00000000000000000000 \n"
+                          "-0.00000000000000000000 -0.00000016292068494295 1.00000000000000000000 \n"
+                          "0.00000000000000000000 -1.00000000000000000000 -0.00000016292068494295 \n"
+                          "-0.00000000000000000000 -0.00000065168273977179 -4.00000000000000000000 \n";
+
+    LOG_INFO("Taka a point that is in front of the camera to image coordinates and back and make sure that both lie on the same side of the camera");
     std::istringstream cam1S(cam1Str);
     BDATA::Camera cam;
     int width = 500, height = 500;
@@ -94,6 +73,32 @@ test3(int argc, char const* argv[])
 }
 
 int
+test4(int argc, char const* argv[])
+{
+    LOG_INFO("Testing world2im");
+    const char* camStr = "7.0008849479e+02 -7.0992716605e-02 -2.8653295186e-02\n"
+                         "9.9240045398e-01 -1.1447615454e-01 4.5128139672e-02\n"
+                         "9.6516563784e-02 9.5165945078e-01 2.9159705528e-01\n"
+                         "-7.6327530178e-02 -2.8502543707e-01 9.5547611606e-01\n"
+                         "1.8342005790e-01 9.7561838757e-01 -8.2822559093e-01";
+
+    std::istringstream camS(camStr);
+    BDATA::Camera cam;
+    camS >> cam;
+
+    Eigen::Vector3d pntW(-0.134889, -0.827748, -2.69439);
+    Eigen::Vector2d pntIm(5.0258, -135.11);
+    Eigen::Vector2d pntImComputed;
+
+    cam.world2im(pntW, pntImComputed, true);
+
+    double err = (pntImComputed - pntIm).norm();
+    assert(err < 0.0005);
+
+    return EXIT_SUCCESS;
+}
+
+int
 main(int argc, char const* argv[])
 {
     cmdc::init();
@@ -115,6 +120,9 @@ main(int argc, char const* argv[])
         break;
     case 3:
         return test3(argc - 2, &argv[2]);
+        break;
+    case 4:
+        return test4(argc - 2, &argv[2]);
         break;
     default:
         LOG_WARN("Invalid number for test " << testNum);

@@ -163,22 +163,32 @@ public:
 
     void buildCam2PointIndex();
 
+    // Returns size of image by looking at the header of the image file
+    // Assumes that the list file was loaded.
+    // @returns 0 for failure and non zero otherwise
+    int getImageSizeForCamera(int camIdx, int& width, int& height) const;
+
     //! Accessors
     const PointInfo::Vector& getPointInfo() const {
         return _points;
     };
+
     const Camera::Vector& getCameras() const {
         return _cameras;
     };
+
     const std::vector<std::string>& getImageFileNames() const {
         return _imageFNames;
     };
+
     PointInfo::Vector& getPointInfo() {
         return _points;
     };
+
     Camera::Vector& getCameras() {
         return _cameras;
     };
+
     std::vector<std::string>& getImageFileNames() {
         return _imageFNames;
     };
