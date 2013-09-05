@@ -47,7 +47,7 @@ main(int argc, char const* argv[])
     using namespace BDATA;
     using namespace cmdc;
 
-    cmdc::init();
+
     OptionParser::Arguments args;
     OptionParser::Options opts;
 
@@ -153,7 +153,7 @@ main(int argc, char const* argv[])
         outListF << outImageList[i] << std::endl;
     }
 
-    cmdc::deinit();
+
 
     return EXIT_SUCCESS;
 }

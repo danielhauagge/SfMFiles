@@ -101,7 +101,6 @@ test4(int argc, char const* argv[])
 int
 main(int argc, char const* argv[])
 {
-    cmdc::init();
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 
     if(argc == 1) {
@@ -127,7 +126,7 @@ main(int argc, char const* argv[])
     default:
         LOG_WARN("Invalid number for test " << testNum);
     }
-    cmdc::deinit();
+
 
     return EXIT_SUCCESS;
 }

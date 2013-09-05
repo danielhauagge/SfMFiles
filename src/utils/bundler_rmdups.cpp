@@ -43,7 +43,7 @@ main(int argc, const char** argv)
 {
     using namespace BDATA;
     using namespace cmdc;
-    cmdc::init();
+
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -107,7 +107,7 @@ main(int argc, const char** argv)
     outBundle.writeFile(outBundleFName.c_str());
     outBundle.writeListFile(outListFName.c_str());
 
-    cmdc::deinit();
+
 
     return EXIT_SUCCESS;
 }

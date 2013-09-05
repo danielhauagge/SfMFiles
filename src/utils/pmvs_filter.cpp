@@ -53,7 +53,7 @@ main(int argc, const char* argv[])
 {
     using namespace BDATA;
     using namespace cmdc;
-    cmdc::init();
+
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -137,7 +137,7 @@ main(int argc, const char* argv[])
 
     pmvsFiltered.writeFile(outPmvsFName.c_str());
 
-    cmdc::deinit();
+
 
     return EXIT_SUCCESS;
 }

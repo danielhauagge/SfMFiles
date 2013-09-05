@@ -3,8 +3,10 @@
 int
 main(int argc, const char* argv[])
 {
+    cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
+
     using namespace BDATA;
-    cmdc::init();
+
 
     if(argc == 1) {
         std::cout << "Usage:\n\t" << argv[0] << " <bundle.out> <list.txt> <cam index>" << std::endl;
@@ -71,6 +73,6 @@ main(int argc, const char* argv[])
     printf(">>\t   featPosCI = [%3.2f, %3.2f]\n", featPosCI(0), featPosCI(1));
     printf(">>\t         err = %f\n", (featPosCI - featPos).norm());
 
-    cmdc::deinit();
+
     return EXIT_SUCCESS;
 }

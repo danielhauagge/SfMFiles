@@ -32,7 +32,7 @@ main(int argc, const char** argv)
 {
     using namespace BDATA::PMVS;
     using namespace cmdc;
-    cmdc::init();
+
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -61,6 +61,6 @@ main(int argc, const char** argv)
     LOG_INFO("Writing file " << outFName);
     merged.writeFile(outFName.c_str());
 
-    cmdc::deinit();
+
     return EXIT_SUCCESS;
 }

@@ -127,7 +127,7 @@ int
 main(int argc, const char** argv)
 {
     using namespace BDATA;
-    cmdc::init();
+
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -160,6 +160,6 @@ main(int argc, const char** argv)
         return EXIT_FAILURE;
     }
 
-    cmdc::deinit();
+
     return EXIT_SUCCESS;
 }

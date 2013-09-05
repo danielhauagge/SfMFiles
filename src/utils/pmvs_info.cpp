@@ -26,7 +26,7 @@
 int
 main(int argc, char** argv)
 {
-    cmdc::init();
+
 
     const char* patchFName = argv[1];
 

@@ -123,7 +123,8 @@ test2(int argc, char** argv)
 int
 main(int argc, char** argv)
 {
-    cmdc::init();
+    cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
+
     if(argc == 1) {
         std::cout << "Usage:\n\t" << argv[0] << "<in: testNum> <in: option.patch> <in: bundle.out> <in: imWidth> <in: imHeight>" << std::endl;
         return EXIT_FAILURE;
@@ -142,6 +143,6 @@ main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    cmdc::deinit();
+
     return EXIT_SUCCESS;
 }

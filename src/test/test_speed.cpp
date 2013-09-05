@@ -54,7 +54,8 @@ test4_forloop_float()
 int
 main(int argc, char const* argv[])
 {
-    cmdc::init();
+
+    cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 
     int testCase = atoi(argv[1]);
 
@@ -75,6 +76,6 @@ main(int argc, char const* argv[])
         LOG_ERROR("Unknown test case " << testCase);
     }
 
-    cmdc::deinit();
+
     return EXIT_SUCCESS;
 }
