@@ -128,7 +128,6 @@ main(int argc, const char** argv)
 {
     using namespace BDATA;
 
-
     OptionParser::Arguments args;
     OptionParser::Options opts;
 

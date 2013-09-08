@@ -45,6 +45,8 @@
 
 // Command Line Core
 #include <CMDCore/logger>
+#include <CMDCore/timer>
+#include <CMDCore/autotimer>
 
 #ifdef SFMF_COMPILING
 #define EIGEN_DONT_ALIGN

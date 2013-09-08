@@ -308,9 +308,12 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
     int nCameras, nPoints;
     fscanf(file, "%d %d", &nCameras, &nPoints);
 
-    // Read the camaeras
+    // Read the cameras
+
     _cameras.resize(nCameras);
+    PROGBAR_START("Read cameras");
     for(int i = 0; i < nCameras; i++) {
+        PROGBAR_UPDATE(i, nCameras);
 
         Camera& cam = _cameras[i];
 
@@ -328,11 +331,13 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
         double* t = &cam.translation(0, 0);
         fscanf(file, "%lf %lf %lf\n", t + 0, t + 1, t + 2);
     }
-
     // Read the points
     _points.resize(nPoints);
     PointInfo::Vector::iterator itPoint = _points.begin();
+
+    PROGBAR_START("Read points");
     for(int i = 0; i < nPoints; i++, itPoint++) {
+        PROGBAR_UPDATE(i, nPoints);
 
         // Position
         double* pos = &itPoint->position[0];
