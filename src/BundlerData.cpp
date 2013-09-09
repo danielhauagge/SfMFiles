@@ -24,6 +24,9 @@
 
 #include <iomanip>
 
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/file.hpp>
+
 static
 std::istream&
 operator>>(std::istream& s, Eigen::Matrix3d& m)
@@ -269,10 +272,10 @@ BDATA::PointEntry::PointEntry(const BDATA::PointEntry& other)
 const char* BDATA::BundlerData::ASCII_SIGNATURE = "# Bundle file v";
 
 void
-BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
+BDATA::BundlerData::_readFileASCII(const char * bundlerFileName, boost::iostreams::filtering_istream & in)
 {
-    FILE* file = fopen(bundlerFileName, "r");
-    if(!file) {
+    in.push(boost::iostreams::file_source(bundlerFileName));
+    if(!in) {
         std::stringstream err;
         err << "Could not read file " << bundlerFileName;
         throw sfmf::Error(err.str());
@@ -281,10 +284,8 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
 
     // File signature
     char sig[200];
-    size_t nread = fread(sig, sizeof(char), strlen(ASCII_SIGNATURE), file);
-    if (nread > 0) {
-        sig[nread] = '\0';
-    }
+    in.read(sig, strlen(ASCII_SIGNATURE));
+    sig[strlen(ASCII_SIGNATURE)] = '\0';
     if (strcmp(sig, ASCII_SIGNATURE) != 0) {
         LOG_WARN("Bad signature in ASCII file: " << sig);
         throw sfmf::Error("Bad signature in binary file");
@@ -295,7 +296,7 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
     //fgets(firstLine, sizeof(firstLine), file);
 
     double version;
-    fscanf(file, "%lf", &version);
+    in >> version;
     if (version != 0.3) {
         std::stringstream err;
         err << "Unsupported version " << version;
@@ -306,7 +307,7 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
 
     // Get the number of points and cameras
     int nCameras, nPoints;
-    fscanf(file, "%d %d", &nCameras, &nPoints);
+    in >> nCameras >> nPoints;
 
     // Read the cameras
 
@@ -318,18 +319,17 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
         Camera& cam = _cameras[i];
 
         // Focal length and radial distortion
-        fscanf(file, "%lf %lf %lf\n", &cam.focalLength, &cam.k1, &cam.k2);
+        in >> cam.focalLength >> cam.k1 >> cam.k2;
 
         // Rotation
         double* R = &cam.rotation(0, 0);
-        fscanf(file, "%lf %lf %lf\n%lf %lf %lf\n%lf %lf %lf\n",
-               &cam.rotation(0, 0), &cam.rotation(0, 1), &cam.rotation(0, 2),
-               &cam.rotation(1, 0), &cam.rotation(1, 1), &cam.rotation(1, 2),
-               &cam.rotation(2, 0), &cam.rotation(2, 1), &cam.rotation(2, 2));
+        in >> cam.rotation(0,0) >> cam.rotation(0,1) >> cam.rotation(0,2);
+        in >> cam.rotation(1,0) >> cam.rotation(1,1) >> cam.rotation(1,2);
+        in >> cam.rotation(2,0) >> cam.rotation(2,1) >> cam.rotation(2,2);
 
         // Translation
         double* t = &cam.translation(0, 0);
-        fscanf(file, "%lf %lf %lf\n", t + 0, t + 1, t + 2);
+        in >> t[0] >> t[1] >> t[2];
     }
     // Read the points
     _points.resize(nPoints);
@@ -341,31 +341,27 @@ BDATA::BundlerData::_readFileASCII(const char* bundlerFileName)
 
         // Position
         double* pos = &itPoint->position[0];
-        fscanf(file, "%lf %lf %lf\n", pos + 0, pos + 1, pos + 2);
+        in >> pos[0] >> pos[1] >> pos[2];
 
         // Color
         float r, g, b;
-        fscanf(file, "%f %f %f\n", &r, &g, &b);
+        in >> r >> g >> b;
         itPoint->color.r = (unsigned char)r;
         itPoint->color.g = (unsigned char)g;
         itPoint->color.b = (unsigned char)b;
 
         // View list
         int viewListSize;
-        fscanf(file, "%d", &viewListSize);
+        in >> viewListSize;
         itPoint->viewList.resize(viewListSize);
 
         PointEntry::Vector::iterator itEntry = itPoint->viewList.begin();
 
         for(int j = 0; j < viewListSize; j++, itEntry++) {
-            fscanf(file, "%d %d %lf %lf",
-                   &itEntry->camera, &itEntry->key,
-                   &itEntry->keyPosition(0),  &itEntry->keyPosition(1));
+            in >> itEntry->camera >> itEntry->key >> itEntry->keyPosition(0) >> itEntry->keyPosition(1);
             assert(itEntry->camera < nCameras && itEntry->camera >= 0);
         }
     }
-
-    fclose(file);
 }
 
 void
@@ -383,11 +379,16 @@ BDATA::BundlerData::readFile(const char* bundlerFileName, bool computeCamIndex)
     fread(fileType, sizeof(char), sizeof(fileType) - 1, file);
     fileType[2] = '\0';
     fclose(file);
+
+    boost::iostreams::filtering_istream in;
     if(strcmp(fileType, "# ") == 0) {
-        _readFileASCII(bundlerFileName);
+        // regular ASCII format
+    } else if (strcmp(fileType, "\x1f\x8b") == 0) {
+        in.push(boost::iostreams::gzip_decompressor());
     } else {
         throw sfmf::Error("File does not seem to be a bundle file.");
     }
+    _readFileASCII(bundlerFileName, in);
 
     _bundleFName = std::string(bundlerFileName);
 
