@@ -24,6 +24,8 @@
 #define __BUNDLER_DATA_HPP__
 
 #include <SfMFiles/sfmfiles>
+#include <boost/iostreams/filtering_stream.hpp>
+
 
 // Author: Daniel Hauagge <hauagge@cs.cornell.edu>
 //   Date: 2011-04-03
@@ -194,7 +196,7 @@ public:
     };
 
 protected:
-    void _readFileASCII(const char* bundlerFileName);
+    void _readFileASCII(const char * bundlerFileName, boost::iostreams::filtering_istream &);
     void _writeFileASCII(const char* bundlerFileName) const;
 
     void _updateNValidCams();

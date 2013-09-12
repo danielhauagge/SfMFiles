@@ -40,7 +40,7 @@ PKG_CHECK_MODULES(EIGEN3 REQUIRED eigen3)
 INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIRS})
 
 # Boost (http://goo.gl/xEHzb)
-FIND_PACKAGE(Boost 1.33 COMPONENTS system filesystem REQUIRED)
+FIND_PACKAGE(Boost 1.33 COMPONENTS system filesystem iostreams REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 # Command line core
