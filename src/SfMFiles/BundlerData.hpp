@@ -24,8 +24,6 @@
 #define __BUNDLER_DATA_HPP__
 
 #include <SfMFiles/sfmfiles>
-#include <boost/iostreams/filtering_stream.hpp>
-
 
 // Author: Daniel Hauagge <hauagge@cs.cornell.edu>
 //   Date: 2011-04-03
