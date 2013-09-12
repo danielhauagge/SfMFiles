@@ -272,16 +272,8 @@ BDATA::PointEntry::PointEntry(const BDATA::PointEntry& other)
 const char* BDATA::BundlerData::ASCII_SIGNATURE = "# Bundle file v";
 
 void
-BDATA::BundlerData::_readFileASCII(const char * bundlerFileName, boost::iostreams::filtering_istream & in)
+BDATA::BundlerData::_readFileASCII(boost::iostreams::filtering_istream& in)
 {
-    in.push(boost::iostreams::file_source(bundlerFileName));
-    if(!in) {
-        std::stringstream err;
-        err << "Could not read file " << bundlerFileName;
-        throw sfmf::Error(err.str());
-        return;
-    }
-
     // File signature
     char sig[200];
     in.read(sig, strlen(ASCII_SIGNATURE));
@@ -323,9 +315,9 @@ BDATA::BundlerData::_readFileASCII(const char * bundlerFileName, boost::iostream
 
         // Rotation
         double* R = &cam.rotation(0, 0);
-        in >> cam.rotation(0,0) >> cam.rotation(0,1) >> cam.rotation(0,2);
-        in >> cam.rotation(1,0) >> cam.rotation(1,1) >> cam.rotation(1,2);
-        in >> cam.rotation(2,0) >> cam.rotation(2,1) >> cam.rotation(2,2);
+        in >> cam.rotation(0, 0) >> cam.rotation(0, 1) >> cam.rotation(0, 2);
+        in >> cam.rotation(1, 0) >> cam.rotation(1, 1) >> cam.rotation(1, 2);
+        in >> cam.rotation(2, 0) >> cam.rotation(2, 1) >> cam.rotation(2, 2);
 
         // Translation
         double* t = &cam.translation(0, 0);
@@ -381,14 +373,21 @@ BDATA::BundlerData::readFile(const char* bundlerFileName, bool computeCamIndex)
     fclose(file);
 
     boost::iostreams::filtering_istream in;
-    if(strcmp(fileType, "# ") == 0) {
-        // regular ASCII format
-    } else if (strcmp(fileType, "\x1f\x8b") == 0) {
+
+    // Is this a GZIPed file?
+    if (strcmp(fileType, "\x1f\x8b") == 0) {
         in.push(boost::iostreams::gzip_decompressor());
-    } else {
-        throw sfmf::Error("File does not seem to be a bundle file.");
     }
-    _readFileASCII(bundlerFileName, in);
+
+    in.push(boost::iostreams::file_source(bundlerFileName));
+    if(!in) {
+        std::stringstream err;
+        err << "Could not read file " << bundlerFileName;
+        throw sfmf::Error(err.str());
+        return;
+    }
+
+    _readFileASCII(in);
 
     _bundleFName = std::string(bundlerFileName);
 

@@ -196,7 +196,7 @@ public:
     };
 
 protected:
-    void _readFileASCII(const char * bundlerFileName, boost::iostreams::filtering_istream &);
+    void _readFileASCII(boost::iostreams::filtering_istream& inputStream);
     void _writeFileASCII(const char* bundlerFileName) const;
 
     void _updateNValidCams();
@@ -209,7 +209,6 @@ private:
 
     std::string _listFName, _bundleFName;
     std::vector<std::string> _imageFNames;
-
 };
 
 } // namespace BDATA
