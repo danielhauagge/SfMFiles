@@ -119,7 +119,56 @@ mainPointMode(const BDATA::BundlerData bundle,
               const OptionParser::Arguments& args,
               const OptionParser::Options& opts)
 {
-    std::cerr << "Not implemented yet" << std::endl;
+    std::set<std::string> selFields;
+    for(int i = 2; i < args.size(); i++) {
+        selFields.insert(args[i]);
+    }
+    if(selFields.size() == 0) selFields.insert("all");
+
+    BDATA::PointInfo::Vector points = bundle.getPointInfo();
+
+    BDATA::PointInfo::Vector::iterator pnt = points.begin();
+    BDATA::PointInfo::Vector::iterator pntEnd = points.end();
+    int pntIdx = 0;
+
+    if(opts.count("selIdx")) {
+        pntIdx  = opts.at("selIdx").asInt();
+        pnt = points.begin() + pntIdx;
+        pntEnd = pnt + 1;
+    }
+
+    std::string sep = "";
+    for (; pnt != pntEnd; pnt++, pntIdx++) {
+        std::cout << sep << "Point " << pntIdx << std::endl;
+        sep = "\n";
+
+        if ( selFields.count("pos") || selFields.count("all") ) {
+            std::cout << " Position: " << pnt->position.transpose() << "\n";
+        }
+
+        if ( selFields.count("color") || selFields.count("all") ) {
+            std::cout << "    Color: ["
+                      << int(pnt->color.r) << ","
+                      << int(pnt->color.g) << ","
+                      << int(pnt->color.b) << "]\n";
+        }
+
+        if ( selFields.count("viewlist") || selFields.count("all") ) {
+            BDATA::PointEntry::Vector::iterator vl = pnt->viewList.begin();
+            BDATA::PointEntry::Vector::iterator vlEnd = pnt->viewList.end();
+
+            std::cout << "View List:\n";
+            std::string sepCam = "";
+            for(; vl != vlEnd; vl++) {
+                std::cout << sepCam;
+                std::cout << "\t camera: " << vl->camera      << "\n";
+                std::cout << "\t    key: " << vl->key         << "\n";
+                std::cout << "\tkey pos: " << vl->keyPosition.transpose() << "\n";
+                sepCam = "\n";
+            }
+        }
+    }
+
     return EXIT_FAILURE;
 }
 
