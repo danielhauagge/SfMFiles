@@ -19,28 +19,18 @@
 // OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#ifndef __FEATURE_DESCRIPTORS_HPP__
+#define __FEATURE_DESCRIPTORS_HPP__
+
 #include <SfMFiles/sfmfiles>
 
-#ifndef __UTILS_HPP__
-#define __UTILS_HPP__
+class SIFTFeature
+{
+public:
+    double x, y, scale, orientation;
+    uint8_t feature[128];
+};
 
-/// Determines size of image (only reads first few bytes of file)
-/// @returns 0 on failure and non zero on success
-int getImageSize(const char* fname, int& width, int& height);
+void loadSIFTFeatures(const char* fname, std::vector<SIFTFeature>& features);
 
-/// Determines size of image stored as JPEG file (only reads first few bytes of file)
-/// @returns 0 on failure and non zero on success
-int getJPEGSize(const char* fname, int& width, int& height);
-
-/// Determines size of image stored as PNG file (only reads first few bytes of file)
-/// @returns 0 on failure and non zero on success
-int getPNGSize(const char* fname, int& width, int& height);
-
-/// Computes a color mapping from a vector of real numbers
-/// @returns text describing the color mapping (to be inserted
-/// as a comment into the ply file)
-void colormapValues(const std::vector<double>& values,
-                    std::vector<Eigen::Vector3f>& colors,
-                    std::string* mapping = NULL);
-
-#endif // __UTILS_HPP__
+#endif // __FEATURE_DESCRIPTORS_HPP__

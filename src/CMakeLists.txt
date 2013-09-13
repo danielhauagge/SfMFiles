@@ -62,9 +62,11 @@ ENDIF (APPLE)
 
 ADD_LIBRARY( SfMFiles 
   SHARED 
-  utils.hpp                 utils.cpp
-  SfMFiles/BundlerData.hpp  BundlerData.cpp  
-  SfMFiles/PMVSData.hpp     PMVSData.cpp            
+  utils.hpp                       utils.cpp
+  ply.hpp                         ply.cpp
+  SfMFiles/FeatureDescriptors.hpp FeatureDescriptors.cpp
+  SfMFiles/BundlerData.hpp        BundlerData.cpp  
+  SfMFiles/PMVSData.hpp           PMVSData.cpp            
   SfMFiles/sfmfiles )
 
 TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES} ${CMDCORE_LIBRARIES})

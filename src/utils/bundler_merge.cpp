@@ -133,8 +133,8 @@ main(int argc, char const* argv[])
 
             // Udate the visibility lists
             if (updateVizList) {
-                for (std::vector<int>::const_iterator pntIdx = cams[imgIdx].visiblePoints.begin(); pntIdx != cams[imgIdx].visiblePoints.end(); pntIdx++) {
-                    outPoints[*pntIdx].viewList.push_back(PointEntry(newCamIdx));
+                for (std::vector<PointVisListIdxs>::const_iterator it = cams[imgIdx].visiblePoints.begin(); it != cams[imgIdx].visiblePoints.end(); it++) {
+                    outPoints[it->pointIdx].viewList.push_back(PointEntry(newCamIdx));
                 }
             }
         }

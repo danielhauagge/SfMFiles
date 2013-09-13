@@ -432,14 +432,7 @@ BDATA::BundlerData::init(const Camera::Vector& cameras, const PointInfo::Vector&
 }
 
 void
-BDATA::BundlerData::writeFile(const char* bundlerFileName, bool ASCII) const
-{
-    _writeFileASCII(bundlerFileName);
-}
-
-// FIXME get rid of C++ stream operators, makes code go really slow
-void
-BDATA::BundlerData::_writeFileASCII(const char* bundlerFileName) const
+BDATA::BundlerData::writeFile(const char* bundlerFileName) const
 {
     std::ofstream f(bundlerFileName);
     f << std::scientific;
@@ -455,32 +448,33 @@ BDATA::BundlerData::_writeFileASCII(const char* bundlerFileName) const
     f << nCameras << " " << getNPoints() << "\n";
 
     // Cameras
-    for(int i = 0; i < nCameras; i++) f << _cameras[i];
+    PROGBAR_START("Writing cameras");
+    for(int i = 0; i < nCameras; i++) {
+        PROGBAR_UPDATE(i, nCameras);
+        f << _cameras[i];
+    }
 
     // Points
+    PROGBAR_START("Writing cameras");
     for(int i = 0; i < nPoints; i++) {
-        f
-        // Position
-                << std::scientific
-                << std::setprecision(16)
-                << _points[i].position[0] << " "
-                << _points[i].position[1] << " "
-                << _points[i].position[2] << "\n"
-                // Color
-                << int(_points[i].color.r) << " "
-                << int(_points[i].color.g) << " "
-                << int(_points[i].color.b) << "\n"
-                // View list
-                << std::fixed
-                << std::setprecision(4)
-                << _points[i].viewList.size() << " ";
+        PROGBAR_UPDATE(i, nPoints);
+        f << std::scientific
+          << std::setprecision(16)
+          << _points[i].position[0] << " "
+          << _points[i].position[1] << " "
+          << _points[i].position[2] << "\n"
+          // Color
+          << int(_points[i].color.r) << " "
+          << int(_points[i].color.g) << " "
+          << int(_points[i].color.b) << "\n"
+          // View list
+          << _points[i].viewList.size() << " ";
 
         // The view list
         for(int j = 0, jEnd = _points[i].viewList.size(); j < jEnd; j++) {
-            f
-                    << _points[i].viewList[j].camera << " "
-                    << _points[i].viewList[j].key << " "
-                    << _points[i].viewList[j].keyPosition(0) << " " << _points[i].viewList[j].keyPosition(1) << " ";
+            f  << _points[i].viewList[j].camera << " "
+               << _points[i].viewList[j].key << " "
+               << _points[i].viewList[j].keyPosition(0) << " " << _points[i].viewList[j].keyPosition(1) << " ";
             assert(_points[i].viewList[j].camera >= 0 && _points[i].viewList[j].camera < nCameras);
         }
         f << "\n";
@@ -591,8 +585,14 @@ BDATA::BundlerData::buildCam2PointIndex()
 
     int pntIdx = 0;
     for(PointInfo::Vector::iterator pnt = _points.begin(), pntEnd = _points.end(); pnt != pntEnd; pnt++, pntIdx++) {
-        for(PointEntry::Vector::iterator pe = pnt->viewList.begin(), peEnd = pnt->viewList.end(); pe != peEnd; pe++) {
-            _cameras[pe->camera].visiblePoints.push_back(pntIdx);
+        int peIdx = 0;
+        for(PointEntry::Vector::iterator pe = pnt->viewList.begin(), peEnd = pnt->viewList.end(); pe != peEnd; pe++, peIdx++) {
+
+            BDATA::PointVisListIdxs entry;
+            entry.visibilityListIdx = peIdx;
+            entry.pointIdx = pntIdx;
+
+            _cameras[pe->camera].visiblePoints.push_back(entry);
         }
     }
 

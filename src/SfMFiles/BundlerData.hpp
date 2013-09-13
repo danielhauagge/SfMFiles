@@ -39,9 +39,18 @@
 namespace BDATA
 {
 
+class Color
+{
+public:
+    Color(uint8_t r_ = 0, uint8_t g_ = 0, uint8_t b_ = 0): r(r_), g(g_), b(b_) {}
+
+    uint8_t r, g, b;
+};
+
 typedef struct {
-    unsigned char r, g, b;
-} Color;
+    int pointIdx;
+    int visibilityListIdx;
+} PointVisListIdxs;
 
 // Stores intrinsic and extrinsic camera parameters
 class Camera
@@ -54,7 +63,7 @@ public:
     // Indexes of visible points, not stored in bundle file and only
     // computed if extra flag is passed to BundlerData constructor or
     // function buildCam2PointIndex is called.
-    std::vector<int> visiblePoints;
+    std::vector<PointVisListIdxs> visiblePoints;
 
     // Extrinsic parameters
     Eigen::Vector3d translation;
@@ -149,7 +158,7 @@ public:
 
     //! Input/Output
     void readFile(const char* bundlerFileName, bool computeCam2PointIndex = false);
-    void writeFile(const char* bundlerFileName, bool ASCII = true) const;
+    void writeFile(const char* bundlerFileName) const;
 
     int getNCameras() const {
         return _cameras.size();
@@ -181,6 +190,7 @@ public:
         return _imageFNames;
     };
 
+    // TODO: Rename PointInfo -> Points and PointEntr -> VisibilityList
     PointInfo::Vector& getPointInfo() {
         return _points;
     };
@@ -195,7 +205,6 @@ public:
 
 protected:
     void _readFileASCII(boost::iostreams::filtering_istream& inputStream);
-    void _writeFileASCII(const char* bundlerFileName) const;
 
     void _updateNValidCams();
 

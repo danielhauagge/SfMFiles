@@ -137,3 +137,52 @@ getPNGSize(const char* fname, int& width, int& height)
 
     return 1;
 }
+
+void
+colormapValues(const std::vector<double>& values,
+               std::vector<Eigen::Vector3f>& colors,
+               std::string* mapping)
+{
+    std::vector<double> valuesSorted = values;
+    std::sort(valuesSorted.begin(), valuesSorted.end());
+    double quants[4];
+    quants[0] = valuesSorted[0];
+    quants[1] = valuesSorted[values.size() * 0.33];
+    quants[2] = valuesSorted[values.size() * 0.66];
+    quants[3] = valuesSorted[values.size() - 1];
+
+    Eigen::Vector3f quantColors[4] = {
+        Eigen::Vector3f(0, 0, 1),
+        Eigen::Vector3f(0, 1, 0),
+        Eigen::Vector3f(1, 1, 0),
+        Eigen::Vector3f(1, 0, 0)
+    };
+
+    if(mapping != NULL) {
+        std::stringstream mappingS;
+        mappingS << "Color mapping\n";
+        const char* fmt = "%6.2f -> Color = [%.1f, %.1f, %.1f]\n";
+        for (int i = 0; i < 4; i++) {
+            char buf[1000];
+            sprintf(buf, fmt, quants[i], quantColors[i][0], quantColors[i][1], quantColors[i][2]);
+            mappingS << buf;
+        }
+        *mapping = mappingS.str();
+    }
+
+    int idx = 0;
+    for(std::vector<Eigen::Vector3f>::iterator it = colors.begin(), itEnd = colors.end(); it != itEnd; it++, idx++) {
+        double value = values[idx];
+
+        int i = 0;
+        for(; value >= quants[i]; ++i);
+        i = std::min(i, 3);
+        assert(i >= 0 && i < 4);
+
+        float alpha = float(value - quants[i - 1]) / float(quants[i] - quants[i - 1]);
+
+        assert(alpha <= 1.0 && alpha >= 0.0);
+
+        *it = quantColors[i - 1] * alpha + (1.0 - alpha) * quantColors[i];
+    }
+}

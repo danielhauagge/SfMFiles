@@ -54,7 +54,6 @@ main(int argc, const char* argv[])
     using namespace BDATA;
     using namespace cmdc;
 
-
     OptionParser::Arguments args;
     OptionParser::Options opts;
 

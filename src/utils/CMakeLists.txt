@@ -4,7 +4,6 @@ TARGET_LINK_LIBRARIES(pmvs_info SfMFiles)
 ADD_EXECUTABLE(bundler_info bundler_info.cpp)
 TARGET_LINK_LIBRARIES(bundler_info SfMFiles)
 
-
 ADD_EXECUTABLE(pmvs_merge pmvs_merge.cpp)
 TARGET_LINK_LIBRARIES(pmvs_merge SfMFiles) 
 
@@ -14,9 +13,14 @@ TARGET_LINK_LIBRARIES(bundler_merge SfMFiles)
 ADD_EXECUTABLE(pmvs_filter pmvs_filter.cpp)
 TARGET_LINK_LIBRARIES(pmvs_filter SfMFiles)
 
+ADD_EXECUTABLE(bundler_filter bundler_filter.cpp)
+TARGET_LINK_LIBRARIES(bundler_filter SfMFiles)
+
 ADD_EXECUTABLE(pmvs2ply pmvs2ply.cpp)
 TARGET_LINK_LIBRARIES(pmvs2ply SfMFiles)
 
+ADD_EXECUTABLE(bundler2ply bundler2ply.cpp)
+TARGET_LINK_LIBRARIES(bundler2ply SfMFiles)
 
 ADD_EXECUTABLE(pmvs2bundler pmvs2bundler.cpp)
 TARGET_LINK_LIBRARIES(pmvs2bundler SfMFiles)
@@ -31,6 +35,8 @@ INSTALL_PROGRAMS(/bin FILES
                  pmvs_merge 
                  pmvs_info 
                  pmvs_filter 
+                 bundler_filter 
                  pmvs2ply 
+                 bundler2ply 
                  pmvs2bundler) 
 

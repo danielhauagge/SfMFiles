@@ -20,6 +20,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <SfMFiles/sfmfiles>
+#include "utils.hpp"
+#include "ply.hpp"
+
 using namespace BDATA;
 #include <CMDCore/optparser>
 
@@ -28,7 +31,19 @@ using namespace BDATA;
 #include <cmath>
 
 void
-recolorPatches(BDATA::PMVS::PMVSData& patches, const std::vector<double>& values)
+recolorPatches(BDATA::PMVS::PMVSData& patches, const std::vector<double>& values, std::string& colorMapping)
+{
+    std::vector<Eigen::Vector3f> colors(patches.getNPatches());
+    colormapValues(values, colors, &colorMapping);
+
+    std::vector<Eigen::Vector3f>::iterator c = colors.begin();
+    for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++, c++) {
+        patch->color = *c;
+    }
+}
+
+void
+recolorPatches2(BDATA::PMVS::PMVSData& patches, const std::vector<double>& values)
 {
     std::vector<double> valuesSorted = values;
     std::sort(valuesSorted.begin(), valuesSorted.end());
@@ -72,25 +87,21 @@ recolorPatches(BDATA::PMVS::PMVSData& patches, const std::vector<double>& values
 }
 
 void
-recolorByScore(BDATA::PMVS::PMVSData& patches, bool stretchValues = false)
+recolorByScore(BDATA::PMVS::PMVSData& patches, std::string& colorMapping)
 {
     using namespace BDATA;
-
-    stretchValues = true;
 
     std::vector<double> scores;
     for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
         scores.push_back(patch->score);
     }
 
-    recolorPatches(patches, scores);
+    recolorPatches(patches, scores, colorMapping);
 }
 
 void
-recolorByNumberOfCameras(BDATA::PMVS::PMVSData& patches, bool useGoodCams)
+recolorByNumberOfCameras(BDATA::PMVS::PMVSData& patches, bool useGoodCams, std::string& colorMapping)
 {
-    LOG_EXPR(useGoodCams);
-
     std::vector<double> patchNCams(patches.getNPatches());
     {
         int i = 0;
@@ -104,7 +115,7 @@ recolorByNumberOfCameras(BDATA::PMVS::PMVSData& patches, bool useGoodCams)
         }
     }
 
-    recolorPatches(patches, patchNCams);
+    recolorPatches(patches, patchNCams, colorMapping);
 }
 
 int
@@ -137,44 +148,33 @@ main(int argc, const char* argv[])
     bool useGoodCams = opts["useGoodCams"].asBool();
 
     PMVS::PMVSData pmvs(pmvsFName.c_str(), tryLoadOptions);
+    Ply ply;
 
-    if(colorByScore) recolorByScore(pmvs);
-    if(colorByNCams) recolorByNumberOfCameras(pmvs, useGoodCams);
+    std::stringstream comments;
+    comments << "Input filename: " << pmvsFName << "\n";
 
-    // Write PLY header
-    //FILE* plyF = fopen(plyFName.c_str(), "wb");
-    FILE* plyF = fopen(plyFName.c_str(), "w");
-    if(plyF == NULL) {
-        std::cout << "ERROR: Could not open file " << plyFName << " for writing" << std::endl;
-        return EXIT_FAILURE;
+    if(colorByScore) {
+        std::string colorMapping;
+        recolorByScore(pmvs, colorMapping);
+
+        comments << "Colored patches based on score\n" << colorMapping;
+    } else if(colorByNCams) {
+        std::string colorMapping;
+        recolorByNumberOfCameras(pmvs, useGoodCams, colorMapping);
+        comments << "Colored patches based on number of cameras that see a point\n" << colorMapping;
     }
-    fprintf(plyF, "ply\n");
-    //fprintf(plyF, "format binary_little_endian 1.0\n");
-    fprintf(plyF, "format ascii 1.0\n");
-    fprintf(plyF, "element vertex %d\n", int(pmvs.getNPatches()));
-    fprintf(plyF, "property float x\nproperty float y\nproperty float z\n");
-    fprintf(plyF, "property uchar diffuse_red\nproperty uchar diffuse_green\nproperty uchar diffuse_blue\nend_header\n");
 
-    LOG_INFO("Processing data");
+    ply.addComment(comments.str());
+
     PMVS::Patch::Vector::iterator patch = pmvs.getPatches().begin();;
     for(int i = 0; i < pmvs.getNPatches(); i++, patch++) {
-        for(int j = 0; j < 3; j++) {
-            float coord = patch->position[j];
-            //fwrite(&coord, sizeof(float), 1, plyF);
-            fprintf(plyF, "%f ", coord);
-        }
-
-        for(int j = 0; j < 3; j++) {
-            double color = patch->color[j];
-            //fwrite(&color, sizeof(float), 1, plyF);
-            fprintf(plyF, "%d ", (int)round(color * 255.0));
-        }
-        fprintf(plyF, "\n");
+        Eigen::Vector3d p(patch->position[0], patch->position[1], patch->position[2]);
+        Eigen::Vector3d n(patch->normal[0], patch->normal[1], patch->normal[2]);
+        Ply::Color c(patch->color[0] * 255, patch->color[1] * 255, patch->color[2] * 255);
+        ply.addVertex(p, n, c);
     }
 
-    fclose(plyF);
-
-
+    ply.writeToFile(plyFName);
 
     return EXIT_SUCCESS;
 }

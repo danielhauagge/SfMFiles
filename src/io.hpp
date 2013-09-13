@@ -21,26 +21,19 @@
 
 #include <SfMFiles/sfmfiles>
 
-#ifndef __UTILS_HPP__
-#define __UTILS_HPP__
+#ifndef __SFMF_IO_HPP__
+#define __SFMF_IO_HPP__
 
-/// Determines size of image (only reads first few bytes of file)
-/// @returns 0 on failure and non zero on success
-int getImageSize(const char* fname, int& width, int& height);
+// This class can read a standard text file or a GZip compressed
+// file. It checks the first few bytes of the file to determine
+// if it is a GZip file.
+class CompressedFileReader
+{
+public:
+    CompressedFileReader(const char* filename);
 
-/// Determines size of image stored as JPEG file (only reads first few bytes of file)
-/// @returns 0 on failure and non zero on success
-int getJPEGSize(const char* fname, int& width, int& height);
+private:
 
-/// Determines size of image stored as PNG file (only reads first few bytes of file)
-/// @returns 0 on failure and non zero on success
-int getPNGSize(const char* fname, int& width, int& height);
+};
 
-/// Computes a color mapping from a vector of real numbers
-/// @returns text describing the color mapping (to be inserted
-/// as a comment into the ply file)
-void colormapValues(const std::vector<double>& values,
-                    std::vector<Eigen::Vector3f>& colors,
-                    std::string* mapping = NULL);
-
-#endif // __UTILS_HPP__
+#endif // __SFMF_IO_HPP__
