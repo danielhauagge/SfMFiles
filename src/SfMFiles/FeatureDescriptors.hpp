@@ -28,9 +28,12 @@ class SIFTFeature
 {
 public:
     double x, y, scale, orientation;
-    uint8_t feature[128];
+    uint8_t descriptor[128];
 };
 
-void loadSIFTFeatures(const char* fname, std::vector<SIFTFeature>& features);
+std::ostream&
+operator<<(std::ostream& s, const SIFTFeature& f);
+
+void loadSIFT(const char* fname, std::vector<SIFTFeature>& features);
 
 #endif // __FEATURE_DESCRIPTORS_HPP__

@@ -9,3 +9,9 @@ TARGET_LINK_LIBRARIES(test_bundler_camera SfMFiles)
 
 ADD_EXECUTABLE(test_utils test_utils.cpp)
 TARGET_LINK_LIBRARIES(test_utils SfMFiles)
+
+ADD_EXECUTABLE(test_io test_io.cpp)
+TARGET_LINK_LIBRARIES(test_io SfMFiles)
+
+ADD_EXECUTABLE(test_feature_descriptors test_feature_descriptors.cpp)
+TARGET_LINK_LIBRARIES(test_feature_descriptors SfMFiles)

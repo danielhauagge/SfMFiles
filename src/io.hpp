@@ -26,14 +26,27 @@
 
 // This class can read a standard text file or a GZip compressed
 // file. It checks the first few bytes of the file to determine
-// if it is a GZip file.
+// if the file was compressed.
 class CompressedFileReader
 {
 public:
     CompressedFileReader(const char* filename);
 
-private:
+    template<typename T>
+    friend
+    CompressedFileReader&
+    operator>>(CompressedFileReader& r, T& v);
 
+private:
+    boost::iostreams::filtering_istream _in;
 };
+
+template<typename T>
+CompressedFileReader&
+operator>>(CompressedFileReader& r, T& v)
+{
+    r._in >> v;
+    return r;
+}
 
 #endif // __SFMF_IO_HPP__

@@ -63,6 +63,7 @@ ENDIF (APPLE)
 ADD_LIBRARY( SfMFiles 
   SHARED 
   utils.hpp                       utils.cpp
+  io.hpp                          io.cpp
   ply.hpp                         ply.cpp
   SfMFiles/FeatureDescriptors.hpp FeatureDescriptors.cpp
   SfMFiles/BundlerData.hpp        BundlerData.cpp  
