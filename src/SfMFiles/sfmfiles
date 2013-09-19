@@ -91,5 +91,6 @@ public:
 
 #include <SfMFiles/BundlerData.hpp>
 #include <SfMFiles/PMVSData.hpp>
+#include <SfMFiles/FeatureDescriptors.hpp>
 
 #endif // __SFMFILES__
