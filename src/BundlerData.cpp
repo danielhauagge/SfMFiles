@@ -21,6 +21,7 @@
 
 #include "SfMFiles/BundlerData.hpp"
 #include "utils.hpp"
+#include "io.hpp"
 
 #include <iomanip>
 
@@ -600,8 +601,34 @@ BDATA::BundlerData::buildCam2PointIndex()
 }
 
 int
-BDATA::BundlerData::getImageSizeForCamera(int camIdx, int& width, int& height) const
+BDATA::BundlerData::getImageSizeForCamera(int camIdx, int& width, int& height, bool throwException) const
 {
     assert(listFileLoaded());
-    return getImageSize(_imageFNames[camIdx].c_str(), width, height);
+    return getImageSize(_imageFNames[camIdx].c_str(), width, height, throwException);
+}
+
+int
+BDATA::BundlerData::loadSIFTFeaturesForCamera(int camIdx, std::vector<SIFTFeature>& sift, bool throwException) const
+{
+    std::string fname = _imageFNames[camIdx];
+    int dotIdx = fname.find_last_of(".");
+
+    std::string bname = fname.substr(dotIdx, fname.size());
+
+    const char* extensions[] = {".key", ".key.gz", NULL};
+    bool done;
+    for(int i = 0; (extensions[i] != NULL) && (!done); i++) {
+        std::string keyFName = bname + extensions[i];
+        done = loadSIFT(keyFName.c_str(), sift, false);
+    }
+
+    if(!done) {
+        if(throwException) {
+            std::stringstream errMsg;
+            errMsg << "Could not find keypoint file for camera  " << camIdx;
+            throw sfmf::IOError(errMsg.str());
+        } else return 0;
+    }
+
+    return 1;
 }

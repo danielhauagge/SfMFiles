@@ -13,6 +13,8 @@ test1(int argc, char** argv)
 
     LOG_EXPR(sift.size());
     std::cout << sift[0] << std::endl;
+
+    return EXIT_SUCCESS;
 }
 
 int

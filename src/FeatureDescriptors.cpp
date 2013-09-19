@@ -1,19 +1,29 @@
 #include "SfMFiles/FeatureDescriptors.hpp"
 #include "io.hpp"
 
-void
-loadSIFT(const char* fname, std::vector<SIFTFeature>& features)
+int
+loadSIFT(const char* fname, std::vector<SIFTFeature>& features, bool throwException)
 {
     CompressedFileReader f(fname);
+
+    if(!f.good()) {
+        if(throwException) {
+            std::stringstream errMsg;
+            errMsg << "Could not open file " << fname << " for reading";
+            throw sfmf::IOError(errMsg.str());
+        } else return 0;
+    }
 
     const int SIFT_DIM = 128;
 
     int nDesc, dim;
     f >> nDesc >> dim;
     if(dim != SIFT_DIM) {
-        std::stringstream errMsg;
-        errMsg << "Incompatible dimension for descriptor. Expecting " << SIFT_DIM << " but file desciptors are of size " << dim;
-        throw sfmf::Error(errMsg.str());
+        if(throwException) {
+            std::stringstream errMsg;
+            errMsg << "Incompatible dimension for descriptor. Expecting " << SIFT_DIM << " but file desciptors are of size " << dim;
+            throw sfmf::Error(errMsg.str());
+        } else return 0;
     }
 
     features.resize(nDesc);
@@ -28,13 +38,13 @@ loadSIFT(const char* fname, std::vector<SIFTFeature>& features)
             (*desc) = v;
         }
     }
+
+    return 1;
 }
 
 std::ostream&
 operator<<(std::ostream& s, const SIFTFeature& f)
 {
-    LOG_EXPR(sizeof(f.descriptor));
-
     s << f.x << " " << f.y << " " << f.scale << " " << f.orientation << "\n";
     const uint8_t* desc = f.descriptor;
 

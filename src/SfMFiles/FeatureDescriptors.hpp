@@ -19,10 +19,10 @@
 // OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <SfMFiles/sfmfiles>
+
 #ifndef __FEATURE_DESCRIPTORS_HPP__
 #define __FEATURE_DESCRIPTORS_HPP__
-
-#include <SfMFiles/sfmfiles>
 
 class SIFTFeature
 {
@@ -34,6 +34,6 @@ public:
 std::ostream&
 operator<<(std::ostream& s, const SIFTFeature& f);
 
-void loadSIFT(const char* fname, std::vector<SIFTFeature>& features);
+int loadSIFT(const char* fname, std::vector<SIFTFeature>& features, bool throwException = true);
 
 #endif // __FEATURE_DESCRIPTORS_HPP__

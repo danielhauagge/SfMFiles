@@ -26,15 +26,15 @@
 
 /// Determines size of image (only reads first few bytes of file)
 /// @returns 0 on failure and non zero on success
-int getImageSize(const char* fname, int& width, int& height);
+int getImageSize(const char* fname, int& width, int& height, bool throwException = true);
 
 /// Determines size of image stored as JPEG file (only reads first few bytes of file)
 /// @returns 0 on failure and non zero on success
-int getJPEGSize(const char* fname, int& width, int& height);
+int getJPEGSize(const char* fname, int& width, int& height, bool throwException = true);
 
 /// Determines size of image stored as PNG file (only reads first few bytes of file)
 /// @returns 0 on failure and non zero on success
-int getPNGSize(const char* fname, int& width, int& height);
+int getPNGSize(const char* fname, int& width, int& height, bool throwException = true);
 
 /// Computes a color mapping from a vector of real numbers
 /// @returns text describing the color mapping (to be inserted

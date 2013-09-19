@@ -147,7 +147,7 @@ private:
     };
 
     // Statistics about the file
-    Stats _goodCamStats, _badCamStats;
+    Stats _goodCamStats, _badCamStats; /// FIXME: remove this stuff, move into pmvs_info
 
 public:
     typedef boost::shared_ptr<PMVSData> Ptr;

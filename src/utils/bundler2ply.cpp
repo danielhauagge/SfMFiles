@@ -77,7 +77,7 @@ main(int argc, const char* argv[])
 
     OptionParser optParser(&args, &opts);
     optParser.addUsage("<in:bundle.out> <out:bundle.ply>");
-    optParser.addDescription("Utility for converting from Bundler reconstructions to a .ply file");
+    optParser.addDescription("Convert Bundler reconstructions to the PLY file format.");
     // optParser.addFlag("colorByScore", "-s", "--color-score", "Change patches color to show the quality score.");
     optParser.addFlag("colorByNCams", "-c", "--color-n-cams", "Change point color to show the number of cameras a point sees.");
     optParser.addOption("camIdx", "-s", "IDX", "--points-seen-by-cam", "Change point color to show the number of cameras a point sees.", "-1");

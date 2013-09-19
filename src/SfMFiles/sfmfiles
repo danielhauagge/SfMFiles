@@ -80,6 +80,13 @@ public:
     }
 };
 
+class IOError: Error
+{
+public:
+    explicit IOError(const std::string what): Error(what) {
+    }
+};
+
 }
 
 #include <SfMFiles/BundlerData.hpp>

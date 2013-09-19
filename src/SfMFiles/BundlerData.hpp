@@ -24,6 +24,7 @@
 #define __BUNDLER_DATA_HPP__
 
 #include <SfMFiles/sfmfiles>
+#include <SfMFiles/FeatureDescriptors.hpp>
 
 // Author: Daniel Hauagge <hauagge@cs.cornell.edu>
 //   Date: 2011-04-03
@@ -146,7 +147,7 @@ public:
     void init(const char* bundleFileName, bool computeCam2PointIndex = false);
     void init(const Camera::Vector& cameras, const PointInfo::Vector& points);
 
-    //! Load file with image filenames
+    /// Load file with image filenames
     void readListFile(const char* listFName);
     void writeListFile(const char* listFName) const;
     bool listFileLoaded() const;
@@ -156,7 +157,7 @@ public:
         return _bundleFName.c_str();
     };
 
-    //! Input/Output
+    /// Input/Output
     void readFile(const char* bundlerFileName, bool computeCam2PointIndex = false);
     void writeFile(const char* bundlerFileName) const;
 
@@ -172,12 +173,18 @@ public:
 
     void buildCam2PointIndex();
 
-    // Returns size of image by looking at the header of the image file
-    // Assumes that the list file was loaded.
-    // @returns 0 for failure and non zero otherwise
-    int getImageSizeForCamera(int camIdx, int& width, int& height) const;
+    /// Returns size of image by looking at the header of the image file
+    /// Assumes that the list file was loaded.
+    /// @returns 0 for failure and non zero otherwise
+    int getImageSizeForCamera(int camIdx, int& width, int& height, bool throwException = false) const;
 
-    //! Accessors
+    /// Loads sift features for a given camera. Uses image filename to
+    /// generate the keypoint filename by replacing the image file extension
+    /// with .key and .key.gz (tries to load both).
+    /// @returns 0 for failure and non zero otherwise
+    int loadSIFTFeaturesForCamera(int camIdx, std::vector<SIFTFeature>& sift, bool throwException = false) const;
+
+    /// Accessors
     const PointInfo::Vector& getPointInfo() const {
         return _points;
     };
@@ -205,14 +212,13 @@ public:
 
 protected:
     void _readFileASCII(boost::iostreams::filtering_istream& inputStream);
-
     void _updateNValidCams();
 
 private:
     Camera::Vector _cameras;
     PointInfo::Vector _points;
     int _nValidCams;
-    bool _cam2PointIndexInitialized; // Weather or not to compute index Camera to visible points
+    bool _cam2PointIndexInitialized;
 
     std::string _listFName, _bundleFName;
     std::vector<std::string> _imageFNames;
@@ -222,4 +228,4 @@ private:
 
 std::istream& operator>> (std::istream& s, BDATA::Camera& cam);
 
-#endif
+#endif // __BUNDLER_DATA_HPP__

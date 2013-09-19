@@ -3,13 +3,15 @@
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/device/file.hpp>
 
-CompressedFileReader::CompressedFileReader(const char* fname)
+CompressedFileReader::CompressedFileReader(const char* fname, bool throwException)
 {
     FILE* file = fopen(fname, "rb");
     if(file == NULL) {
-        std::stringstream errMsg;
-        errMsg << "Could not open " << fname << " for reading";
-        throw sfmf::Error(errMsg.str().c_str());
+        if(throwException) {
+            std::stringstream errMsg;
+            errMsg << "Could not open " << fname << " for reading";
+            throw sfmf::Error(errMsg.str().c_str());
+        } else return;
     }
 
     // Read the first two bites
@@ -24,10 +26,11 @@ CompressedFileReader::CompressedFileReader(const char* fname)
     }
 
     _in.push(boost::iostreams::file_source(fname));
-    if(!_in) {
-        std::stringstream err;
-        err << "Could not read file " << fname;
-        throw sfmf::Error(err.str());
-        return;
+    if(!_in.good()) {
+        if(throwException) {
+            std::stringstream err;
+            err << "Could not read file " << fname;
+            throw sfmf::Error(err.str());
+        } else return;
     }
 }

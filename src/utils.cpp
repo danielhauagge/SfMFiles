@@ -90,24 +90,29 @@ hasExtension(std::string fname, const char* exts[])
 }
 
 int
-getImageSize(const char* fname, int& width, int& height)
+getImageSize(const char* fname, int& width, int& height, bool throwException)
 {
     const char* jpgExts[]  = {".jpg", ".jpeg", NULL};
     const char* pngExts[]  = {".png", NULL};
 
     if(hasExtension(fname, jpgExts)) {
-        return getJPEGSize(fname, width, height);
+        return getJPEGSize(fname, width, height, throwException);
     } else if(hasExtension(fname, pngExts)) {
-        return getPNGSize(fname, width, height);
+        return getPNGSize(fname, width, height, throwException);
     }
     return 0;
 }
 
 int
-getJPEGSize(const char* fname, int& width, int& height)
+getJPEGSize(const char* fname, int& width, int& height, bool throwException)
 {
     FILE* file = fopen(fname, "rb");
     if(file == NULL) {
+        if(throwException) {
+            std::stringstream err;
+            err << "Could not open file " << fname << " for reading";
+            throw sfmf::IOError(err.str());
+        }
         return 0;
     }
 
@@ -118,11 +123,18 @@ getJPEGSize(const char* fname, int& width, int& height)
 }
 
 int
-getPNGSize(const char* fname, int& width, int& height)
+getPNGSize(const char* fname, int& width, int& height, bool throwException)
 {
     // Ref: http://stackoverflow.com/questions/5354459/c-how-to-get-the-image-size-of-a-png-file-in-directory
     std::ifstream in(fname);
-    if(!in.good()) return 0;
+    if(!in.good()) {
+        if(throwException) {
+            std::stringstream err;
+            err << "Could not open file " << fname << " for reading";
+            throw sfmf::IOError(err.str());
+        }
+        return 0;
+    }
 
     unsigned int widthTmp, heightTmp;
 

@@ -99,7 +99,5 @@ main(int argc, const char* argv[])
     LOG_INFO("Writing " << outBundleFName);
     bundle->writeFile(outBundleFName.c_str());
 
-
-
     return EXIT_SUCCESS;
 }

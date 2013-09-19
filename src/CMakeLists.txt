@@ -97,7 +97,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 ELSE()  
   INSTALL_FILES(/include/SfMFiles FILES SfMFiles/sfmfiles)
-  INSTALL_FILES(/include/SfMFiles .hpp SfMFiles/BundlerData.hpp SfMFiles/PMVSData.hpp)
+  INSTALL_FILES(/include/SfMFiles .hpp SfMFiles/BundlerData.hpp SfMFiles/PMVSData.hpp SfMFiles/FeatureDescriptors.hpp)
   INSTALL_TARGETS(/lib SfMFiles)
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
 

@@ -30,7 +30,11 @@
 class CompressedFileReader
 {
 public:
-    CompressedFileReader(const char* filename);
+    CompressedFileReader(const char* filename, bool throwException = true);
+
+    bool good() {
+        return _in.good();
+    }
 
     template<typename T>
     friend
