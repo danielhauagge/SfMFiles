@@ -73,7 +73,7 @@ public:
     Eigen::Vector4d position, normal;
     double score; // Photometric consistency score, stays within -1 and 1 (good score)
     double debug1, debug2; // Numbers contained in the .patch file that are for debugging purposes
-    std::vector<uint32_t> goodCameras; // To which cameras is this point visible?
+    std::vector<uint32_t> goodCameras; // Which cameras see this point?
     std::vector<uint32_t> badCameras;
 
     Eigen::Vector3f color;

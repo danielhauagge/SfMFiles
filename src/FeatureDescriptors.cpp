@@ -4,7 +4,7 @@
 int
 loadSIFT(const char* fname, std::vector<SIFTFeature>& features, bool throwException)
 {
-    CompressedFileReader f(fname);
+    CompressedFileReader f(fname, throwException);
 
     if(!f.good()) {
         if(throwException) {

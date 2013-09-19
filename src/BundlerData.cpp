@@ -130,16 +130,18 @@ BDATA::Camera::im2world(const Eigen::Vector2d& im, Eigen::Vector3d& w,
 void
 BDATA::Camera::im2cam(const Eigen::Vector2d& im, Eigen::Vector3d& c, int imWidth, int imHeight) const
 {
-    c[0] =  (  imWidth / 2 - im[0]) / focalLength;
-    c[1] = -( imHeight / 2 - im[1]) / focalLength;
+    c[0] =  (  imWidth / 2.0 - im[0]) / focalLength;
+    c[1] = -( imHeight / 2.0 - im[1]) / focalLength;
     c[2] = -1.0;
 }
 
-void
+bool
 BDATA::Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d& im,
                       bool applyRadialDistortion,
                       int imWidth, int imHeight) const
 {
+    bool isInFront = c[2] < 0.0;
+    bool badZ = c[2] == 0.0;
     c /= -c[2];
 
     double r = 1.0;
@@ -149,18 +151,25 @@ BDATA::Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d& im,
         r = 1.0 + k1 * cNorm2 + k2 * std::pow(cNorm2, 2.0);
     }
 
-    im[0] = imWidth / 2 + r * c[0] * focalLength;
-    im[1] = imHeight / 2 + r * c[1] * focalLength;
+    im[0] = imWidth / 2.0 + r * c[0] * focalLength;
+    im[1] = imHeight / 2.0 + r * c[1] * focalLength;
+
+    bool isInsideImage = true;
+    if(imWidth > 0 && imHeight > 0) {
+        isInsideImage = (im[0] >= 0) && (im[0] < imWidth) && (im[1] >= 0) && (im[1] < imHeight);
+    }
+
+    return isInsideImage && isInFront && !badZ;
 }
 
-void
+bool
 BDATA::Camera::world2im(const Eigen::Vector3d& w, Eigen::Vector2d& im,
                         bool applyRadialDistortion,
                         int imWidth, int imHeight) const
 {
     Eigen::Vector3d c;
     world2cam(w, c);
-    cam2im(c, im, applyRadialDistortion, imWidth, imHeight);
+    return cam2im(c, im, applyRadialDistortion, imWidth, imHeight);
 }
 
 void
@@ -222,7 +231,7 @@ BDATA::Camera::invIntrinsicMatrix(int imWidth, int imHeight, Eigen::Matrix3d& in
     invK(1, 1) = -1.0 / focalLength;
     invK(0, 2) = -imWidth  / (focalLength * 2.0);
     invK(1, 2) =  imHeight / (focalLength * 2.0);
-    invK(2, 2) = -1;
+    invK(2, 2) = -1.0;
 }
 
 void
@@ -613,7 +622,7 @@ BDATA::BundlerData::loadSIFTFeaturesForCamera(int camIdx, std::vector<SIFTFeatur
     std::string fname = _imageFNames[camIdx];
     int dotIdx = fname.find_last_of(".");
 
-    std::string bname = fname.substr(dotIdx, fname.size());
+    std::string bname = fname.substr(0, dotIdx);
 
     const char* extensions[] = {".key", ".key.gz", NULL};
     bool done;

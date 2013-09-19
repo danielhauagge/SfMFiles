@@ -1,4 +1,5 @@
 #include <SfMFiles/sfmfiles>
+#include "../ply.hpp"
 
 int
 test1(int argc, char const* argv[])
@@ -99,6 +100,83 @@ test4(int argc, char const* argv[])
 }
 
 int
+test5(int argc, char const* argv[])
+{
+    LOG_INFO("Visibility computation");
+
+    BDATA::Camera cam;
+    cam.focalLength = 2;
+
+    Ply ply;
+    Ply::Color red(250, 100, 100);
+    Ply::Color green(100, 255, 100);
+    Ply::Color blue(100, 100, 255);
+
+    int imW = 1;
+    int imH = 1;
+
+    double r = 1;
+
+    for(double phi = 0; phi < M_PI; phi += M_PI / 180.) {
+        for(double theta = 0; theta < 2 * M_PI; theta += M_PI / 180.) {
+            Eigen::Vector3d pnt(r * cos(theta) * sin(phi), r * sin(theta) * sin(phi), r * cos(phi));
+
+            Eigen::Vector2d pntIm;
+            if(cam.world2im(pnt, pntIm, false, imW, imH)) {
+                ply.addVertex(pnt, green);
+            } else {
+                ply.addVertex(pnt, red);
+            }
+        }
+    }
+
+    ply.addCamera(cam, imW, imH, blue);
+
+    std::string plyFName = "/tmp/test5.ply";
+    LOG_INFO("Writing file " << plyFName);
+    ply.writeToFile(plyFName);
+
+    return EXIT_SUCCESS;
+}
+
+int
+test6(int argc, char const* argv[])
+{
+    LOG_INFO("Testing im2world");
+    BDATA::Camera cam;
+    cam.focalLength = 0.5;
+
+    Eigen::Vector3d camCenter;
+    cam.center(camCenter);
+
+    double imWidth = 1.0;
+    double imHeight = 1.0;
+
+    double imCorners[4][2] = {
+        { 0,  0},
+        { imWidth,  0},
+        { imWidth, imHeight},
+        { 0, imHeight}
+    };
+
+    double trueWorld[4][3] {
+        {  1, -1, -1},
+        { -1, -1, -1},
+        { -1,  1, -1},
+        {  1,  1, -1}
+    };
+
+    for (int i = 0; i < 4; i++) {
+        Eigen::Vector2d im(imCorners[i][0], imCorners[i][1]);
+        Eigen::Vector3d world;
+        cam.im2world(im, world, imWidth, imHeight);
+        //LOG_EXPR(world.transpose());
+
+        assert((world - Eigen::Vector3d(trueWorld[i][0], trueWorld[i][1], trueWorld[i][2])).norm() < 0.00000001);
+    }
+}
+
+int
 main(int argc, char const* argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
@@ -123,10 +201,15 @@ main(int argc, char const* argv[])
     case 4:
         return test4(argc - 2, &argv[2]);
         break;
+    case 5:
+        return test5(argc - 2, &argv[2]);
+        break;
+    case 6:
+        return test6(argc - 2, &argv[2]);
+        break;
     default:
         LOG_WARN("Invalid number for test " << testNum);
     }
-
 
     return EXIT_SUCCESS;
 }

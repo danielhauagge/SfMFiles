@@ -76,11 +76,14 @@ public:
 
     // Coordinate transforms
     void im2world(const Eigen::Vector2d& im, Eigen::Vector3d& w, int imWidth = 0, int imHeight = 0) const;
-    void world2im(const Eigen::Vector3d& w, Eigen::Vector2d& im, bool applyRadialDistortion = false, int imWidth = 0, int imHeight = 0) const;
     void im2cam(const Eigen::Vector2d& im, Eigen::Vector3d& c, int imWidth = 0, int imHeight = 0) const;
-    void cam2im(Eigen::Vector3d c, Eigen::Vector2d& im, bool applyRadialDistortion, int imWidth = 0, int imHeight = 0) const;
     void cam2world(const Eigen::Vector3d& c, Eigen::Vector3d& w) const;
     void world2cam(const Eigen::Vector3d& w, Eigen::Vector3d& c) const;
+
+    /// @returns true if point lies inside image (if width or height were given) and is in front of camera
+    bool world2im(const Eigen::Vector3d& w, Eigen::Vector2d& im, bool applyRadialDistortion = false, int imWidth = 0, int imHeight = 0) const;
+    /// @returns true if point lies inside image (if width or height were given) and is in front of camera
+    bool cam2im(Eigen::Vector3d c, Eigen::Vector2d& im, bool applyRadialDistortion, int imWidth = 0, int imHeight = 0) const;
 
     // Outputs image coordinates that agree with PMVS (origin at upper left of image, x points right, y points down, pixel centered at (0.5, 0.5))
     void world2imPmvs(const Eigen::Vector3d& w, Eigen::Vector2d& im, bool applyRadialDistortion, int imWidth, int imHeight) const;

@@ -38,10 +38,10 @@ Ply::addCamera(const BDATA::Camera& cam, int imWidth, int imHeight, const Color&
     size_t idxCenter = addVertex(camCenter);
 
     double imCorners[4][2] = {
-        { 0,  0},
-        { imWidth,  0},
+        {       0,        0},
+        { imWidth,        0},
         { imWidth, imHeight},
-        { 0, imHeight}
+        {       0, imHeight}
     };
 
     size_t edgeIdxs[4];
@@ -64,8 +64,9 @@ Ply::addCamera(const BDATA::Camera& cam, int imWidth, int imHeight, const Color&
 
     // Mark up direction
     if(imWidth > 0 && imHeight > 0) {
-        Eigen::Vector2d imTopIm(0, imHeight / 2);
+        Eigen::Vector2d imTopIm(0, imHeight / 2.0);
         Eigen::Vector2d imCenterIm(0, 0);
+
         Eigen::Vector3d imTopW, imCenterW;
         cam.im2world(imTopIm, imTopW);
         cam.im2world(imCenterIm, imCenterW);
