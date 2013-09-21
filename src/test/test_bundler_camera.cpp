@@ -10,7 +10,7 @@ test1(int argc, char const* argv[])
                           "0.00000000000000000000 -1.00000000000000000000 -0.00000016292068494295 \n"
                           "-0.00000000000000000000 -0.00000065168273977179 -4.00000000000000000000 \n";
 
-    LOG_INFO("Taka a point that is in front of the camera to image coordinates and back and make sure that both lie on the same side of the camera");
+    LOG_INFO("Take a point that is in front of the camera to image coordinates and back and make sure that both lie on the same side of the camera");
     std::istringstream cam1S(cam1Str);
     BDATA::Camera cam;
     int width = 500, height = 500;

@@ -140,26 +140,29 @@ BDATA::Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d& im,
                       bool applyRadialDistortion,
                       int imWidth, int imHeight) const
 {
-    bool isInFront = c[2] < 0.0;
-    bool badZ = c[2] == 0.0;
+    applyRadialDistortion = applyRadialDistortion && (k1 != 0.0 || k2 != 0.0);
+
+    bool isInFrontOfCamera = c[2] < 0.0;
+    bool badZ = c[2] == 0.0; // point is at the center of projection
     c /= -c[2];
 
-    double r = 1.0;
-
-    if(applyRadialDistortion && (k1 != 0.0 || k2 != 0.0)) {
+    if(applyRadialDistortion) {
         double cNorm2 = std::pow(c[0], 2.0) + std::pow(c[1], 2.0);
-        r = 1.0 + k1 * cNorm2 + k2 * std::pow(cNorm2, 2.0);
+        double r = 1.0 + k1 * cNorm2 + k2 * std::pow(cNorm2, 2.0);
+
+        c[0] *= r;
+        c[1] *= r;
     }
 
-    im[0] = imWidth / 2.0 + r * c[0] * focalLength;
-    im[1] = imHeight / 2.0 + r * c[1] * focalLength;
+    im[0] = imWidth / 2.0 + c[0] * focalLength;
+    im[1] = imHeight / 2.0 + c[1] * focalLength;
 
     bool isInsideImage = true;
     if(imWidth > 0 && imHeight > 0) {
         isInsideImage = (im[0] >= 0) && (im[0] < imWidth) && (im[1] >= 0) && (im[1] < imHeight);
     }
 
-    return isInsideImage && isInFront && !badZ;
+    return isInsideImage && isInFrontOfCamera && !badZ;
 }
 
 bool

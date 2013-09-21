@@ -80,7 +80,7 @@ main(int argc, const char* argv[])
     optParser.addDescription("Convert Bundler reconstructions to the PLY file format.");
     // optParser.addFlag("colorByScore", "-s", "--color-score", "Change patches color to show the quality score.");
     optParser.addFlag("colorByNCams", "-c", "--color-n-cams", "Change point color to show the number of cameras a point sees.");
-    optParser.addOption("camIdx", "-s", "IDX", "--points-seen-by-cam", "Change point color to show the number of cameras a point sees.", "-1");
+    optParser.addOption("camIdx", "-s", "IDX", "--points-seen-by-cam", "Change point color to show which points are seen by a given camera.", "-1");
     optParser.setNArguments(2, 2);
     optParser.parse(argc, argv);
 
