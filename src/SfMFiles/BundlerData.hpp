@@ -79,9 +79,14 @@ public:
     void im2cam(const Eigen::Vector2d& im, Eigen::Vector3d& c, int imWidth = 0, int imHeight = 0) const;
     void cam2world(const Eigen::Vector3d& c, Eigen::Vector3d& w) const;
     void world2cam(const Eigen::Vector3d& w, Eigen::Vector3d& c) const;
+    void world2cam(const Eigen::Vector4d& w, Eigen::Vector3d& c) const;
 
     /// @returns true if point lies inside image (if width or height were given) and is in front of camera
     bool world2im(const Eigen::Vector3d& w, Eigen::Vector2d& im, bool applyRadialDistortion = false, int imWidth = 0, int imHeight = 0) const;
+
+    /// @returns true if point lies inside image (if width or height were given) and is in front of camera
+    bool world2im(const Eigen::Vector4d& w, Eigen::Vector2d& im, bool applyRadialDistortion = false, int imWidth = 0, int imHeight = 0) const;
+
     /// @returns true if point lies inside image (if width or height were given) and is in front of camera
     bool cam2im(Eigen::Vector3d c, Eigen::Vector2d& im, bool applyRadialDistortion, int imWidth = 0, int imHeight = 0) const;
 

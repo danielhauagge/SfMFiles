@@ -175,6 +175,16 @@ BDATA::Camera::world2im(const Eigen::Vector3d& w, Eigen::Vector2d& im,
     return cam2im(c, im, applyRadialDistortion, imWidth, imHeight);
 }
 
+bool
+BDATA::Camera::world2im(const Eigen::Vector4d& w, Eigen::Vector2d& im,
+                        bool applyRadialDistortion,
+                        int imWidth, int imHeight) const
+{
+    Eigen::Vector3d c;
+    world2cam(w, c);
+    return cam2im(c, im, applyRadialDistortion, imWidth, imHeight);
+}
+
 void
 BDATA::Camera::cam2imPmvs(Eigen::Vector3d c, Eigen::Vector2d& im,
                           bool applyRadialDistortion,
@@ -203,6 +213,12 @@ void
 BDATA::Camera::world2cam(const Eigen::Vector3d& w, Eigen::Vector3d& c) const
 {
     c = rotation * w + translation;
+}
+
+void
+BDATA::Camera::world2cam(const Eigen::Vector4d& w, Eigen::Vector3d& c) const
+{
+    c = rotation * w.block(0, 0, 3, 1) + translation * w(3);
 }
 
 void

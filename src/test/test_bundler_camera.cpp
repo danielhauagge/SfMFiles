@@ -1,3 +1,5 @@
+#undef NDEBUG
+
 #include <SfMFiles/sfmfiles>
 #include "../ply.hpp"
 
@@ -177,6 +179,36 @@ test6(int argc, char const* argv[])
 }
 
 int
+test7(int argc, char const* argv[])
+{
+    LOG_INFO("Testing world2cam with 3d and 4d vectors");
+
+    const char* camStr = "7.0008849479e+02 -7.0992716605e-02 -2.8653295186e-02\n"
+                         "9.9240045398e-01 -1.1447615454e-01 4.5128139672e-02\n"
+                         "9.6516563784e-02 9.5165945078e-01 2.9159705528e-01\n"
+                         "-7.6327530178e-02 -2.8502543707e-01 9.5547611606e-01\n"
+                         "1.8342005790e-01 9.7561838757e-01 -8.2822559093e-01";
+
+    std::istringstream camS(camStr);
+    BDATA::Camera cam;
+    camS >> cam;
+
+    Eigen::Vector3d p3d(1, 2, 3);
+    Eigen::Vector4d p4d(1, 2, 3, 1);
+
+    Eigen::Vector3d p3dCam, p4dCam;
+    cam.world2cam(p3d, p3dCam);
+    cam.world2cam(p4d, p4dCam);
+
+    LOG_EXPR(p3dCam.transpose());
+    LOG_EXPR(p4dCam.transpose());
+
+    assert((p3dCam - p4dCam).norm() < 0.000001);
+
+    return EXIT_SUCCESS;
+}
+
+int
 main(int argc, char const* argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
@@ -206,6 +238,9 @@ main(int argc, char const* argv[])
         break;
     case 6:
         return test6(argc - 2, &argv[2]);
+        break;
+    case 7:
+        return test7(argc - 2, &argv[2]);
         break;
     default:
         LOG_WARN("Invalid number for test " << testNum);

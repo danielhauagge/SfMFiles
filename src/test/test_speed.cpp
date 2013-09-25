@@ -1,3 +1,5 @@
+#undef NDEBUG
+
 #include <SfMFiles/sfmfiles>
 #include <iostream>
 
@@ -54,7 +56,6 @@ test4_forloop_float()
 int
 main(int argc, char const* argv[])
 {
-
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 
     int testCase = atoi(argv[1]);

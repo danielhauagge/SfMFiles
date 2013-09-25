@@ -1,3 +1,5 @@
+#undef NDEBUG
+
 #include <SfMFiles/sfmfiles>
 #include "../io.hpp"
 
