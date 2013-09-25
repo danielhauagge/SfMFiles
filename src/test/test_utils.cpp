@@ -9,9 +9,12 @@ test1(int argc, char const* argv[])
     const char* imFName = argv[0];
 
     int width, height;
-    getImageSize(imFName, width, height);
-    LOG_EXPR(width);
-    LOG_EXPR(height);
+    if(getImageSize(imFName, width, height)) {
+        LOG_EXPR(width);
+        LOG_EXPR(height);
+    } else {
+        LOG_WARN("Could not determine size of image " << imFName);
+    }
 
     return EXIT_SUCCESS;
 }

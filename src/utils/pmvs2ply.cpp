@@ -43,50 +43,6 @@ recolorPatches(BDATA::PMVS::PMVSData& patches, const std::vector<double>& values
 }
 
 void
-recolorPatches2(BDATA::PMVS::PMVSData& patches, const std::vector<double>& values)
-{
-    std::vector<double> valuesSorted = values;
-    std::sort(valuesSorted.begin(), valuesSorted.end());
-    double quants[4];
-    quants[0] = valuesSorted[0];
-    quants[1] = valuesSorted[patches.getNPatches() * 0.33];
-    quants[2] = valuesSorted[patches.getNPatches() * 0.66];
-    quants[3] = valuesSorted[patches.getNPatches() - 1];
-
-    for (int i = 0; i < 4; i++) {
-        LOG_EXPR(quants[i]);
-    }
-
-    Eigen::Vector3f quantColors[4] = {
-        Eigen::Vector3f(0, 0, 1),
-        Eigen::Vector3f(0, 1, 0),
-        Eigen::Vector3f(1, 1, 0),
-        Eigen::Vector3f(1, 0, 0)
-    };
-
-    const char* fmt = "%6.2f -> Color = [%.1f, %.1f, %.1f]\n";
-    for (int i = 0; i < 4; i++) {
-        printf(fmt, quants[i], quantColors[i][0], quantColors[i][1], quantColors[i][2]);
-    }
-
-    int patchIdx = 0;
-    for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++, patchIdx++) {
-        double value = values[patchIdx];
-
-        int i = 0;
-        for(; value >= quants[i]; ++i);
-        i = std::min(i, 3);
-        assert(i >= 0 && i < 4);
-
-        float alpha = float(value - quants[i - 1]) / float(quants[i] - quants[i - 1]);
-
-        assert(alpha <= 1.0 && alpha >= 0.0);
-
-        patch->color = quantColors[i - 1] * alpha + (1.0 - alpha) * quantColors[i];
-    }
-}
-
-void
 recolorByScore(BDATA::PMVS::PMVSData& patches, std::string& colorMapping)
 {
     using namespace BDATA;

@@ -75,13 +75,13 @@ main(int argc, const char* argv[])
     std::string inPmvsFName = args[0];
     std::string outPmvsFName = args[1];
 
-    float frac = opts["subsampleFraction"].asFloat();
+    double frac = opts["subsampleFraction"].asFloat();
 
     bool tryLoadOptions = !opts["dontLoadOption"].asBool();
 
     bool useBoundingSphere = 0;
     Eigen::Vector4d spherePos;
-    float sphereRadius = 0;
+    double sphereRadius = 0;
     if(opts.count("boundingSphere") != 0) {
         useBoundingSphere = 1;
 
@@ -96,6 +96,8 @@ main(int argc, const char* argv[])
             spherePos[i] = atof(tokens[i].c_str());
         }
         spherePos[3] = 1;
+
+        LOG_EXPR(spherePos);
 
         sphereRadius = atof(tokens[3].c_str());
     }
@@ -132,7 +134,8 @@ main(int argc, const char* argv[])
 
     LOG_INFO(nOutsideSphere << " points discarded because they were outside the bounding sphere");
     LOG_INFO(nDiscardedSampling << " points discarded by sampling");
-    LOG_INFO(patchFiltered.size() << "/" << pmvs.getNPatches() << " points kept");
+    double fracKept = 100.0 * double(patchFiltered.size()) / pmvs.getNPatches();
+    LOG_INFO(patchFiltered.size() << "/" << pmvs.getNPatches() << " points kept (" << fracKept << "%)");
 
     pmvsFiltered.writeFile(outPmvsFName.c_str());
 

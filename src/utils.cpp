@@ -82,8 +82,11 @@ hasExtension(std::string fname, const char* exts[])
 {
     std::transform(fname.begin(), fname.end(), fname.begin(), ::tolower);
 
+    size_t fnameLen = fname.size();
     for(int i = 0; exts[i] != NULL; i++) {
-        if(strstr(fname.c_str(), exts[i]) != NULL) return true;
+        size_t extLen = strlen(exts[i]);
+        if(extLen > fnameLen) continue;
+        if(strcasecmp(fname.c_str() + fnameLen - extLen, exts[i]) == 0) return true;
     }
 
     return false;

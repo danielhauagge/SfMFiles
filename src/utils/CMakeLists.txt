@@ -31,10 +31,14 @@ TARGET_LINK_LIBRARIES(bundler_rmdups SfMFiles)
 ADD_EXECUTABLE(bundler_transform bundler_transform.cpp)
 TARGET_LINK_LIBRARIES(bundler_transform SfMFiles)
 
+ADD_EXECUTABLE(bundler_focal2list bundler_focal2list.cpp)
+TARGET_LINK_LIBRARIES(bundler_focal2list SfMFiles)
+
 INSTALL_PROGRAMS(/bin FILES 
                  bundler_merge 
                  bundler_info  
                  bundler_transform  
+                 bundler_focal2list
                  pmvs_merge 
                  pmvs_info 
                  pmvs_filter 
