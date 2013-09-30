@@ -66,8 +66,8 @@ ADD_LIBRARY( SfMFiles
   io.hpp                          io.cpp
   ply.hpp                         ply.cpp
   SfMFiles/FeatureDescriptors.hpp FeatureDescriptors.cpp
-  SfMFiles/BundlerData.hpp        BundlerData.cpp  
-  SfMFiles/PMVSData.hpp           PMVSData.cpp            
+  SfMFiles/Bundler.hpp            Bundler.cpp  
+  SfMFiles/PMVS.hpp               PMVS.cpp            
   SfMFiles/sfmfiles )
 
 TARGET_LINK_LIBRARIES(SfMFiles ${Boost_LIBRARIES} ${CMDCORE_LIBRARIES})
@@ -86,7 +86,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   SET_TARGET_PROPERTIES( SfMFiles PROPERTIES
     FRAMEWORK TRUE
     FRAMEWORK_VERSION Current
-    PUBLIC_HEADER "SfMFiles/sfmfiles;SfMFiles/BundlerData.hpp;SfMFiles/PMVSData.hpp"
+    PUBLIC_HEADER "SfMFiles/sfmfiles;SfMFiles/Bundler.hpp;SfMFiles/PMVS.hpp"
     DEBUG_POSTIFX -d
     )
   
@@ -97,7 +97,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 ELSE()  
   INSTALL_FILES(/include/SfMFiles FILES SfMFiles/sfmfiles)
-  INSTALL_FILES(/include/SfMFiles .hpp SfMFiles/BundlerData.hpp SfMFiles/PMVSData.hpp SfMFiles/FeatureDescriptors.hpp)
+  INSTALL_FILES(/include/SfMFiles .hpp SfMFiles/Bundler.hpp SfMFiles/PMVS.hpp SfMFiles/FeatureDescriptors.hpp)
   INSTALL_TARGETS(/lib SfMFiles)
   #INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /bin SharedLibraryTarget)
 

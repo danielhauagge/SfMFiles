@@ -3,9 +3,11 @@
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/device/file.hpp>
 
-CompressedFileReader::CompressedFileReader(const char* fname, bool throwException)
+SFMFILES_NAMESPACE_BEGIN
+
+CompressedFileReader::CompressedFileReader(const char *fname, bool throwException)
 {
-    FILE* file = fopen(fname, "rb");
+    FILE *file = fopen(fname, "rb");
     if(file == NULL) {
         if(throwException) {
             std::stringstream errMsg;
@@ -22,11 +24,11 @@ CompressedFileReader::CompressedFileReader(const char* fname, bool throwExceptio
 
     // Is this a GZiped file?
     if (strcmp(fileType, "\x1f\x8b") == 0) {
-        _in.push(boost::iostreams::gzip_decompressor());
+        this->push(boost::iostreams::gzip_decompressor());
     }
 
-    _in.push(boost::iostreams::file_source(fname));
-    if(!_in.good()) {
+    this->push(boost::iostreams::file_source(fname));
+    if(!this->good()) {
         if(throwException) {
             std::stringstream err;
             err << "Could not read file " << fname;
@@ -34,3 +36,5 @@ CompressedFileReader::CompressedFileReader(const char* fname, bool throwExceptio
         } else return;
     }
 }
+
+SFMFILES_NAMESPACE_END

@@ -25,13 +25,12 @@
 #include <CMDCore/optparser>
 
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
 
 int
-main(int argc, const char* argv[])
+main(int argc, const char *argv[])
 {
-    using namespace BDATA;
     using namespace cmdc;
-
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -56,18 +55,18 @@ main(int argc, const char* argv[])
     LOG_EXPR(pmvsFName);
 
     LOG_INFO("Loading the bundle file");
-    BDATA::BundlerData::Ptr bundle = BDATA::BundlerData::New(inBundleFName.c_str());
+    Bundler::Reconstruction::Ptr bundle = Bundler::Reconstruction::New(inBundleFName.c_str());
 
     LOG_INFO("Loading the pmvs file");
-    PMVS::PMVSData::Ptr pmvs = PMVS::PMVSData::New(pmvsFName.c_str(), tryLoadOptions);
+    PMVS::Recontruction::Ptr pmvs = PMVS::Recontruction::New(pmvsFName.c_str(), tryLoadOptions);
 
     LOG_INFO("Adding patches to bundle file");
     PMVS::Patch::Vector::iterator patch = pmvs->getPatches().begin();
 
-    bundle->getPointInfo().resize(0);
+    bundle->getPoints().resize(0);
 
     for(int i = 0; i < pmvs->getNPatches(); i++, patch++) {
-        BDATA::PointInfo pinfo;
+        Bundler::Point pinfo;
 
         // Position
         for(int j = 0; j < 3; j++) pinfo.position(j) = patch->position(j);
@@ -84,16 +83,16 @@ main(int argc, const char* argv[])
 
         int camIdx = 0;
         for(int j = 0; j < patch->goodCameras.size(); j++, camIdx++) {
-            pinfo.viewList[camIdx] = BDATA::PointEntry(patch->goodCameras[j], -1, Eigen::Vector2d());
+            pinfo.viewList[camIdx] = Bundler::ViewListEntry(patch->goodCameras[j], -1, Eigen::Vector2d());
         }
 
         if(includeBadCameras) {
             for(int j = 0; j < patch->badCameras.size(); j++, camIdx++) {
-                pinfo.viewList[camIdx] = BDATA::PointEntry(patch->badCameras[j], -1, Eigen::Vector2d());
+                pinfo.viewList[camIdx] = Bundler::ViewListEntry(patch->badCameras[j], -1, Eigen::Vector2d());
             }
         }
 
-        bundle->getPointInfo().push_back(pinfo);
+        bundle->getPoints().push_back(pinfo);
     }
 
     LOG_INFO("Writing " << outBundleFName);

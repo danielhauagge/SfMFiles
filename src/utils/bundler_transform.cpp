@@ -21,16 +21,17 @@
 
 // Other projects
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
 #include <CMDCore/optparser>
 
 #include <fstream>
 
 int
-main(int argc, char const* argv[])
+main(int argc, char const *argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 
-    using namespace BDATA;
+    using namespace Bundler;
     using namespace cmdc;
 
     OptionParser::Arguments args;
@@ -70,11 +71,11 @@ main(int argc, char const* argv[])
     }
 
     LOG_INFO("Loading bundle file");
-    BDATA::BundlerData bundle(inBundleFName.c_str());
+    Bundler::Reconstruction bundle(inBundleFName.c_str());
 
     PROGBAR_START("Applying transform to all points");
-    BDATA::PointInfo::Vector& pnts = bundle.getPointInfo();
-    BDATA::PointInfo::Vector::iterator pnt = pnts.begin();
+    Bundler::Point::Vector &pnts = bundle.getPoints();
+    Bundler::Point::Vector::iterator pnt = pnts.begin();
     for (int i = 0, iEnd = bundle.getNPoints(); i < iEnd; i++, pnt++) {
         PROGBAR_UPDATE(i, iEnd);
 
@@ -88,8 +89,8 @@ main(int argc, char const* argv[])
 
     Eigen::MatrixXd transInv = trans.inverse();
     PROGBAR_START("Applying transform to all cameras");
-    BDATA::Camera::Vector& cams = bundle.getCameras();
-    BDATA::Camera::Vector::iterator cam = cams.begin();
+    Bundler::Camera::Vector &cams = bundle.getCameras();
+    Bundler::Camera::Vector::iterator cam = cams.begin();
     for (int i = 0, iEnd = bundle.getNCameras(); i < iEnd; i++, cam++) {
         PROGBAR_UPDATE(i, iEnd);
         Eigen::MatrixXd camT(4, 4);

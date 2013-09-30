@@ -21,6 +21,7 @@
 
 // Other projects
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
 #include <CMDCore/optparser>
 using namespace cmdc;
 
@@ -34,11 +35,11 @@ using namespace cmdc;
 #include <boost/filesystem.hpp>
 
 int
-mainCameraMode(const BDATA::BundlerData bundle,
-               const OptionParser::Arguments& args,
-               const OptionParser::Options& opts)
+mainCameraMode(const Bundler::Reconstruction bundle,
+               const OptionParser::Arguments &args,
+               const OptionParser::Options &opts)
 {
-    using namespace BDATA;
+    using namespace Bundler;
 
     int w = 15;
 
@@ -115,9 +116,9 @@ mainCameraMode(const BDATA::BundlerData bundle,
 }
 
 int
-mainPointMode(const BDATA::BundlerData bundle,
-              const OptionParser::Arguments& args,
-              const OptionParser::Options& opts)
+mainPointMode(const Bundler::Reconstruction bundle,
+              const OptionParser::Arguments &args,
+              const OptionParser::Options &opts)
 {
     std::set<std::string> selFields;
     for(int i = 2; i < args.size(); i++) {
@@ -125,10 +126,10 @@ mainPointMode(const BDATA::BundlerData bundle,
     }
     if(selFields.size() == 0) selFields.insert("all");
 
-    BDATA::PointInfo::Vector points = bundle.getPointInfo();
+    Bundler::Point::Vector points = bundle.getPoints();
 
-    BDATA::PointInfo::Vector::iterator pnt = points.begin();
-    BDATA::PointInfo::Vector::iterator pntEnd = points.end();
+    Bundler::Point::Vector::iterator pnt = points.begin();
+    Bundler::Point::Vector::iterator pntEnd = points.end();
     int pntIdx = 0;
 
     if(opts.count("selIdx")) {
@@ -154,8 +155,8 @@ mainPointMode(const BDATA::BundlerData bundle,
         }
 
         if ( selFields.count("viewlist") || selFields.count("all") ) {
-            BDATA::PointEntry::Vector::iterator vl = pnt->viewList.begin();
-            BDATA::PointEntry::Vector::iterator vlEnd = pnt->viewList.end();
+            Bundler::ViewListEntry::Vector::iterator vl = pnt->viewList.begin();
+            Bundler::ViewListEntry::Vector::iterator vlEnd = pnt->viewList.end();
 
             std::cout << "View List:\n";
             std::string sepCam = "";
@@ -173,9 +174,9 @@ mainPointMode(const BDATA::BundlerData bundle,
 }
 
 int
-main(int argc, const char** argv)
+main(int argc, const char **argv)
 {
-    using namespace BDATA;
+    using namespace Bundler;
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -195,7 +196,7 @@ main(int argc, const char** argv)
     std::string mode = args[1];
 
     // Load bundle file
-    BundlerData bundle(bundleFName.c_str());
+    Reconstruction bundle(bundleFName.c_str());
     if(opts.count("listFName")) {
         bundle.readListFile(opts["listFName"].c_str());
     }

@@ -20,7 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <SfMFiles/sfmfiles>
-using namespace BDATA;
+using namespace sfmf;
 #include <CMDCore/optparser>
 using namespace cmdc;
 
@@ -36,16 +36,16 @@ using namespace cmdc;
 // };
 
 int
-mainPointMode(const PMVS::PMVSData pmvs,
-              const OptionParser::Arguments& args,
-              const OptionParser::Options& opts)
+mainPointMode(const PMVS::Recontruction pmvs,
+              const OptionParser::Arguments &args,
+              const OptionParser::Options &opts)
 {
     // Which fields did the user specify
     std::set<std::string> selFields;
     for(int i = 2; i < args.size(); i++) selFields.insert(args[i]);
     if(selFields.size() == 0) selFields.insert("all");
 
-    std::ostream* out = &std::cout;
+    std::ostream *out = &std::cout;
     std::ofstream outF;
     if(opts.count("outFName")) {
         std::string outFName = opts.at("outFName");
@@ -120,7 +120,7 @@ mainPointMode(const PMVS::PMVSData pmvs,
 
 
 int
-main(int argc, char const* argv[])
+main(int argc, char const *argv[])
 {
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -138,7 +138,7 @@ main(int argc, char const* argv[])
     std::string patchFName = args[0];
     std::string mode = args[1];
 
-    BDATA::PMVS::PMVSData pmvs(patchFName.c_str());
+    PMVS::Recontruction pmvs(patchFName.c_str());
     pmvs.loadCamerasAndImageFilenames();
 
     // Print requested info

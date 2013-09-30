@@ -1,14 +1,16 @@
 #undef NDEBUG
 
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
+
 #include <utils.hpp>
 
 int
-test1(int argc, char const* argv[])
+test1(int argc, char const *argv[])
 {
     LOG_INFO("Test get image size");
 
-    const char* imFName = argv[0];
+    const char *imFName = argv[0];
 
     int width, height;
     if(getImageSize(imFName, width, height)) {
@@ -22,7 +24,7 @@ test1(int argc, char const* argv[])
 }
 
 int
-main(int argc, char const* argv[])
+main(int argc, char const *argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 

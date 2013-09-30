@@ -23,11 +23,12 @@
 #include <CMDCore/optparser>
 
 int
-main(int argc, char const* argv[])
+main(int argc, char const *argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 
-    using namespace BDATA;
+    using namespace sfmf;
+    using namespace Bundler;
     using namespace cmdc;
 
     OptionParser::Arguments args;
@@ -42,7 +43,7 @@ main(int argc, char const* argv[])
     std::string inListFName = args[1];
     std::string outListFName = args[2];
 
-    BDATA::BundlerData bundler(bundleFName.c_str());
+    Bundler::Reconstruction bundler(bundleFName.c_str());
     bundler.readListFile(inListFName.c_str());
 
     std::ofstream outList(outListFName.c_str());
@@ -51,7 +52,7 @@ main(int argc, char const* argv[])
         return EXIT_FAILURE;
     }
 
-    BDATA::Camera::Vector::iterator cam = bundler.getCameras().begin();
+    Bundler::Camera::Vector::iterator cam = bundler.getCameras().begin();
     for (int camIdx = 0; camIdx < bundler.getNCameras(); camIdx++, cam++) {
         int imW, imH;
         double focal = 0.0;

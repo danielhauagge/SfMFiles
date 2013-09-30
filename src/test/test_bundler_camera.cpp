@@ -1,12 +1,13 @@
 #undef NDEBUG
 
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
 #include "../ply.hpp"
 
 int
-test1(int argc, char const* argv[])
+test1(int argc, char const *argv[])
 {
-    const char* cam1Str = "500.00000000000000000000 0.00000000000000000000 0.00000000000000000000\n"
+    const char *cam1Str = "500.00000000000000000000 0.00000000000000000000 0.00000000000000000000\n"
                           "1.00000000000000000000 -0.00000000000000000000 0.00000000000000000000 \n"
                           "-0.00000000000000000000 -0.00000016292068494295 1.00000000000000000000 \n"
                           "0.00000000000000000000 -1.00000000000000000000 -0.00000016292068494295 \n"
@@ -14,7 +15,7 @@ test1(int argc, char const* argv[])
 
     LOG_INFO("Take a point that is in front of the camera to image coordinates and back and make sure that both lie on the same side of the camera");
     std::istringstream cam1S(cam1Str);
-    BDATA::Camera cam;
+    Bundler::Camera cam;
     int width = 500, height = 500;
     cam1S >> cam;
 
@@ -41,10 +42,10 @@ test1(int argc, char const* argv[])
 }
 
 int
-test2(int argc, char const* argv[])
+test2(int argc, char const *argv[])
 {
     LOG_INFO("Camera up vector");
-    BDATA::Camera cam;
+    Bundler::Camera cam;
     Eigen::Vector3d camUp;
     cam.up(camUp);
 
@@ -63,11 +64,11 @@ test2(int argc, char const* argv[])
 }
 
 int
-test3(int argc, char const* argv[])
+test3(int argc, char const *argv[])
 {
     LOG_INFO("Camera lookAt vector");
 
-    BDATA::Camera cam;
+    Bundler::Camera cam;
     Eigen::Vector3d lookAt;
     cam.lookingAt(lookAt);
     assert((lookAt - Eigen::Vector3d(0, 0, -1)).norm() < 0.01);
@@ -76,17 +77,17 @@ test3(int argc, char const* argv[])
 }
 
 int
-test4(int argc, char const* argv[])
+test4(int argc, char const *argv[])
 {
     LOG_INFO("Testing world2im");
-    const char* camStr = "7.0008849479e+02 -7.0992716605e-02 -2.8653295186e-02\n"
+    const char *camStr = "7.0008849479e+02 -7.0992716605e-02 -2.8653295186e-02\n"
                          "9.9240045398e-01 -1.1447615454e-01 4.5128139672e-02\n"
                          "9.6516563784e-02 9.5165945078e-01 2.9159705528e-01\n"
                          "-7.6327530178e-02 -2.8502543707e-01 9.5547611606e-01\n"
                          "1.8342005790e-01 9.7561838757e-01 -8.2822559093e-01";
 
     std::istringstream camS(camStr);
-    BDATA::Camera cam;
+    Bundler::Camera cam;
     camS >> cam;
 
     Eigen::Vector3d pntW(-0.134889, -0.827748, -2.69439);
@@ -102,11 +103,11 @@ test4(int argc, char const* argv[])
 }
 
 int
-test5(int argc, char const* argv[])
+test5(int argc, char const *argv[])
 {
     LOG_INFO("Visibility computation");
 
-    BDATA::Camera cam;
+    Bundler::Camera cam;
     cam.focalLength = 2;
 
     Ply ply;
@@ -142,10 +143,10 @@ test5(int argc, char const* argv[])
 }
 
 int
-test6(int argc, char const* argv[])
+test6(int argc, char const *argv[])
 {
     LOG_INFO("Testing im2world");
-    BDATA::Camera cam;
+    Bundler::Camera cam;
     cam.focalLength = 0.5;
 
     Eigen::Vector3d camCenter;
@@ -179,18 +180,18 @@ test6(int argc, char const* argv[])
 }
 
 int
-test7(int argc, char const* argv[])
+test7(int argc, char const *argv[])
 {
     LOG_INFO("Testing world2cam with 3d and 4d vectors");
 
-    const char* camStr = "7.0008849479e+02 -7.0992716605e-02 -2.8653295186e-02\n"
+    const char *camStr = "7.0008849479e+02 -7.0992716605e-02 -2.8653295186e-02\n"
                          "9.9240045398e-01 -1.1447615454e-01 4.5128139672e-02\n"
                          "9.6516563784e-02 9.5165945078e-01 2.9159705528e-01\n"
                          "-7.6327530178e-02 -2.8502543707e-01 9.5547611606e-01\n"
                          "1.8342005790e-01 9.7561838757e-01 -8.2822559093e-01";
 
     std::istringstream camS(camStr);
-    BDATA::Camera cam;
+    Bundler::Camera cam;
     camS >> cam;
 
     Eigen::Vector3d p3d(1, 2, 3);
@@ -209,7 +210,7 @@ test7(int argc, char const* argv[])
 }
 
 int
-main(int argc, char const* argv[])
+main(int argc, char const *argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 

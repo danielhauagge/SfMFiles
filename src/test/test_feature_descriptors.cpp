@@ -1,11 +1,12 @@
 #undef NDEBUG
 
 #include "SfMFiles/sfmfiles"
+using namespace sfmf;
 #include "SfMFiles/FeatureDescriptors.hpp"
 #include "../io.hpp"
 
 int
-test1(int argc, char** argv)
+test1(int argc, char **argv)
 {
     std::string siftFName = argv[0];
     LOG_INFO("Will load descriptors from file " << siftFName);
@@ -20,7 +21,7 @@ test1(int argc, char** argv)
 }
 
 int
-main(int argc, char** argv)
+main(int argc, char **argv)
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 

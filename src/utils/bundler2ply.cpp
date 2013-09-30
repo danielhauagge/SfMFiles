@@ -22,7 +22,8 @@
 #include <SfMFiles/sfmfiles>
 #include "ply.hpp"
 #include "utils.hpp"
-using namespace BDATA;
+using namespace sfmf;
+using namespace sfmf::Bundler;
 #include <CMDCore/optparser>
 
 #include <iostream>
@@ -30,11 +31,11 @@ using namespace BDATA;
 #include <cmath>
 
 void
-recolorByNCams(BDATA::BundlerData& bundler, std::string& colorMapping)
+recolorByNCams(Reconstruction &bundler, std::string &colorMapping)
 {
     std::vector<double> values(bundler.getNPoints());
     std::vector<double>::iterator v = values.begin();
-    for(PointInfo::Vector::const_iterator it = bundler.getPointInfo().begin(), itEnd = bundler.getPointInfo().end(); it != itEnd; it++, v++) {
+    for(Point::Vector::const_iterator it = bundler.getPoints().begin(), itEnd = bundler.getPoints().end(); it != itEnd; it++, v++) {
         (*v) = it->viewList.size();
     }
 
@@ -42,20 +43,20 @@ recolorByNCams(BDATA::BundlerData& bundler, std::string& colorMapping)
     colormapValues(values, colors, &colorMapping);
 
     std::vector<Eigen::Vector3f>::iterator c = colors.begin();
-    for(PointInfo::Vector::iterator it = bundler.getPointInfo().begin(), itEnd = bundler.getPointInfo().end(); it != itEnd; it++, v++, c++) {
+    for(Point::Vector::iterator it = bundler.getPoints().begin(), itEnd = bundler.getPoints().end(); it != itEnd; it++, v++, c++) {
         (*c) *= 255.0;
         it->color = Color((*c)[0], (*c)[1], (*c)[2]);
     }
 }
 
 void
-colorPointsSeenByCamera(BDATA::BundlerData& bundler, int camIdx, std::string& colorMapping)
+colorPointsSeenByCamera(Reconstruction &bundler, int camIdx, std::string &colorMapping)
 {
     Color red(250, 100, 100);
     Color green(100, 250, 100);
-    for(PointInfo::Vector::iterator it = bundler.getPointInfo().begin(), itEnd = bundler.getPointInfo().end(); it != itEnd; it++) {
-        PointEntry::Vector::iterator pe = it->viewList.begin();
-        PointEntry::Vector::iterator peEnd = it->viewList.end();
+    for(Point::Vector::iterator it = bundler.getPoints().begin(), itEnd = bundler.getPoints().end(); it != itEnd; it++) {
+        ViewListEntry::Vector::iterator pe = it->viewList.begin();
+        ViewListEntry::Vector::iterator peEnd = it->viewList.end();
         bool found = false;
         for(; pe != peEnd && !found; pe++) if(pe->camera == camIdx) found = true;
 
@@ -65,11 +66,10 @@ colorPointsSeenByCamera(BDATA::BundlerData& bundler, int camIdx, std::string& co
 }
 
 int
-main(int argc, const char* argv[])
+main(int argc, const char *argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 
-    using namespace BDATA;
     using namespace cmdc;
 
     OptionParser::Arguments args;
@@ -91,7 +91,7 @@ main(int argc, const char* argv[])
     bool colorByNCams = opts["colorByNCams"].asBool();
     int camIdx = opts["camIdx"].asInt();
 
-    BundlerData bundler(bundleFName.c_str());
+    Reconstruction bundler(bundleFName.c_str());
 
     Ply ply;
     std::stringstream comments;
@@ -111,8 +111,8 @@ main(int argc, const char* argv[])
 
     ply.addComment(comments.str());
 
-    const PointInfo::Vector& pnts = bundler.getPointInfo();
-    for(PointInfo::Vector::const_iterator it = pnts.begin(), itEnd = pnts.end(); it != itEnd; it++) {
+    const Point::Vector &pnts = bundler.getPoints();
+    for(Point::Vector::const_iterator it = pnts.begin(), itEnd = pnts.end(); it != itEnd; it++) {
         ply.addVertex(it->position, Ply::Color(it->color.r, it->color.g, it->color.b));
     }
     ply.writeToFile(plyFName);

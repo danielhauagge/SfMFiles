@@ -27,7 +27,7 @@
 
 // http://stackoverflow.com/questions/10051679/c-tokenize-string
 std::vector<std::string> inline
-splitString(const std::string& source, const char* delimiter = " ", bool keepEmpty = false)
+splitString(const std::string &source, const char *delimiter = " ", bool keepEmpty = false)
 {
     std::vector<std::string> results;
 
@@ -49,9 +49,9 @@ splitString(const std::string& source, const char* delimiter = " ", bool keepEmp
 }
 
 int
-main(int argc, const char* argv[])
+main(int argc, const char *argv[])
 {
-    using namespace BDATA;
+    using namespace sfmf;
     using namespace cmdc;
 
     OptionParser::Arguments args;
@@ -103,13 +103,13 @@ main(int argc, const char* argv[])
     }
 
     // Loading data
-    PMVS::PMVSData pmvs(inPmvsFName.c_str(), tryLoadOptions);
-    PMVS::PMVSData pmvsFiltered;
+    PMVS::Recontruction pmvs(inPmvsFName.c_str(), tryLoadOptions);
+    PMVS::Recontruction pmvsFiltered;
 
     int nOutsideSphere = 0, nDiscardedSampling = 0;
 
     LOG_INFO("Processing data");
-    PMVS::Patch::Vector& patchFiltered = pmvsFiltered.getPatches();
+    PMVS::Patch::Vector &patchFiltered = pmvsFiltered.getPatches();
     for(int i = 0; i < pmvs.getNPatches(); i++) {
         //if(i%1000 == 0) {
         //  LOG_INFO(i << "/" << pmvs.getNPatches());

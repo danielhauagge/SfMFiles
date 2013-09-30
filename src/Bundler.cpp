@@ -459,7 +459,7 @@ Reconstruction::writeFile(const char *bundlerFileName) const
     }
 
     // Points
-    PROGBAR_START("Writing cameras");
+    PROGBAR_START("Writing points");
     for(int i = 0; i < nPoints; i++) {
         PROGBAR_UPDATE(i, nPoints);
         f << std::scientific

@@ -1,26 +1,26 @@
 #undef NDEBUG
 
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
 
 int
-main(int argc, const char* argv[])
+main(int argc, const char *argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 
-    using namespace BDATA;
-
+    using namespace Bundler;
 
     if(argc == 1) {
         std::cout << "Usage:\n\t" << argv[0] << " <bundle.out> <list.txt> <cam index>" << std::endl;
         return EXIT_FAILURE;
     }
 
-    const char* bundleFName = argv[1];
-    const char* listFName = argv[2];
+    const char *bundleFName = argv[1];
+    const char *listFName = argv[2];
     int camNum = atoi(argv[3]);
 
     LOG_INFO("Loading bundle file");
-    BDATA::BundlerData bundler(bundleFName);
+    Bundler::Reconstruction bundler(bundleFName);
     LOG_EXPR(bundler.getNCameras());
     LOG_EXPR(bundler.getNValidCameras());
     LOG_EXPR(bundler.getNPoints());
@@ -40,7 +40,7 @@ main(int argc, const char* argv[])
     LOG_EXPR(bundler.getImageFileNames()[camNum]);
 
     // Test transforms
-    PointInfo& pntInfo = bundler.getPointInfo()[0];
+    Point &pntInfo = bundler.getPoints()[0];
 
     LOG_EXPR(pntInfo.position.transpose());
     const int pntIdx = 0;

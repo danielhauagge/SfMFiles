@@ -22,8 +22,8 @@
 #include <SfMFiles/sfmfiles>
 #include "utils.hpp"
 #include "ply.hpp"
+using namespace sfmf;
 
-using namespace BDATA;
 #include <CMDCore/optparser>
 
 #include <iostream>
@@ -31,7 +31,7 @@ using namespace BDATA;
 #include <cmath>
 
 void
-recolorPatches(BDATA::PMVS::PMVSData& patches, const std::vector<double>& values, std::string& colorMapping)
+recolorPatches(PMVS::Recontruction &patches, const std::vector<double> &values, std::string &colorMapping)
 {
     std::vector<Eigen::Vector3f> colors(patches.getNPatches());
     colormapValues(values, colors, &colorMapping);
@@ -43,10 +43,8 @@ recolorPatches(BDATA::PMVS::PMVSData& patches, const std::vector<double>& values
 }
 
 void
-recolorByScore(BDATA::PMVS::PMVSData& patches, std::string& colorMapping)
+recolorByScore(PMVS::Recontruction &patches, std::string &colorMapping)
 {
-    using namespace BDATA;
-
     std::vector<double> scores;
     for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
         scores.push_back(patch->score);
@@ -56,7 +54,7 @@ recolorByScore(BDATA::PMVS::PMVSData& patches, std::string& colorMapping)
 }
 
 void
-recolorByNumberOfCameras(BDATA::PMVS::PMVSData& patches, bool useGoodCams, std::string& colorMapping)
+recolorByNumberOfCameras(PMVS::Recontruction &patches, bool useGoodCams, std::string &colorMapping)
 {
     std::vector<double> patchNCams(patches.getNPatches());
     {
@@ -75,11 +73,9 @@ recolorByNumberOfCameras(BDATA::PMVS::PMVSData& patches, bool useGoodCams, std::
 }
 
 int
-main(int argc, const char* argv[])
+main(int argc, const char *argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
-
-    using namespace BDATA;
     using namespace cmdc;
 
     OptionParser::Arguments args;
@@ -103,7 +99,7 @@ main(int argc, const char* argv[])
     bool colorByNCams = opts["colorByNCams"].asBool();
     bool useGoodCams = opts["useGoodCams"].asBool();
 
-    PMVS::PMVSData pmvs(pmvsFName.c_str(), tryLoadOptions);
+    PMVS::Recontruction pmvs(pmvsFName.c_str(), tryLoadOptions);
     Ply ply;
 
     std::stringstream comments;

@@ -1,6 +1,8 @@
 #include "utils.hpp"
 #include <arpa/inet.h>
 
+SFMFILES_NAMESPACE_BEGIN
+
 // Ref: http://carnage-melon.tom7.org/stuff/jpegsize.html
 /* portions derived from IJG code */
 
@@ -13,7 +15,7 @@
 
 
 int
-scanhead(FILE* infile, int* image_width, int* image_height)
+scanhead(FILE *infile, int *image_width, int *image_height)
 {
     int marker = 0;
     int dummy = 0;
@@ -47,7 +49,7 @@ scanhead(FILE* infile, int* image_width, int* image_height)
         case 0xCD:
         case 0xCE:
         case 0xCF: {
-            readword(dummy, infile);	/* usual parameter length count */
+            readword(dummy, infile);    /* usual parameter length count */
             readbyte(dummy, infile);
             readword((*image_height), infile);
             readword((*image_width), infile);
@@ -78,7 +80,7 @@ scanhead(FILE* infile, int* image_width, int* image_height)
 }
 
 bool
-hasExtension(std::string fname, const char* exts[])
+hasExtension(std::string fname, const char *exts[])
 {
     std::transform(fname.begin(), fname.end(), fname.begin(), ::tolower);
 
@@ -93,10 +95,10 @@ hasExtension(std::string fname, const char* exts[])
 }
 
 int
-getImageSize(const char* fname, int& width, int& height, bool throwException)
+getImageSize(const char *fname, int &width, int &height, bool throwException)
 {
-    const char* jpgExts[]  = {".jpg", ".jpeg", NULL};
-    const char* pngExts[]  = {".png", NULL};
+    const char *jpgExts[]  = {".jpg", ".jpeg", NULL};
+    const char *pngExts[]  = {".png", NULL};
 
     if(hasExtension(fname, jpgExts)) {
         return getJPEGSize(fname, width, height, throwException);
@@ -107,9 +109,9 @@ getImageSize(const char* fname, int& width, int& height, bool throwException)
 }
 
 int
-getJPEGSize(const char* fname, int& width, int& height, bool throwException)
+getJPEGSize(const char *fname, int &width, int &height, bool throwException)
 {
-    FILE* file = fopen(fname, "rb");
+    FILE *file = fopen(fname, "rb");
     if(file == NULL) {
         if(throwException) {
             std::stringstream err;
@@ -126,7 +128,7 @@ getJPEGSize(const char* fname, int& width, int& height, bool throwException)
 }
 
 int
-getPNGSize(const char* fname, int& width, int& height, bool throwException)
+getPNGSize(const char *fname, int &width, int &height, bool throwException)
 {
     // Ref: http://stackoverflow.com/questions/5354459/c-how-to-get-the-image-size-of-a-png-file-in-directory
     std::ifstream in(fname);
@@ -142,8 +144,8 @@ getPNGSize(const char* fname, int& width, int& height, bool throwException)
     unsigned int widthTmp, heightTmp;
 
     in.seekg(16);
-    in.read((char*)&widthTmp, 4);
-    in.read((char*)&heightTmp, 4);
+    in.read((char *)&widthTmp, 4);
+    in.read((char *)&heightTmp, 4);
 
     widthTmp = ntohl(widthTmp);
     heightTmp = ntohl(heightTmp);
@@ -154,9 +156,9 @@ getPNGSize(const char* fname, int& width, int& height, bool throwException)
 }
 
 void
-colormapValues(const std::vector<double>& values,
-               std::vector<Eigen::Vector3f>& colors,
-               std::string* mapping)
+colormapValues(const std::vector<double> &values,
+               std::vector<Eigen::Vector3f> &colors,
+               std::string *mapping)
 {
     std::vector<double> valuesSorted = values;
     std::sort(valuesSorted.begin(), valuesSorted.end());
@@ -176,7 +178,7 @@ colormapValues(const std::vector<double>& values,
     if(mapping != NULL) {
         std::stringstream mappingS;
         mappingS << "Color mapping\n";
-        const char* fmt = "%6.2f -> Color = [%.1f, %.1f, %.1f]\n";
+        const char *fmt = "%6.2f -> Color = [%.1f, %.1f, %.1f]\n";
         for (int i = 0; i < 4; i++) {
             char buf[1000];
             sprintf(buf, fmt, quants[i], quantColors[i][0], quantColors[i][1], quantColors[i][2]);
@@ -201,3 +203,5 @@ colormapValues(const std::vector<double>& values,
         *it = quantColors[i - 1] * alpha + (1.0 - alpha) * quantColors[i];
     }
 }
+
+SFMFILES_NAMESPACE_END

@@ -24,33 +24,17 @@
 #ifndef __SFMF_IO_HPP__
 #define __SFMF_IO_HPP__
 
+SFMFILES_NAMESPACE_BEGIN
+
 // This class can read a standard text file or a GZip compressed
-// file. It checks the first few bytes of the file to determine
+// one. It checks the first few bytes of the file to determine
 // if the file was compressed.
-class CompressedFileReader
+class CompressedFileReader : public boost::iostreams::filtering_istream
 {
 public:
-    CompressedFileReader(const char* filename, bool throwException = true);
-
-    bool good() {
-        return _in.good();
-    }
-
-    template<typename T>
-    friend
-    CompressedFileReader&
-    operator>>(CompressedFileReader& r, T& v);
-
-private:
-    boost::iostreams::filtering_istream _in;
+    CompressedFileReader(const char *filename, bool throwException = true);
 };
 
-template<typename T>
-CompressedFileReader&
-operator>>(CompressedFileReader& r, T& v)
-{
-    r._in >> v;
-    return r;
-}
+SFMFILES_NAMESPACE_END
 
 #endif // __SFMF_IO_HPP__

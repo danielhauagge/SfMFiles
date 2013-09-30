@@ -21,6 +21,7 @@
 
 // Other projects
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
 #include <CMDCore/optparser>
 
 // STD
@@ -31,7 +32,7 @@
 #include <boost/filesystem.hpp>
 
 std::string
-basename(const std::string& fname)
+basename(const std::string &fname)
 {
     using namespace boost::filesystem;
 
@@ -42,9 +43,9 @@ basename(const std::string& fname)
 }
 
 int
-main(int argc, char const* argv[])
+main(int argc, char const *argv[])
 {
-    using namespace BDATA;
+    using namespace Bundler;
     using namespace cmdc;
 
 
@@ -76,7 +77,7 @@ main(int argc, char const* argv[])
 
     std::vector<std::string> outImageList;
     Camera::Vector outCams;
-    PointInfo::Vector outPoints;
+    Point::Vector outPoints;
 
     // We don't add a camera more than once, this keeps track of which ones
     // we've seen.
@@ -84,7 +85,7 @@ main(int argc, char const* argv[])
 
     for (int bun = 0, nPoints = -1; bun < inBundleFNames.size(); bun++) {
         LOG_INFO("[" << std::setw(4) << bun << "/" << inBundleFNames.size() << "] Loading " << inBundleFNames[bun]);
-        BundlerData bundle(inBundleFNames[bun].c_str());
+        Reconstruction bundle(inBundleFNames[bun].c_str());
         bundle.readListFile(inListFNames[bun].c_str());
 
         if (updateVizList) {
@@ -94,7 +95,7 @@ main(int argc, char const* argv[])
 
         if (bun == 0) {
             nPoints = bundle.getNPoints();
-            outPoints = bundle.getPointInfo();
+            outPoints = bundle.getPoints();
             outCams = bundle.getCameras();
 
             for (int i = 0; i < bundle.getNCameras(); i++) {
@@ -110,8 +111,8 @@ main(int argc, char const* argv[])
             return EXIT_FAILURE;
         }
 
-        std::vector<std::string>& imageList = bundle.getImageFileNames();
-        const Camera::Vector& cams = bundle.getCameras();
+        std::vector<std::string> &imageList = bundle.getImageFileNames();
+        const Camera::Vector &cams = bundle.getCameras();
 
         int nAdded = 0;
         for (int imgIdx = 0; imgIdx < bundle.getNCameras(); imgIdx++) {
@@ -134,7 +135,7 @@ main(int argc, char const* argv[])
             // Udate the visibility lists
             if (updateVizList) {
                 for (std::vector<PointVisListIdxs>::const_iterator it = cams[imgIdx].visiblePoints.begin(); it != cams[imgIdx].visiblePoints.end(); it++) {
-                    outPoints[it->pointIdx].viewList.push_back(PointEntry(newCamIdx));
+                    outPoints[it->pointIdx].viewList.push_back(ViewListEntry(newCamIdx));
                 }
             }
         }
@@ -142,9 +143,9 @@ main(int argc, char const* argv[])
     }
 
     LOG_INFO("Writing bundle file to " << outBundleFName);
-    BundlerData outBundle;
+    Reconstruction outBundle;
     outBundle.getCameras() = outCams;
-    outBundle.getPointInfo() = outPoints;
+    outBundle.getPoints() = outPoints;
     outBundle.writeFile(outBundleFName.c_str());
 
     LOG_INFO("Writing image list to " << outListFName);

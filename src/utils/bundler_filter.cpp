@@ -20,20 +20,21 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
 
 #include <CMDCore/optparser>
 
 void
-filterByNCams(BDATA::BundlerData& bundler, int minNCams)
+filterByNCams(Bundler::Reconstruction &bundler, int minNCams)
 {
-    using namespace BDATA;
+    using namespace Bundler;
 
-    PointInfo::Vector newPnts;
+    Point::Vector newPnts;
     PROGBAR_START("Processing points");
     int idx = 0;
     int nPnts = bundler.getNPoints();
     int nCulled = 0;
-    for(PointInfo::Vector::iterator it = bundler.getPointInfo().begin(), itEnd = bundler.getPointInfo().end(); it != itEnd; it++, idx++) {
+    for(Point::Vector::iterator it = bundler.getPoints().begin(), itEnd = bundler.getPoints().end(); it != itEnd; it++, idx++) {
         PROGBAR_UPDATE(idx, nPnts);
         if(it->viewList.size() >= minNCams) {
             newPnts.push_back(*it);
@@ -44,13 +45,13 @@ filterByNCams(BDATA::BundlerData& bundler, int minNCams)
 
     LOG_INFO(nCulled << "/" << bundler.getNPoints() << " points were removed");
 
-    bundler.getPointInfo() = newPnts;
+    bundler.getPoints() = newPnts;
 }
 
 int
-main(int argc, char const* argv[])
+main(int argc, char const *argv[])
 {
-    using namespace BDATA;
+    using namespace Bundler;
     using namespace cmdc;
 
     OptionParser::Arguments args;
@@ -71,7 +72,7 @@ main(int argc, char const* argv[])
 
     int minNCams = opts["minNCams"].asInt();
 
-    BundlerData bundler(inBundleFName.c_str());
+    Reconstruction bundler(inBundleFName.c_str());
 
     filterByNCams(bundler, minNCams);
 

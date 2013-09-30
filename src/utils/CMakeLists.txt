@@ -39,6 +39,7 @@ INSTALL_PROGRAMS(/bin FILES
                  bundler_info  
                  bundler_transform  
                  bundler_focal2list
+                 bundler_rmdups
                  pmvs_merge 
                  pmvs_info 
                  pmvs_filter 

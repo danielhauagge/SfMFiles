@@ -21,6 +21,7 @@
 
 // Other projects
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
 #include <CMDCore/optparser>
 
 // STD
@@ -28,11 +29,10 @@
 #include <iomanip>
 
 int
-main(int argc, const char** argv)
+main(int argc, const char **argv)
 {
-    using namespace BDATA::PMVS;
+    using namespace PMVS;
     using namespace cmdc;
-
 
     OptionParser::Arguments args;
     OptionParser::Options opts;
@@ -51,10 +51,10 @@ main(int argc, const char** argv)
         inFNames.push_back(args[i]);
     }
 
-    PMVSData merged;
+    Recontruction merged;
     for (int i = 0; i < inFNames.size(); i++) {
         std::cout << "[" << std::setw(4) << i << "/" << inFNames.size() << "] " << inFNames[i] << std::endl;
-        PMVSData pmvs(inFNames[i].c_str(), tryLoadOptions);
+        Recontruction pmvs(inFNames[i].c_str(), tryLoadOptions);
         merged.mergeWith(pmvs);
     }
 

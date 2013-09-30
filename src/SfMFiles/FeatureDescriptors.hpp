@@ -21,8 +21,10 @@
 
 #include <SfMFiles/sfmfiles>
 
-#ifndef __FEATURE_DESCRIPTORS_HPP__
-#define __FEATURE_DESCRIPTORS_HPP__
+#ifndef __SFMF_FEATURE_DESCRIPTORS_HPP__
+#define __SFMF_FEATURE_DESCRIPTORS_HPP__
+
+SFMFILES_NAMESPACE_BEGIN
 
 class SIFTFeature
 {
@@ -31,9 +33,11 @@ public:
     uint8_t descriptor[128];
 };
 
-std::ostream&
-operator<<(std::ostream& s, const SIFTFeature& f);
+int loadSIFT(const char *fname, std::vector<SIFTFeature> &features, bool throwException = true);
 
-int loadSIFT(const char* fname, std::vector<SIFTFeature>& features, bool throwException = true);
+SFMFILES_NAMESPACE_END
 
-#endif // __FEATURE_DESCRIPTORS_HPP__
+std::ostream &
+operator<<(std::ostream &s, const sfmf::SIFTFeature &f);
+
+#endif // __SFMF_FEATURE_DESCRIPTORS_HPP__

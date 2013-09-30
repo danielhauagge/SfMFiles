@@ -70,8 +70,16 @@
 
 #include <stdexcept>
 
-namespace sfmf
-{
+#define SFMFILES_NAMESPACE_BEGIN namespace sfmf {
+#define SFMFILES_NAMESPACE_END }
+
+#define BUNDLER_NAMESPACE_BEGIN namespace sfmf { namespace Bundler {
+#define BUNDLER_NAMESPACE_END }}
+
+#define PMVS_NAMESPACE_BEGIN namespace sfmf { namespace PMVS {
+#define PMVS_NAMESPACE_END }}
+
+SFMFILES_NAMESPACE_BEGIN
 
 class Error: public std::runtime_error
 {
@@ -87,10 +95,10 @@ public:
     }
 };
 
-}
+SFMFILES_NAMESPACE_END
 
-#include <SfMFiles/BundlerData.hpp>
-#include <SfMFiles/PMVSData.hpp>
-#include <SfMFiles/FeatureDescriptors.hpp>
+#include <SfMFiles/Bundler.hpp>
+#include <SfMFiles/PMVS.hpp>
+//#include <SfMFiles/FeatureDescriptors.hpp>
 
 #endif // __SFMFILES__

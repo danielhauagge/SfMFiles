@@ -1,44 +1,44 @@
 #undef NDEBUG
 
 #include <SfMFiles/sfmfiles>
+using namespace sfmf;
 
 #include <iostream>
 
 int
-test1(int argc, char** argv)
+test1(int argc, char **argv)
 {
     LOG_INFO("Project 3D points from bundler reconstruction");
 
-    using namespace BDATA;
     using namespace std;
 
-    const char* patchFName = argv[1];
-    const char* bundlerFName = argv[2];
+    const char *patchFName = argv[1];
+    const char *bundlerFName = argv[2];
     int width = atoi(argv[3]);
     int height = atoi(argv[4]);
     LOG_EXPR(width);
     LOG_EXPR(height);
 
-    PMVS::PMVSData pmvsData(patchFName, false);
-    BDATA::BundlerData bundlerData(bundlerFName, false);
+    PMVS::Recontruction Recontruction(patchFName, false);
+    Bundler::Reconstruction Reconstruction(bundlerFName, false);
 
-    pmvsData.loadCamerasAndImageFilenames("", false);
+    Recontruction.loadCamerasAndImageFilenames("", false);
 
-    LOG_EXPR(pmvsData.getNPatches());
-    LOG_EXPR(pmvsData.getNCameras());
+    LOG_EXPR(Recontruction.getNPatches());
+    LOG_EXPR(Recontruction.getNCameras());
 
-    BDATA::Camera::Vector::iterator cam = bundlerData.getCameras().begin();
-    for(; cam != bundlerData.getCameras().end(); cam++) {
+    Bundler::Camera::Vector::iterator cam = Reconstruction.getCameras().begin();
+    for(; cam != Reconstruction.getCameras().end(); cam++) {
     }
 
-    BDATA::PointInfo::Vector::iterator pnt = bundlerData.getPointInfo().begin();
-    for(; pnt != bundlerData.getPointInfo().end(); pnt++) {
+    Bundler::Point::Vector::iterator pnt = Reconstruction.getPoints().begin();
+    for(; pnt != Reconstruction.getPoints().end(); pnt++) {
         Eigen::Vector3d w = pnt->position;
 
 
-        for(BDATA::PointEntry::Vector::iterator pEnt = pnt->viewList.begin(); pEnt != pnt->viewList.end(); pEnt++) {
-            BDATA::Camera& camB = bundlerData.getCameras()[pEnt->camera];
-            PMVS::Camera& camP = pmvsData.getCameras()[pEnt->camera];
+        for(Bundler::ViewListEntry::Vector::iterator pEnt = pnt->viewList.begin(); pEnt != pnt->viewList.end(); pEnt++) {
+            Bundler::Camera &camB = Reconstruction.getCameras()[pEnt->camera];
+            PMVS::Camera &camP = Recontruction.getCameras()[pEnt->camera];
 
             if(camP.isValid() == false) continue;
 
@@ -69,40 +69,39 @@ test1(int argc, char** argv)
 }
 
 int
-test2(int argc, char** argv)
+test2(int argc, char **argv)
 {
     LOG_INFO("Project 3D points from PMVS reconstruction");
 
-    using namespace BDATA;
     using namespace std;
 
-    const char* patchFName = argv[1];
-    const char* bundlerFName = argv[2];
+    const char *patchFName = argv[1];
+    const char *bundlerFName = argv[2];
     int width = atoi(argv[3]);
     int height = atoi(argv[4]);
     LOG_EXPR(width);
     LOG_EXPR(height);
 
-    PMVS::PMVSData pmvsData(patchFName, false);
-    BDATA::BundlerData bundlerData(bundlerFName, false);
+    PMVS::Recontruction Recontruction(patchFName, false);
+    Bundler::Reconstruction Reconstruction(bundlerFName, false);
 
-    pmvsData.loadCamerasAndImageFilenames();
+    Recontruction.loadCamerasAndImageFilenames();
 
-    LOG_EXPR(pmvsData.getNPatches());
-    LOG_EXPR(pmvsData.getNCameras());
+    LOG_EXPR(Recontruction.getNPatches());
+    LOG_EXPR(Recontruction.getNCameras());
 
     LOG_INFO("Verifying if points that are seen by camera project into image");
 
-    PMVS::Patch::Vector::iterator patch = pmvsData.getPatches().begin();
-    for(int patchIdx = 0; patch != pmvsData.getPatches().end(); patch++, patchIdx++) {
+    PMVS::Patch::Vector::iterator patch = Recontruction.getPatches().begin();
+    for(int patchIdx = 0; patch != Recontruction.getPatches().end(); patch++, patchIdx++) {
         //LOG_EXPR(patchIdx);
 
         vector<uint32_t> camIdxs = patch->goodCameras;
         //camIdxs.insert(camIdxs.end(), patch->badCameras.begin(), patch->badCameras.end());
 
         for(vector<uint32_t>::iterator camIdx = camIdxs.begin(); camIdx != camIdxs.end(); camIdx++) {
-            PMVS::Camera& pmvsCam = pmvsData.getCameras()[*camIdx];
-            BDATA::Camera& bundlerCam = bundlerData.getCameras()[*camIdx];
+            PMVS::Camera &pmvsCam = Recontruction.getCameras()[*camIdx];
+            Bundler::Camera &bundlerCam = Reconstruction.getCameras()[*camIdx];
 
             Eigen::Vector3d w(patch->position[0], patch->position[1], patch->position[2]);
             Eigen::Vector2d im, imB;
@@ -122,7 +121,7 @@ test2(int argc, char** argv)
 }
 
 int
-main(int argc, char** argv)
+main(int argc, char **argv)
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 

@@ -1,11 +1,13 @@
 #include "ply.hpp"
 
+SFMFILES_NAMESPACE_BEGIN
+
 Ply::Ply()
 {
 }
 
 size_t
-Ply::addVertex(const Eigen::Vector3d& v, const Color& color)
+Ply::addVertex(const Eigen::Vector3d &v, const Color &color)
 {
     size_t idx = _vertices.size();
     _vertices.push_back(Vertex(v, color));
@@ -13,7 +15,7 @@ Ply::addVertex(const Eigen::Vector3d& v, const Color& color)
 }
 
 size_t
-Ply::addVertex(const Eigen::Vector3d& v, const Eigen::Vector3d& n, const Color& color)
+Ply::addVertex(const Eigen::Vector3d &v, const Eigen::Vector3d &n, const Color &color)
 {
     size_t idx = _vertexWithNormal.size();
     _vertexWithNormal.push_back(Vertex(v, n, color));
@@ -21,7 +23,7 @@ Ply::addVertex(const Eigen::Vector3d& v, const Eigen::Vector3d& n, const Color& 
 }
 
 void
-Ply::addEdge(const Eigen::Vector3d& v1, const Eigen::Vector3d& v2, const Color& color)
+Ply::addEdge(const Eigen::Vector3d &v1, const Eigen::Vector3d &v2, const Color &color)
 {
     size_t idx1, idx2;
     idx1 = addVertex(v1, color);
@@ -31,7 +33,7 @@ Ply::addEdge(const Eigen::Vector3d& v1, const Eigen::Vector3d& v2, const Color& 
 }
 
 void
-Ply::addCamera(const BDATA::Camera& cam, int imWidth, int imHeight, const Color& color)
+Ply::addCamera(const Bundler::Camera &cam, int imWidth, int imHeight, const Color &color)
 {
     Eigen::Vector3d camCenter;
     cam.center(camCenter);
@@ -76,13 +78,13 @@ Ply::addCamera(const BDATA::Camera& cam, int imWidth, int imHeight, const Color&
 }
 
 void
-Ply::addComment(const std::string& comment)
+Ply::addComment(const std::string &comment)
 {
     _comments.push_back(comment);
 }
 
 void
-Ply::writeToFile(const std::string& fname)
+Ply::writeToFile(const std::string &fname)
 {
     std::ofstream plyF(fname.c_str());
     assert(plyF.good());
@@ -161,3 +163,5 @@ Ply::writeToFile(const std::string& fname)
         }
     }
 }
+
+SFMFILES_NAMESPACE_END
