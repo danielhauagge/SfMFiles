@@ -31,7 +31,7 @@ using namespace sfmf;
 #include <cmath>
 
 void
-recolorPatches(PMVS::Recontruction &patches, const std::vector<double> &values, std::string &colorMapping)
+recolorPatches(PMVS::Reconstruction &patches, const std::vector<double> &values, std::string &colorMapping)
 {
     std::vector<Eigen::Vector3f> colors(patches.getNPatches());
     colormapValues(values, colors, &colorMapping);
@@ -43,7 +43,7 @@ recolorPatches(PMVS::Recontruction &patches, const std::vector<double> &values, 
 }
 
 void
-recolorByScore(PMVS::Recontruction &patches, std::string &colorMapping)
+recolorByScore(PMVS::Reconstruction &patches, std::string &colorMapping)
 {
     std::vector<double> scores;
     for(PMVS::Patch::Vector::iterator patch = patches.getPatches().begin(); patch != patches.getPatches().end(); patch++) {
@@ -54,7 +54,7 @@ recolorByScore(PMVS::Recontruction &patches, std::string &colorMapping)
 }
 
 void
-recolorByNumberOfCameras(PMVS::Recontruction &patches, bool useGoodCams, std::string &colorMapping)
+recolorByNumberOfCameras(PMVS::Reconstruction &patches, bool useGoodCams, std::string &colorMapping)
 {
     std::vector<double> patchNCams(patches.getNPatches());
     {
@@ -99,7 +99,7 @@ main(int argc, const char *argv[])
     bool colorByNCams = opts["colorByNCams"].asBool();
     bool useGoodCams = opts["useGoodCams"].asBool();
 
-    PMVS::Recontruction pmvs(pmvsFName.c_str(), tryLoadOptions);
+    PMVS::Reconstruction pmvs(pmvsFName.c_str(), tryLoadOptions);
     Ply ply;
 
     std::stringstream comments;

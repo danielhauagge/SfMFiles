@@ -40,7 +40,7 @@ main(int argc, char const *argv[])
         return test1(argc - 2, &argv[2]);
         break;
     default:
-        LOG_WARN("Invalid number for test " << testNum);
+        LOG_WARN("No test " << testNum);
     }
 
     return EXIT_SUCCESS;

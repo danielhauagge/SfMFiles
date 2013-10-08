@@ -109,6 +109,8 @@ test5(int argc, char const *argv[])
 
     Bundler::Camera cam;
     cam.focalLength = 2;
+    cam.k1 = 1.0;
+    cam.k1 = 1.0;
 
     Ply ply;
     Ply::Color red(250, 100, 100);
@@ -125,7 +127,7 @@ test5(int argc, char const *argv[])
             Eigen::Vector3d pnt(r * cos(theta) * sin(phi), r * sin(theta) * sin(phi), r * cos(phi));
 
             Eigen::Vector2d pntIm;
-            if(cam.world2im(pnt, pntIm, false, imW, imH)) {
+            if(cam.world2im(pnt, pntIm, true, imW, imH)) {
                 ply.addVertex(pnt, green);
             } else {
                 ply.addVertex(pnt, red);
@@ -244,7 +246,7 @@ main(int argc, char const *argv[])
         return test7(argc - 2, &argv[2]);
         break;
     default:
-        LOG_WARN("Invalid number for test " << testNum);
+        LOG_WARN("No test " << testNum);
     }
 
     return EXIT_SUCCESS;

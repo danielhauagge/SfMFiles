@@ -51,10 +51,10 @@ main(int argc, const char **argv)
         inFNames.push_back(args[i]);
     }
 
-    Recontruction merged;
+    Reconstruction merged;
     for (int i = 0; i < inFNames.size(); i++) {
         std::cout << "[" << std::setw(4) << i << "/" << inFNames.size() << "] " << inFNames[i] << std::endl;
-        Recontruction pmvs(inFNames[i].c_str(), tryLoadOptions);
+        Reconstruction pmvs(inFNames[i].c_str(), tryLoadOptions);
         merged.mergeWith(pmvs);
     }
 

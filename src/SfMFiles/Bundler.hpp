@@ -25,7 +25,6 @@
 
 #include <SfMFiles/sfmfiles>
 #include <SfMFiles/FeatureDescriptors.hpp>
-#include "io.hpp"
 
 // Author: Daniel Hauagge <hauagge@cs.cornell.edu>
 //   Date: 2011-04-03
@@ -111,7 +110,7 @@ public:
     bool isValid() const;
 };
 
-class ViewListEntry // TODO Find a better name for this class
+class ViewListEntry
 {
 public:
     typedef std::vector<ViewListEntry> Vector;
@@ -218,7 +217,7 @@ public:
     };
 
 protected:
-    void _readFileASCII(CompressedFileReader &inputStream);
+    //void _readFileASCII(CompressedFileReader &inputStream);
     void _updateNValidCams();
 
 private:

@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "SfMFiles/PMVS.hpp"
+#include "io.hpp"
 
 // STD
 #include <fstream>
@@ -173,13 +174,13 @@ Camera::isValid() const
     return this->block<3, 3>(0, 0).determinant() != 0;
 }
 
-Recontruction::Recontruction(const char *pmvsFileName, bool tryLoadOptionsFile)
+Reconstruction::Reconstruction(const char *pmvsFileName, bool tryLoadOptionsFile)
 {
     init(pmvsFileName, tryLoadOptionsFile);
 }
 
 void
-Recontruction::init(const char *pmvsFileName, bool tryLoadOptionsFile)
+Reconstruction::init(const char *pmvsFileName, bool tryLoadOptionsFile)
 {
     using namespace boost::filesystem;
 
@@ -288,7 +289,7 @@ loadCamera(const char *fname, Camera &cam)
 }
 
 void
-Recontruction::loadCamerasAndImageFilenames(const char *basedir, bool loadOnlyUsedCameras)
+Reconstruction::loadCamerasAndImageFilenames(const char *basedir, bool loadOnlyUsedCameras)
 {
     using namespace boost::filesystem;
     assert(_patchesFName.size());
@@ -360,7 +361,7 @@ Recontruction::loadCamerasAndImageFilenames(const char *basedir, bool loadOnlyUs
 }
 
 void
-Recontruction::writeFile(const char *patchesFileName) const
+Reconstruction::writeFile(const char *patchesFileName) const
 {
     std::ofstream patchesF(patchesFileName);
 
@@ -372,7 +373,7 @@ Recontruction::writeFile(const char *patchesFileName) const
 }
 
 void
-Recontruction::mergeWith(const Recontruction &other)
+Reconstruction::mergeWith(const Reconstruction &other)
 {
     this->_patchesFName = "";
     std::copy(other._patches.begin(), other._patches.end(), std::back_inserter(this->_patches));
@@ -380,14 +381,14 @@ Recontruction::mergeWith(const Recontruction &other)
     this->_imageFNames.insert(other._imageFNames.begin(), other._imageFNames.end());
 }
 
-Recontruction::Ptr
-Recontruction::New(const char *pmvsFileName, bool tryLoadOptionsFile)
+Reconstruction::Ptr
+Reconstruction::New(const char *pmvsFileName, bool tryLoadOptionsFile)
 {
-    return Recontruction::Ptr(new Recontruction(pmvsFileName, tryLoadOptionsFile));
+    return Reconstruction::Ptr(new Reconstruction(pmvsFileName, tryLoadOptionsFile));
 }
 
 void
-Recontruction::printStats() const
+Reconstruction::printStats() const
 {
     printf("# of cameras: %lu\n", getNCameras());
     printf("# of patches: %lu\n", getNPatches());
@@ -406,7 +407,7 @@ Recontruction::printStats() const
 }
 
 void
-Recontruction::Stats::accumulate(uint32_t sample)
+Reconstruction::Stats::accumulate(uint32_t sample)
 {
     maxVal = std::max(maxVal, float(sample));
     minVal = std::min(minVal, float(sample));
@@ -415,7 +416,7 @@ Recontruction::Stats::accumulate(uint32_t sample)
 }
 
 void
-Recontruction::Stats::finish()
+Reconstruction::Stats::finish()
 {
     if (_samples.size() != 0) {
         std::sort(_samples.begin(), _samples.end());

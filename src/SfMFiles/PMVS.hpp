@@ -112,7 +112,7 @@ public:
 };
 
 /// Class that loads .patch files produced by PMVS
-class Recontruction
+class Reconstruction
 {
 private:
     //std::vector<uint32_t> _camIndexMapping;
@@ -148,11 +148,11 @@ private:
     Stats _goodCamStats, _badCamStats; /// FIXME: remove this stuff, move into pmvs_info
 
 public:
-    typedef boost::shared_ptr<Recontruction> Ptr;
-    static Recontruction::Ptr New(const char *pmvsFileName, bool tryLoadOptionsFile = true);
+    typedef boost::shared_ptr<Reconstruction> Ptr;
+    static Reconstruction::Ptr New(const char *pmvsFileName, bool tryLoadOptionsFile = true);
 
-    Recontruction() {};
-    Recontruction(const char *pmvsFileName, bool tryLoadOptionsFile = true);
+    Reconstruction() {};
+    Reconstruction(const char *pmvsFileName, bool tryLoadOptionsFile = true);
 
     void init(const char *pmvsFileName, bool tryLoadOptionsFile = true);
 
@@ -196,7 +196,7 @@ public:
 
     void printStats() const;
 
-    void mergeWith(const Recontruction &other);
+    void mergeWith(const Reconstruction &other);
 };
 
 PMVS_NAMESPACE_END

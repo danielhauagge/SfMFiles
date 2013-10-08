@@ -137,6 +137,14 @@ Camera::im2cam(const Eigen::Vector2d &im, Eigen::Vector3d &c, int imWidth, int i
     c[2] = -1.0;
 }
 
+static
+inline
+bool
+inBounds(const Eigen::Vector2d &pnt, int width, int height)
+{
+    return (pnt[0] >= 0) && (pnt[0] < width) && (pnt[1] >= 0) && (pnt[1] < height);
+}
+
 bool
 Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d &im,
                bool applyRadialDistortion,
@@ -148,20 +156,23 @@ Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d &im,
     bool badZ = c[2] == 0.0; // point is at the center of projection
     c /= -c[2];
 
-    if(applyRadialDistortion) {
-        double cNorm2 = std::pow(c[0], 2.0) + std::pow(c[1], 2.0);
-        double r = 1.0 + k1 * cNorm2 + k2 * std::pow(cNorm2, 2.0);
-
-        c[0] *= r;
-        c[1] *= r;
-    }
-
     im[0] = imWidth / 2.0 + c[0] * focalLength;
     im[1] = imHeight / 2.0 + c[1] * focalLength;
 
     bool isInsideImage = true;
     if(imWidth > 0 && imHeight > 0) {
-        isInsideImage = (im[0] >= 0) && (im[0] < imWidth) && (im[1] >= 0) && (im[1] < imHeight);
+        //isInsideImage = (im[0] >= 0) && (im[0] < imWidth) && (im[1] >= 0) && (im[1] < imHeight);
+        isInsideImage = inBounds(im, imWidth, imHeight);
+    }
+
+    if(applyRadialDistortion) {
+        double cNorm2 = std::pow(c[0], 2.0) + std::pow(c[1], 2.0);
+        double r = k1 * cNorm2 + k2 * std::pow(cNorm2, 2.0);
+
+        im[0] += r * c[0] * focalLength;
+        im[1] += r * c[1] * focalLength;
+
+        if(isInsideImage) isInsideImage = inBounds(im, imWidth, imHeight);
     }
 
     return isInsideImage && isInFrontOfCamera && !badZ;
@@ -302,6 +313,7 @@ ViewListEntry::ViewListEntry(const ViewListEntry &other)
 
 const char *Reconstruction::ASCII_SIGNATURE = "# Bundle file v";
 
+#if 0
 void
 Reconstruction::_readFileASCII(CompressedFileReader &in)
 {
@@ -386,12 +398,93 @@ Reconstruction::_readFileASCII(CompressedFileReader &in)
         }
     }
 }
+#endif
 
 void
 Reconstruction::readFile(const char *bundlerFileName, bool computeCamIndex)
 {
-    CompressedFileReader f(bundlerFileName);
-    _readFileASCII(f);
+    CompressedFileReader in(bundlerFileName);
+
+    // File signature
+    char sig[200];
+    in.read(sig, strlen(ASCII_SIGNATURE));
+    sig[strlen(ASCII_SIGNATURE)] = '\0';
+    if (strcmp(sig, ASCII_SIGNATURE) != 0) {
+        LOG_WARN("Bad signature in ASCII file: " << sig);
+        throw sfmf::Error("Bad signature in binary file");
+        return;
+    }
+
+    //char firstLine[255];
+    //fgets(firstLine, sizeof(firstLine), file);
+
+    double version;
+    in >> version;
+    if (version != 0.3) {
+        std::stringstream err;
+        err << "Unsupported version " << version;
+        LOG_WARN(err.str());
+        throw sfmf::Error(err.str());
+        return;
+    }
+
+    // Get the number of points and cameras
+    int nCameras, nPoints;
+    in >> nCameras >> nPoints;
+
+    // Read the cameras
+
+    _cameras.resize(nCameras);
+    PROGBAR_START("Read cameras");
+    for(int i = 0; i < nCameras; i++) {
+        PROGBAR_UPDATE(i, nCameras);
+
+        Camera &cam = _cameras[i];
+
+        // Focal length and radial distortion
+        in >> cam.focalLength >> cam.k1 >> cam.k2;
+
+        // Rotation
+        double *R = &cam.rotation(0, 0);
+        in >> cam.rotation(0, 0) >> cam.rotation(0, 1) >> cam.rotation(0, 2);
+        in >> cam.rotation(1, 0) >> cam.rotation(1, 1) >> cam.rotation(1, 2);
+        in >> cam.rotation(2, 0) >> cam.rotation(2, 1) >> cam.rotation(2, 2);
+
+        // Translation
+        double *t = &cam.translation(0, 0);
+        in >> t[0] >> t[1] >> t[2];
+    }
+    // Read the points
+    _points.resize(nPoints);
+    Point::Vector::iterator itPoint = _points.begin();
+
+    PROGBAR_START("Read points");
+    for(int i = 0; i < nPoints; i++, itPoint++) {
+        PROGBAR_UPDATE(i, nPoints);
+
+        // Position
+        double *pos = &itPoint->position[0];
+        in >> pos[0] >> pos[1] >> pos[2];
+
+        // Color
+        float r, g, b;
+        in >> r >> g >> b;
+        itPoint->color.r = (unsigned char)r;
+        itPoint->color.g = (unsigned char)g;
+        itPoint->color.b = (unsigned char)b;
+
+        // View list
+        int viewListSize;
+        in >> viewListSize;
+        itPoint->viewList.resize(viewListSize);
+
+        ViewListEntry::Vector::iterator itEntry = itPoint->viewList.begin();
+
+        for(int j = 0; j < viewListSize; j++, itEntry++) {
+            in >> itEntry->camera >> itEntry->key >> itEntry->keyPosition(0) >> itEntry->keyPosition(1);
+            assert(itEntry->camera < nCameras && itEntry->camera >= 0);
+        }
+    }
 
     _bundleFName = std::string(bundlerFileName);
 

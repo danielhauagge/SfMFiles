@@ -103,8 +103,8 @@ main(int argc, const char *argv[])
     }
 
     // Loading data
-    PMVS::Recontruction pmvs(inPmvsFName.c_str(), tryLoadOptions);
-    PMVS::Recontruction pmvsFiltered;
+    PMVS::Reconstruction pmvs(inPmvsFName.c_str(), tryLoadOptions);
+    PMVS::Reconstruction pmvsFiltered;
 
     int nOutsideSphere = 0, nDiscardedSampling = 0;
 

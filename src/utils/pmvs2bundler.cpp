@@ -58,7 +58,7 @@ main(int argc, const char *argv[])
     Bundler::Reconstruction::Ptr bundle = Bundler::Reconstruction::New(inBundleFName.c_str());
 
     LOG_INFO("Loading the pmvs file");
-    PMVS::Recontruction::Ptr pmvs = PMVS::Recontruction::New(pmvsFName.c_str(), tryLoadOptions);
+    PMVS::Reconstruction::Ptr pmvs = PMVS::Reconstruction::New(pmvsFName.c_str(), tryLoadOptions);
 
     LOG_INFO("Adding patches to bundle file");
     PMVS::Patch::Vector::iterator patch = pmvs->getPatches().begin();

@@ -54,7 +54,7 @@ test4_forloop_float()
 }
 
 int
-main(int argc, char const* argv[])
+main(int argc, char const *argv[])
 {
     cmdc::Logger::setLogLevels(cmdc::LOGLEVEL_DEBUG);
 
@@ -74,7 +74,7 @@ main(int argc, char const* argv[])
         test4_forloop_float();
         break;
     default:
-        LOG_ERROR("Unknown test case " << testCase);
+        LOG_WARN("No test " << testNum);
     }
 
 

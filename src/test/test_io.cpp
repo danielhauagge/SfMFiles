@@ -31,7 +31,7 @@ main(int argc, char **argv)
         return test1(argc - 1, &argv[1]);
         break;
     default:
-        LOG_ERROR("Test case " << testNum << " not recognized");
+        LOG_WARN("No test " << testNum);
         return EXIT_FAILURE;
     }
 

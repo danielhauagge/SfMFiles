@@ -36,7 +36,7 @@ using namespace cmdc;
 // };
 
 int
-mainPointMode(const PMVS::Recontruction pmvs,
+mainPointMode(const PMVS::Reconstruction pmvs,
               const OptionParser::Arguments &args,
               const OptionParser::Options &opts)
 {
@@ -138,7 +138,7 @@ main(int argc, char const *argv[])
     std::string patchFName = args[0];
     std::string mode = args[1];
 
-    PMVS::Recontruction pmvs(patchFName.c_str());
+    PMVS::Reconstruction pmvs(patchFName.c_str());
     pmvs.loadCamerasAndImageFilenames();
 
     // Print requested info

@@ -19,26 +19,26 @@ test1(int argc, char **argv)
     LOG_EXPR(width);
     LOG_EXPR(height);
 
-    PMVS::Recontruction Recontruction(patchFName, false);
-    Bundler::Reconstruction Reconstruction(bundlerFName, false);
+    PMVS::Reconstruction pmvs(patchFName, false);
+    Bundler::Reconstruction bundler(bundlerFName, false);
 
-    Recontruction.loadCamerasAndImageFilenames("", false);
+    pmvs.loadCamerasAndImageFilenames("", false);
 
-    LOG_EXPR(Recontruction.getNPatches());
-    LOG_EXPR(Recontruction.getNCameras());
+    LOG_EXPR(pmvs.getNPatches());
+    LOG_EXPR(pmvs.getNCameras());
 
-    Bundler::Camera::Vector::iterator cam = Reconstruction.getCameras().begin();
-    for(; cam != Reconstruction.getCameras().end(); cam++) {
+    Bundler::Camera::Vector::iterator cam = bundler.getCameras().begin();
+    for(; cam != bundler.getCameras().end(); cam++) {
     }
 
-    Bundler::Point::Vector::iterator pnt = Reconstruction.getPoints().begin();
-    for(; pnt != Reconstruction.getPoints().end(); pnt++) {
+    Bundler::Point::Vector::iterator pnt = bundler.getPoints().begin();
+    for(; pnt != bundler.getPoints().end(); pnt++) {
         Eigen::Vector3d w = pnt->position;
 
 
         for(Bundler::ViewListEntry::Vector::iterator pEnt = pnt->viewList.begin(); pEnt != pnt->viewList.end(); pEnt++) {
-            Bundler::Camera &camB = Reconstruction.getCameras()[pEnt->camera];
-            PMVS::Camera &camP = Recontruction.getCameras()[pEnt->camera];
+            Bundler::Camera &camB = bundler.getCameras()[pEnt->camera];
+            PMVS::Camera &camP = pmvs.getCameras()[pEnt->camera];
 
             if(camP.isValid() == false) continue;
 
@@ -82,26 +82,26 @@ test2(int argc, char **argv)
     LOG_EXPR(width);
     LOG_EXPR(height);
 
-    PMVS::Recontruction Recontruction(patchFName, false);
-    Bundler::Reconstruction Reconstruction(bundlerFName, false);
+    PMVS::Reconstruction pmvs(patchFName, false);
+    Bundler::Reconstruction bundler(bundlerFName, false);
 
-    Recontruction.loadCamerasAndImageFilenames();
+    pmvs.loadCamerasAndImageFilenames();
 
-    LOG_EXPR(Recontruction.getNPatches());
-    LOG_EXPR(Recontruction.getNCameras());
+    LOG_EXPR(pmvs.getNPatches());
+    LOG_EXPR(pmvs.getNCameras());
 
     LOG_INFO("Verifying if points that are seen by camera project into image");
 
-    PMVS::Patch::Vector::iterator patch = Recontruction.getPatches().begin();
-    for(int patchIdx = 0; patch != Recontruction.getPatches().end(); patch++, patchIdx++) {
+    PMVS::Patch::Vector::iterator patch = pmvs.getPatches().begin();
+    for(int patchIdx = 0; patch != pmvs.getPatches().end(); patch++, patchIdx++) {
         //LOG_EXPR(patchIdx);
 
         vector<uint32_t> camIdxs = patch->goodCameras;
         //camIdxs.insert(camIdxs.end(), patch->badCameras.begin(), patch->badCameras.end());
 
         for(vector<uint32_t>::iterator camIdx = camIdxs.begin(); camIdx != camIdxs.end(); camIdx++) {
-            PMVS::Camera &pmvsCam = Recontruction.getCameras()[*camIdx];
-            Bundler::Camera &bundlerCam = Reconstruction.getCameras()[*camIdx];
+            PMVS::Camera &pmvsCam = pmvs.getCameras()[*camIdx];
+            Bundler::Camera &bundlerCam = bundler.getCameras()[*camIdx];
 
             Eigen::Vector3d w(patch->position[0], patch->position[1], patch->position[2]);
             Eigen::Vector2d im, imB;
