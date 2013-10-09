@@ -24,6 +24,8 @@ using namespace sfmf;
 
 #include <CMDCore/optparser>
 
+#include <algorithm>
+
 void
 filterByNCams(Bundler::Reconstruction &bundler, int minNCams)
 {
@@ -48,6 +50,54 @@ filterByNCams(Bundler::Reconstruction &bundler, int minNCams)
     bundler.getPoints() = newPnts;
 }
 
+void
+removeCameras(const std::string &rmCamsFName, Bundler::Reconstruction &bundler)
+{
+    using namespace std;
+
+    ifstream f(rmCamsFName.c_str());
+    if(f.bad()) {
+        LOG_ERROR("Could not open file " << rmCamsFName << " for reading");
+        exit(EXIT_FAILURE);
+    }
+
+    vector<int> rmCamIdxs;
+    while(f.good()) {
+        int camIdx;
+        f >> camIdx;
+        rmCamIdxs.push_back(camIdx);
+    }
+
+    LOG_INFO(rmCamIdxs.size() << " indexes in file");
+    sort(rmCamIdxs.begin(), rmCamIdxs.end());
+
+    Bundler::Camera::Vector newCams;
+    Bundler::Camera::Vector &cams = bundler.getCameras();
+
+    vector<string> &imgFNames = bundler.getImageFileNames();
+    vector<string> newImgFNames;
+
+    vector<int>::iterator rmIdx = rmCamIdxs.end();
+    int currIdx = 0;
+    while(true) {
+        for(; rmIdx != rmCamIdxs.end() && (*rmIdx) >= currIdx; rmIdx++);
+        if(rmIdx == rmCamIdxs.end()) break;
+
+        for(; currIdx < cams.size() && currIdx < (*rmIdx); currIdx++) {
+            newCams.push_back(cams[currIdx]);
+
+            if(bundler.listFileLoaded()) newImgFNames.push_back(imgFNames[currIdx]);
+        }
+        if(currIdx == cams.size()) break;
+    }
+
+    bundler.getCameras() = newCams;
+
+    if(bundler.listFileLoaded()) {
+        bundler.getImageFileNames() = newImgFNames;
+    }
+}
+
 int
 main(int argc, char const *argv[])
 {
@@ -64,20 +114,38 @@ main(int argc, char const *argv[])
     //                     "Keep all points that fall within a bounding sphere. Specify as X,Y,Z,R where "
     //                     "X, Y, and Z are center coordinates and R is the radius.");
     optParser.addOption("minNCams", "-n", "N", "--by-ncams",
-                        "Keel all points that are seen by at least N cameras", "-1");
+                        "Keep all points that are seen by at least N cameras", "-1");
+    optParser.addOption("rmCamsFName", "-r", "FNAME", "--rm-cams",
+                        "Remove cameras listed in file FNAME (one camera per line, zero indexed)");
+    optParser.addOption("inListFName", "", "FNAME", "--in-list", "Input list filename");
+    optParser.addOption("outListFName", "", "FNAME", "--out-list", "Output list filename");
     optParser.parse(argc, argv);
 
     std::string inBundleFName = args[0];
     std::string outBundleFName = args[1];
 
     int minNCams = opts["minNCams"].asInt();
+    std::string rmCamsFName = opts["rmCamsFName"];
+    std::string inListFName = opts["inListFName"];
+    std::string outListFName = opts["outListFName"];
 
     Reconstruction bundler(inBundleFName.c_str());
+    if(inListFName.size()) bundler.readListFile(inListFName.c_str());
 
-    filterByNCams(bundler, minNCams);
+    if(rmCamsFName.size()) removeCameras(rmCamsFName, bundler);
+    if(minNCams >= 0) filterByNCams(bundler, minNCams);
 
     LOG_INFO("Writing output to " << outBundleFName);
     bundler.writeFile(outBundleFName.c_str());
+
+    if(outListFName.size()) {
+        if(!bundler.listFileLoaded()) {
+            LOG_ERROR("No list file loaded but output list filename specified");
+            return EXIT_FAILURE;
+        }
+
+        bundler.writeListFile(outBundleFName.c_str());
+    }
 
     return EXIT_SUCCESS;
 }

@@ -110,7 +110,7 @@ public:
     bool isValid() const;
 };
 
-class ViewListEntry
+class ViewListEntry // formely PointEntry
 {
 public:
     typedef std::vector<ViewListEntry> Vector;
@@ -125,7 +125,7 @@ public:
 };
 
 // Stores point location, color and list of cameras that can view this point
-class Point
+class Point // formerly PointEntry
 {
 public:
     typedef std::vector<Point> Vector;
@@ -137,7 +137,7 @@ public:
 
 // Class that represents bundler output, encapsulating
 // camera information and point information for reconstructed model.
-class Reconstruction
+class Reconstruction // formely BundlerData
 {
 public:
     static const char *ASCII_SIGNATURE;
@@ -160,23 +160,15 @@ public:
     bool listFileLoaded() const;
 
     const char *getListFileName() const;
-    const char *getBundleFileName() const {
-        return _bundleFName.c_str();
-    };
+    const char *getBundleFileName() const { return _bundleFName.c_str(); };
 
     /// Input/Output
     void readFile(const char *bundlerFileName, bool computeCam2PointIndex = false);
     void writeFile(const char *bundlerFileName) const;
 
-    int getNCameras() const {
-        return _cameras.size();
-    }
-    int getNValidCameras() const {
-        return _nValidCams;
-    }
-    int getNPoints() const {
-        return _points.size();
-    }
+    int getNCameras() const { return _cameras.size(); }
+    int getNValidCameras() const { return _nValidCams; }
+    int getNPoints() const { return _points.size(); }
 
     void buildCam2PointIndex();
 
@@ -192,32 +184,14 @@ public:
     int loadSIFTFeaturesForCamera(int camIdx, std::vector<SIFTFeature> &sift, bool throwException = false) const;
 
     /// Accessors
-    const Point::Vector &getPoints() const {
-        return _points;
-    };
-
-    const Camera::Vector &getCameras() const {
-        return _cameras;
-    };
-
-    const std::vector<std::string> &getImageFileNames() const {
-        return _imageFNames;
-    };
-
-    Point::Vector &getPoints() {
-        return _points;
-    };
-
-    Camera::Vector &getCameras() {
-        return _cameras;
-    };
-
-    std::vector<std::string> &getImageFileNames() {
-        return _imageFNames;
-    };
+    const Point::Vector &getPoints() const { return _points; };
+    const Camera::Vector &getCameras() const { return _cameras; };
+    const std::vector<std::string> &getImageFileNames() const { return _imageFNames; };
+    Point::Vector &getPoints() { return _points; };
+    Camera::Vector &getCameras() { return _cameras; };
+    std::vector<std::string> &getImageFileNames() { return _imageFNames; };
 
 protected:
-    //void _readFileASCII(CompressedFileReader &inputStream);
     void _updateNValidCams();
 
 private:
