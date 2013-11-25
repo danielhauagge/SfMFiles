@@ -38,7 +38,7 @@ main(int argc, char const *argv[])
     OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
-    optParser.addUsage("<out:bundle.out> <in:transform.txt> <out:bundle2.out>");
+    optParser.addUsage("<in:bundle.out> <in:transform.txt> <out:bundle2.out>");
     optParser.addDescription("Apply transform to a bundler file. Transform is supplied as a 3 x 4 matrix stored in a text file.");
     optParser.setNArguments(3, 3);
     optParser.parse(argc, argv);

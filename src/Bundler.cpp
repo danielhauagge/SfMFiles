@@ -145,6 +145,7 @@ inBounds(const Eigen::Vector2d &pnt, int width, int height)
     return (pnt[0] >= 0) && (pnt[0] < width) && (pnt[1] >= 0) && (pnt[1] < height);
 }
 
+#if 1
 bool
 Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d &im,
                bool applyRadialDistortion,
@@ -152,6 +153,7 @@ Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d &im,
 {
     applyRadialDistortion = applyRadialDistortion && (k1 != 0.0 || k2 != 0.0);
 
+    bool checkIfInBounds = imWidth > 0 && imHeight > 0;
     bool isInFrontOfCamera = c[2] < 0.0;
     bool badZ = c[2] == 0.0; // point is at the center of projection
     c /= -c[2];
@@ -160,10 +162,7 @@ Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d &im,
     im[1] = imHeight / 2.0 + c[1] * focalLength;
 
     bool isInsideImage = true;
-    if(imWidth > 0 && imHeight > 0) {
-        //isInsideImage = (im[0] >= 0) && (im[0] < imWidth) && (im[1] >= 0) && (im[1] < imHeight);
-        isInsideImage = inBounds(im, imWidth, imHeight);
-    }
+    if(checkIfInBounds) isInsideImage = inBounds(im, imWidth, imHeight);
 
     if(applyRadialDistortion) {
         double cNorm2 = std::pow(c[0], 2.0) + std::pow(c[1], 2.0);
@@ -172,11 +171,49 @@ Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d &im,
         im[0] += r * c[0] * focalLength;
         im[1] += r * c[1] * focalLength;
 
-        if(isInsideImage) isInsideImage = inBounds(im, imWidth, imHeight);
+        if(checkIfInBounds && isInsideImage) isInsideImage = inBounds(im, imWidth, imHeight);
     }
 
     return isInsideImage && isInFrontOfCamera && !badZ;
 }
+#else
+bool
+Camera::cam2im(Eigen::Vector3d c, Eigen::Vector2d &im,
+               bool applyRadialDistortion,
+               int imWidth, int imHeight) const
+{
+    applyRadialDistortion = applyRadialDistortion && (k1 != 0.0 || k2 != 0.0);
+
+    bool checkIfInBounds = imWidth > 0 && imHeight > 0;
+    bool isInFrontOfCamera = c[2] < 0.0;
+    bool badZ = c[2] == 0.0; // point is at the center of projection
+    c /= -c[2];
+
+    bool isInsideImage = true;
+
+    if(applyRadialDistortion) {
+        double cNorm2 = std::pow(c[0], 2.0) + std::pow(c[1], 2.0);
+        double r = 1.0 + k1 * cNorm2 + k2 * std::pow(cNorm2, 2.0);
+
+        Eigen::Vector3d cNoRD = c;
+        c[0] *= r;
+        c[1] *= r;
+
+        if(checkIfInBounds) {
+            if( (c.dot(cNoRD)  / (c.norm() * cNoRD.norm())) < cos(5.0 * M_PI / 180.0)) isInsideImage = false;
+        }
+    }
+
+    im[0] = imWidth / 2.0 + c[0] * focalLength;
+    im[1] = imHeight / 2.0 + c[1] * focalLength;
+
+    if(checkIfInBounds && isInsideImage) {
+        isInsideImage = inBounds(im, imWidth, imHeight);
+    }
+
+    return isInsideImage && isInFrontOfCamera && !badZ;
+}
+#endif
 
 bool
 Camera::world2im(const Eigen::Vector3d &w, Eigen::Vector2d &im,
@@ -728,6 +765,5 @@ Reconstruction::loadSIFTFeaturesForCamera(int camIdx, std::vector<SIFTFeature> &
 
     return 1;
 }
-
 
 BUNDLER_NAMESPACE_END

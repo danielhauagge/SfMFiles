@@ -167,7 +167,7 @@ public:
     void writeFile(const char *bundlerFileName) const;
 
     int getNCameras() const { return _cameras.size(); }
-    int getNValidCameras() const { return _nValidCams; }
+    int getNValidCameras() const { return _nValidCams; } // TODO: get rid of this
     int getNPoints() const { return _points.size(); }
 
     void buildCam2PointIndex();
@@ -192,12 +192,12 @@ public:
     std::vector<std::string> &getImageFileNames() { return _imageFNames; };
 
 protected:
-    void _updateNValidCams();
+    void _updateNValidCams(); // TODO: get rid of this
 
 private:
     Camera::Vector _cameras;
     Point::Vector _points;
-    int _nValidCams;
+    int _nValidCams;  // TODO: get rid of this
     bool _cam2PointIndexInitialized;
 
     std::string _listFName, _bundleFName;

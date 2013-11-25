@@ -171,7 +171,7 @@ Camera::world2im(const Eigen::Vector3d &w, Eigen::Vector2d &im) const
 bool
 Camera::isValid() const
 {
-    return this->block<3, 3>(0, 0).determinant() != 0;
+    return fabs(this->block<3, 3>(0, 0).determinant() - 1.0) < 0.00001;
 }
 
 Reconstruction::Reconstruction(const char *pmvsFileName, bool tryLoadOptionsFile)
