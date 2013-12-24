@@ -749,7 +749,7 @@ Reconstruction::loadSIFTFeaturesForCamera(int camIdx, std::vector<SIFTFeature> &
     std::string bname = fname.substr(0, dotIdx);
 
     const char *extensions[] = {".key", ".key.gz", NULL};
-    bool done;
+    bool done = false;
     for(int i = 0; (extensions[i] != NULL) && (!done); i++) {
         std::string keyFName = bname + extensions[i];
         done = loadSIFT(keyFName.c_str(), sift, false);

@@ -79,12 +79,14 @@ public:
     float reconstructionSLevel;
 
     Patch() {};
-    Patch &operator = ( const Patch &source ) {
+    Patch &operator = ( const Patch &source )
+    {
         assert(0);
         return *this;
     }
 
-    Patch(const Patch &p) {
+    Patch(const Patch &p)
+    {
         this->score = p.score;
         this->debug1 = p.debug1;
         this->debug2 = p.debug2;
@@ -97,7 +99,8 @@ public:
         this->reconstructionSLevel = p.reconstructionSLevel;
     }
 
-    Patch(Patch &p) {
+    Patch(Patch &p)
+    {
         this->score = p.score;
         this->debug1 = p.debug1;
         this->debug2 = p.debug2;
@@ -137,7 +140,8 @@ private:
 
         Stats():
             maxVal(0.0), minVal(std::numeric_limits<float>::max()),
-            avgVal(0.0), medianVal(0.0) {
+            avgVal(0.0), medianVal(0.0)
+        {
         }
 
         void accumulate(uint32_t sample);
@@ -165,40 +169,52 @@ public:
     /// root/visualize.
     void loadCamerasAndImageFilenames(const char *basedir = "", bool loadOnlyUsedCameras = true);
 
-    size_t getNPatches() const {
+    size_t getNPatches() const
+    {
         return _patches.size();
     }
-    size_t getNCameras() const {
+    size_t getNCameras() const
+    {
         return _cameras.size();
     }
 
     // Accessors
-    const Patch::Vector &getPatches() const {
+    const Patch::Vector &getPatches() const
+    {
         return _patches;
     }
-    Patch::Vector &getPatches() {
+    Patch::Vector &getPatches()
+    {
         return _patches;
     }
 
-    const std::map<uint32_t, std::string> &getImageFileNames() const {
+    const std::map<uint32_t, std::string> &getImageFileNames() const
+    {
         return _imageFNames;
     };
-    std::map<uint32_t, std::string> &getImageFileNames() {
+    std::map<uint32_t, std::string> &getImageFileNames()
+    {
         return _imageFNames;
     };
 
-    const Camera::Map &getCameras() const {
+    const Camera::Map &getCameras() const
+    {
         return _cameras;
     };
-    Camera::Map &getCameras() {
+    Camera::Map &getCameras()
+    {
         return _cameras;
     };
 
     void printStats() const;
 
     void mergeWith(const Reconstruction &other);
+
+    static std::string defaultOptionsFileForPatchFile(const std::string &patchFName);
 };
 
 PMVS_NAMESPACE_END
+
+std::istream &operator>>(std::istream &s, sfmf::PMVS::Options &opt);
 
 #endif // __SFMF_PMVS_HPP__

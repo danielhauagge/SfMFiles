@@ -48,7 +48,6 @@ main(int argc, char const *argv[])
     using namespace Bundler;
     using namespace cmdc;
 
-
     OptionParser::Arguments args;
     OptionParser::Options opts;
 
@@ -153,8 +152,6 @@ main(int argc, char const *argv[])
     for (int i = 0; i < outImageList.size(); i++) {
         outListF << outImageList[i] << std::endl;
     }
-
-
 
     return EXIT_SUCCESS;
 }

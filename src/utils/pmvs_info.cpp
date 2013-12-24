@@ -64,8 +64,36 @@ mainPointMode(const PMVS::Reconstruction pmvs,
 
     if(opts.count("selIdx")) {
         pntIdx  = opts.at("selIdx").asInt();
+        // patch = patches.begin() + pntIdx;
+        // patchEnd = patch + 1;
+
         patch = patches.begin() + pntIdx;
-        patchEnd = patch + 1;
+
+        (*out) << "Position: " << patch->position.transpose() << "\n"
+               << "Normal: " << patch->normal.transpose() << "\n"
+               << "Score: " << patch->score << "\n"
+               << "Good cameras (" << patch->goodCameras.size() <<  "): \n";
+
+        std::string sep = "";
+        for (int i = 0; i < patch->goodCameras.size(); i++) {
+            (*out) << sep << patch->goodCameras[i];
+            sep = ", ";
+        }
+        (*out) << "\n";
+
+        (*out) << "Bad cameras (" << patch->badCameras.size() <<  "): \n";
+
+        sep = "";
+        for (int i = 0; i < patch->badCameras.size(); i++) {
+            (*out) << sep << patch->badCameras[i];
+            sep = ", ";
+        }
+
+        (*out) << "Reconstruction Accuracy: " << patch->reconstructionAccuracy << "\n"
+               << "Reconstruction SLevel: " << patch->reconstructionSLevel << "\n";
+
+        (*out) << std::flush;
+        return EXIT_SUCCESS;
     }
 
     std::string sep = "";
@@ -118,6 +146,33 @@ mainPointMode(const PMVS::Reconstruction pmvs,
     return EXIT_SUCCESS;
 }
 
+int
+mainCameraIndexes(const PMVS::Reconstruction pmvs,
+                  const OptionParser::Arguments &args,
+                  const OptionParser::Options &opts)
+{
+    std::vector<int> camIdxs;
+
+    const PMVS::Patch::Vector &patches = pmvs.getPatches();
+
+    PMVS::Patch::Vector::const_iterator patch = patches.begin();
+    PMVS::Patch::Vector::const_iterator patchEnd = patches.end();
+    for (; patch != patchEnd; patch++) {
+        for(std::vector<uint32_t>::const_iterator idx = patch->goodCameras.begin(); idx != patch->goodCameras.end(); idx++) {
+            camIdxs.push_back(*idx);
+        }
+    }
+
+    std::sort(camIdxs.begin(), camIdxs.end());
+
+    uint32_t prevIdx = camIdxs[0] + 1;
+    for(std::vector<int>::iterator i = camIdxs.begin(); i != camIdxs.end(); i++) {
+        if(*i != prevIdx) std::cout << (*i) << std::endl;
+        prevIdx = (*i);
+    }
+
+    return EXIT_SUCCESS;
+}
 
 int
 main(int argc, char const *argv[])
@@ -129,6 +184,7 @@ main(int argc, char const *argv[])
     optParser.setNArguments(2, -1);
     optParser.addDescription("Prints miscelaneous information about a PMVS .patch file.");
     optParser.addUsage("<in:reconstruction.patch> PNT <field>");
+    optParser.addUsage("<in:reconstruction.patch> CAMIDXS");
     //optParser.addUsage("<in:reconstruction.patch> CAM <field>");
     optParser.addOption("selIdx", "-i", "IDX", "--sel-idx", "Only print information from selected camera or point");
     optParser.addOption("outFName", "-o", "F", "", "Output information to file");
@@ -139,16 +195,16 @@ main(int argc, char const *argv[])
     std::string mode = args[1];
 
     PMVS::Reconstruction pmvs(patchFName.c_str());
-    pmvs.loadCamerasAndImageFilenames();
+    //pmvs.loadCamerasAndImageFilenames();
 
     // Print requested info
     //if (strcasecmp(mode.c_str(), "cam") == 0) return mainCameraMode(bundle, args, opts);
     if (strcasecmp(mode.c_str(), "pnt") == 0) return mainPointMode(pmvs, args, opts);
+    else if (strcasecmp(mode.c_str(), "camidxs") == 0) return mainCameraIndexes(pmvs, args, opts);
     else {
         LOG_ERROR("Incorrect usage, run with -h for help");
         return EXIT_FAILURE;
     }
-
 
     return EXIT_SUCCESS;
 }

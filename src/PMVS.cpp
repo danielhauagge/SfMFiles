@@ -29,6 +29,8 @@
 // Boost
 #include <boost/filesystem.hpp>
 
+#define PRINT_EXPR(expr) std::cout << #expr << " = " << (expr) << std::endl
+
 static
 void
 readSeq(std::istream &s, std::vector<uint32_t> &seq)
@@ -62,7 +64,9 @@ operator>>(std::istream &s, sfmf::PMVS::Options &opt)
         if (strlen(firstToken) == 0) continue;
         if (firstToken[0] == '#') {
             s.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
         }
+
         if (strcmp("level"      , firstToken) == 0) s >> opt.level;
         else if (strcmp("csize"      , firstToken) == 0) s >> opt.csize;
         else if (strcmp("threshold"  , firstToken) == 0) s >> opt.threshold;
@@ -221,13 +225,16 @@ Reconstruction::init(const char *pmvsFileName, bool tryLoadOptionsFile)
 
     // Load options file and fix camera indexes
     if (tryLoadOptionsFile) {
+#if 0
         path pathPatches(_patchesFName);
 
         std::string basename = pathPatches.leaf().string();
         std::string basenameNoExt(basename.begin(), basename.end() - strlen(".patch"));
 
         path optionsPath(pathPatches.parent_path() / path("..") / basenameNoExt);
-
+#else
+        path optionsPath(defaultOptionsFileForPatchFile(_patchesFName));
+#endif
         if (exists(optionsPath)) {
             LOG_INFO("Found options file " << optionsPath.string());
             CompressedFileReader optF(optionsPath.string().c_str());
@@ -235,12 +242,18 @@ Reconstruction::init(const char *pmvsFileName, bool tryLoadOptionsFile)
             optF >> opt;
 
             if (opt.oimages.size() != 0) {
-                throw sfmf::Error("Do not know what to do when the size of oimages is not 0");
+                throw sfmf::Error("Don't know what to do when the size of oimages is not 0");
             }
 #if 1
             LOG_INFO("Remapping indexes");
             for (Patch::Vector::iterator p = _patches.begin(); p != _patches.end(); p++) {
                 for (std::vector<uint32_t>::iterator cam = p->goodCameras.begin(); cam != p->goodCameras.end(); cam++) {
+                    assert((*cam) >= 0);
+
+                    if(opt.timages.size() > (*cam)) {
+                        throw sfmf::Error("Patch camera index exceeds size of timage vector. This could mean that your patch file has indices that were already remapped, try running this again suppressing the loading of option files.");
+                    }
+
                     *cam = opt.timages[*cam];
                 }
                 // not entirelly sure about this part, maybe should use oimages here
@@ -252,7 +265,7 @@ Reconstruction::init(const char *pmvsFileName, bool tryLoadOptionsFile)
 
 #if 1
         } else {
-            LOG_INFO("Could not find options file");
+            LOG_WARN("Could not find options file");
         }
     }
 #else
@@ -423,6 +436,21 @@ Reconstruction::Stats::finish()
         medianVal = _samples[_samples.size() / 2];
         avgVal /= _samples.size();
     }
+}
+
+std::string
+Reconstruction::defaultOptionsFileForPatchFile(const std::string &patchesFName)
+{
+    using namespace boost::filesystem;
+
+    path pathPatches(patchesFName);
+
+    std::string basename = pathPatches.leaf().string();
+    std::string basenameNoExt(basename.begin(), basename.end() - strlen(".patch"));
+
+    path optionsPath(pathPatches.parent_path() / path("..") / basenameNoExt);
+
+    return optionsPath.string();
 }
 
 PMVS_NAMESPACE_END

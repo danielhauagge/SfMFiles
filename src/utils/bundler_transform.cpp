@@ -65,10 +65,10 @@ main(int argc, char const *argv[])
     trans(3, 3) = 1.0;
     Eigen::MatrixXd rot = trans.block(0, 0, 3, 3);
 
-    if(fabs(rot.determinant() - 1.0) > 0.0001) {
-        LOG_ERROR("Bad rotation matrix (determinant is not 1)");
-        return EXIT_FAILURE;
-    }
+    // if(fabs(rot.determinant() - 1.0) > 0.0001) {
+    //     LOG_ERROR("Bad rotation matrix (determinant is not 1)");
+    //     return EXIT_FAILURE;
+    // }
 
     LOG_INFO("Loading bundle file");
     Bundler::Reconstruction bundle(inBundleFName.c_str());

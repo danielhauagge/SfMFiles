@@ -37,6 +37,10 @@ TARGET_LINK_LIBRARIES(pmvs_transform SfMFiles)
 ADD_EXECUTABLE(bundler_focal2list bundler_focal2list.cpp)
 TARGET_LINK_LIBRARIES(bundler_focal2list SfMFiles)
 
+ADD_EXECUTABLE(pmvs_check_remapped pmvs_check_remapped.cpp)
+TARGET_LINK_LIBRARIES(pmvs_check_remapped SfMFiles)
+
+
 INSTALL_PROGRAMS(/bin 
                  FILES 
 
@@ -53,5 +57,6 @@ INSTALL_PROGRAMS(/bin
                  pmvs_filter 
                  pmvs_transform
                  pmvs2ply 
-                 pmvs2bundler) 
+                 pmvs2bundler
+                 pmvs_check_remapped) 
 
