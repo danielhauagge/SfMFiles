@@ -26,6 +26,27 @@ using namespace sfmf;
 
 #include <fstream>
 
+void
+loadTransformFromFile(const std::string &fname, Eigen::Matrix4d &trans)
+{
+    LOG_INFO("Loading transform");
+    std::ifstream fTrans(fname.c_str());
+    if(fTrans.bad()) {
+        LOG_ERROR("Could not open file " << fname << " for reading");
+        exit(EXIT_FAILURE);
+    }
+
+    for(int i = 0; i < 3; i++) {
+        for (int j = 0; j < 4; j++) {
+            float v;
+            fTrans >> v;
+            trans(i, j) = v;
+        }
+    }
+    for (int j = 0; j < 3; j++) trans(3, j) = 0.0;
+    trans(3, 3) = 1.0;
+}
+
 int
 main(int argc, char const *argv[])
 {
@@ -38,37 +59,33 @@ main(int argc, char const *argv[])
     OptionParser::Options opts;
 
     OptionParser optParser(&args, &opts);
-    optParser.addUsage("<in:bundle.out> <in:transform.txt> <out:bundle2.out>");
-    optParser.addDescription("Apply transform to a bundler file. Transform is supplied as a 3 x 4 matrix stored in a text file.");
-    optParser.setNArguments(3, 3);
+    optParser.addUsage("<in:bundle.out> <out:bundle2.out>");
+    optParser.addDescription("Apply transform to a bundler file.");
+    optParser.addOption("scale", "-s", "S", "--scale", "Scale the model by S", "-1");
+    optParser.addOption("transFName", "-f", "FNAME", "--from-file", "Load transform from file (should be a 3 x 4 matrix)", "");
+    optParser.setNArguments(2, 2);
     optParser.parse(argc, argv);
 
-    std::string inBundleFName = args[0];
-    std::string transformFName = args[1];
-    std::string outBundleFName = args[2];
+    std::string inBundleFName  = args[0];
+    std::string outBundleFName = args[1];
 
-    LOG_INFO("Loading transform");
-    std::ifstream fTrans(transformFName.c_str());
-    if(fTrans.bad()) {
-        LOG_ERROR("Could not open file " << transformFName << " for reading");
-        return EXIT_FAILURE;
-    }
-    Eigen::MatrixXd trans(4, 4);
-    for(int i = 0; i < 3; i++) {
-        for (int j = 0; j < 4; j++) {
-            float v;
-            fTrans >> v;
-            trans(i, j) = v;
+    double scaleFactor = opts["scale"].asFloat();
+    std::string transformFName = opts["transFName"];
+
+    // Put together the transform
+    Eigen::Matrix4d trans;
+    trans.setIdentity();
+    if(scaleFactor > 0) {
+        for (int i = 0; i < 3; i++) {
+            trans(i, i) = scaleFactor;
         }
     }
-    for (int j = 0; j < 3; j++) trans(3, j) = 0.0;
-    trans(3, 3) = 1.0;
-    Eigen::MatrixXd rot = trans.block(0, 0, 3, 3);
 
-    // if(fabs(rot.determinant() - 1.0) > 0.0001) {
-    //     LOG_ERROR("Bad rotation matrix (determinant is not 1)");
-    //     return EXIT_FAILURE;
-    // }
+    if(transformFName.size()) {
+        Eigen::Matrix4d transF;
+        loadTransformFromFile(transformFName, transF);
+        trans *= transF;
+    }
 
     LOG_INFO("Loading bundle file");
     Bundler::Reconstruction bundle(inBundleFName.c_str());

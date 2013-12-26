@@ -26,6 +26,27 @@ using namespace sfmf;
 
 #include <fstream>
 
+void
+loadTransformFromFile(const std::string &fname, Eigen::Matrix4d &trans)
+{
+    LOG_INFO("Loading transform");
+    std::ifstream fTrans(fname.c_str());
+    if(fTrans.bad()) {
+        LOG_ERROR("Could not open file " << fname << " for reading");
+        exit(EXIT_FAILURE);
+    }
+
+    for(int i = 0; i < 3; i++) {
+        for (int j = 0; j < 4; j++) {
+            float v;
+            fTrans >> v;
+            trans(i, j) = v;
+        }
+    }
+    for (int j = 0; j < 3; j++) trans(3, j) = 0.0;
+    trans(3, 3) = 1.0;
+}
+
 int
 main(int argc, char const *argv[])
 {
@@ -39,36 +60,31 @@ main(int argc, char const *argv[])
 
     OptionParser optParser(&args, &opts);
     optParser.addUsage("<in:model.patch> <in:transform.txt> <out:model_transformed.patch>");
-    optParser.addDescription("Apply transform to points in a PMVS .patch file, cameras are not changed. Transform is "
-                             "supplied as a 3 x 4 matrix stored in a text file.");
-    optParser.setNArguments(3, 3);
+    optParser.addDescription("Apply transform to points in a PMVS .patch file, cameras are not changed");
+    optParser.addOption("scale", "-s", "S", "--scale", "Scale the model by S", "-1");
+    optParser.addOption("transFName", "-f", "FNAME", "--from-file", "Load transform from file (should be a 3 x 4 matrix)", "");
+    optParser.setNArguments(2, 2);
     optParser.parse(argc, argv);
 
     std::string inPMVSFname    = args[0];
-    std::string transformFName = args[1];
-    std::string outPMVSFName   = args[2];
+    std::string outPMVSFName   = args[1];
 
-    LOG_INFO("Loading transform");
-    std::ifstream fTrans(transformFName.c_str());
-    if(fTrans.bad()) {
-        LOG_ERROR("Could not open file " << transformFName << " for reading");
-        return EXIT_FAILURE;
-    }
-    Eigen::MatrixXd trans(4, 4);
-    for(int i = 0; i < 3; i++) {
-        for (int j = 0; j < 4; j++) {
-            float v;
-            fTrans >> v;
-            trans(i, j) = v;
+    double scaleFactor = opts["scale"].asFloat();
+    std::string transformFName = opts["transFName"];
+
+    // Put together the transform
+    Eigen::Matrix4d trans;
+    trans.setIdentity();
+    if(scaleFactor > 0) {
+        for (int i = 0; i < 3; i++) {
+            trans(i, i) = scaleFactor;
         }
     }
-    for (int j = 0; j < 3; j++) trans(3, j) = 0.0;
-    trans(3, 3) = 1.0;
-    Eigen::MatrixXd rot = trans.block(0, 0, 3, 3);
 
-    if(fabs(rot.determinant() - 1.0) > 0.0001) {
-        LOG_ERROR("Bad rotation matrix (determinant is not 1)");
-        return EXIT_FAILURE;
+    if(transformFName.size()) {
+        Eigen::Matrix4d transF;
+        loadTransformFromFile(transformFName, transF);
+        trans *= transF;
     }
 
     LOG_INFO("Loading PMVS file");
@@ -82,6 +98,16 @@ main(int argc, char const *argv[])
 
         patch->position = trans * patch->position;
         patch->normal   = trans * patch->normal;
+
+        double norm = 0.0;
+        for(int j = 0; j < 3; j++) {
+            norm += std::pow(patch->normal(j), 2.0);
+        }
+        norm = std::sqrt(norm);
+        for(int j = 0; j < 3; j++) {
+            patch->normal[j] /= norm;
+        }
+        patch->normal[3] = 1.0;
     }
 
     LOG_INFO("Writing output to " << outPMVSFName);
