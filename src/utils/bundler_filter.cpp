@@ -61,15 +61,15 @@ removeCameras(const std::string &rmCamsFName, Bundler::Reconstruction &bundler)
         exit(EXIT_FAILURE);
     }
 
-    vector<int> rmCamIdxs;
+    set<int> rmCamIdxs;
     while(f.good()) {
         int camIdx;
         f >> camIdx;
-        rmCamIdxs.push_back(camIdx);
+        rmCamIdxs.insert(camIdx);
     }
 
     LOG_INFO(rmCamIdxs.size() << " indexes in file");
-    sort(rmCamIdxs.begin(), rmCamIdxs.end());
+    // sort(rmCamIdxs.begin(), rmCamIdxs.end());
 
     Bundler::Camera::Vector newCams;
     Bundler::Camera::Vector &cams = bundler.getCameras();
@@ -77,20 +77,28 @@ removeCameras(const std::string &rmCamsFName, Bundler::Reconstruction &bundler)
     vector<string> &imgFNames = bundler.getImageFileNames();
     vector<string> newImgFNames;
 
-    vector<int>::iterator rmIdx = rmCamIdxs.end();
-    int currIdx = 0;
-    while(true) {
-        for(; rmIdx != rmCamIdxs.end() && (*rmIdx) >= currIdx; rmIdx++);
-        if(rmIdx == rmCamIdxs.end()) break;
+    // vector<int>::iterator rmIdx = rmCamIdxs.end();
+    // int currIdx = 0;
 
-        for(; currIdx < cams.size() && currIdx < (*rmIdx); currIdx++) {
-            newCams.push_back(cams[currIdx]);
-
-            if(bundler.listFileLoaded()) newImgFNames.push_back(imgFNames[currIdx]);
-        }
-        if(currIdx == cams.size()) break;
+    for (int i = 0; i < cams.size(); i++) {
+        if(rmCamIdxs.count(i)) continue;
+        newCams.push_back(cams[i]);
+        if(bundler.listFileLoaded()) newImgFNames.push_back(imgFNames[i]);
     }
 
+    // while(true) {
+    //     for(; rmIdx != rmCamIdxs.end() && (*rmIdx) >= currIdx; rmIdx++);
+    //     if(rmIdx == rmCamIdxs.end()) break;
+
+    //     for(; currIdx < cams.size() && currIdx < (*rmIdx); currIdx++) {
+    //         newCams.push_back(cams[currIdx]);
+
+    //         if(bundler.listFileLoaded()) newImgFNames.push_back(imgFNames[currIdx]);
+    //     }
+    //     if(currIdx == cams.size()) break;
+    // }
+
+    LOG_INFO(newCams.size() << " cameras left in the end");
     bundler.getCameras() = newCams;
 
     if(bundler.listFileLoaded()) {
@@ -119,6 +127,7 @@ main(int argc, char const *argv[])
                         "Remove cameras listed in file FNAME (one camera per line, zero indexed)");
     optParser.addOption("inListFName", "", "FNAME", "--in-list", "Input list filename");
     optParser.addOption("outListFName", "", "FNAME", "--out-list", "Output list filename");
+    optParser.setNArguments(2, 2);
     optParser.parse(argc, argv);
 
     std::string inBundleFName = args[0];
