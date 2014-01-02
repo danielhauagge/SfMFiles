@@ -40,7 +40,6 @@ TARGET_LINK_LIBRARIES(bundler_focal2list SfMFiles)
 ADD_EXECUTABLE(pmvs_check_remapped pmvs_check_remapped.cpp)
 TARGET_LINK_LIBRARIES(pmvs_check_remapped SfMFiles)
 
-
 INSTALL_PROGRAMS(/bin 
                  FILES 
 

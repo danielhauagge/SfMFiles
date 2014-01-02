@@ -80,10 +80,40 @@ removeCameras(const std::string &rmCamsFName, Bundler::Reconstruction &bundler)
     // vector<int>::iterator rmIdx = rmCamIdxs.end();
     // int currIdx = 0;
 
+    PROGBAR_START("Filtering cameras");
+    map<uint32_t, uint32_t> newCamIdxs;
+    uint32_t newIdx = 0;
     for (int i = 0; i < cams.size(); i++) {
+        PROGBAR_UPDATE(i, cams.size());
         if(rmCamIdxs.count(i)) continue;
+
+        newCamIdxs[i] = newIdx;
+
         newCams.push_back(cams[i]);
         if(bundler.listFileLoaded()) newImgFNames.push_back(imgFNames[i]);
+
+        newIdx++;
+    }
+
+    LOG_INFO("newIdx = " << newIdx);
+
+    PROGBAR_START("Processing points");
+    Bundler::Point::Vector &points = bundler.getPoints();
+    Bundler::Point::Vector newPoints(points.size());
+    for (int i = 0; i < points.size(); i++) {
+        PROGBAR_UPDATE(i, points.size());
+
+        newPoints[i].position = points[i].position;
+        newPoints[i].color = points[i].color;
+
+        for (int j = 0; j < points[i].viewList.size(); j++) {
+            if(rmCamIdxs.count(points[i].viewList[j].camera)) continue;
+
+            Bundler::ViewListEntry entry = points[i].viewList[j];
+            entry.camera = newCamIdxs[entry.camera];
+
+            newPoints[i].viewList.push_back(entry);
+        }
     }
 
     // while(true) {
@@ -100,6 +130,7 @@ removeCameras(const std::string &rmCamsFName, Bundler::Reconstruction &bundler)
 
     LOG_INFO(newCams.size() << " cameras left in the end");
     bundler.getCameras() = newCams;
+    bundler.getPoints() = newPoints;
 
     if(bundler.listFileLoaded()) {
         bundler.getImageFileNames() = newImgFNames;
