@@ -148,12 +148,13 @@ main(int argc, char const *argv[])
     bundler.writeFile(outBundleFName.c_str());
 
     if(outListFName.size()) {
+        LOG_INFO("Writing list to " << outListFName);
         if(!bundler.listFileLoaded()) {
             LOG_ERROR("No list file loaded but output list filename specified");
             return EXIT_FAILURE;
         }
 
-        bundler.writeListFile(outBundleFName.c_str());
+        bundler.writeListFile(outListFName.c_str());
     }
 
     return EXIT_SUCCESS;
