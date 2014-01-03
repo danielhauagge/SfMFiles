@@ -105,6 +105,10 @@ main(int argc, char const *argv[])
     }
 
     Eigen::MatrixXd transInv = trans.inverse();
+    Eigen::Matrix3d transRot = transInv.block(0, 0, 3, 3);
+    double scale = std::pow(transRot.determinant(), 1.0 / 3.0);
+    transInv.block(0, 0, 3, 3) /= scale;
+
     PROGBAR_START("Applying transform to all cameras");
     Bundler::Camera::Vector &cams = bundle.getCameras();
     Bundler::Camera::Vector::iterator cam = cams.begin();
@@ -119,7 +123,7 @@ main(int argc, char const *argv[])
         camT *= transInv;
 
         cam->rotation = camT.block(0, 0, 3, 3);
-        cam->translation = camT.block(0, 3, 3, 1);
+        cam->translation = camT.block(0, 3, 3, 1) / scale;
     }
 
     LOG_INFO("Writing output to " << outBundleFName);
