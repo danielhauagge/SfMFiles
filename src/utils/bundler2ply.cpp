@@ -114,7 +114,7 @@ main(int argc, const char *argv[])
     int camIdxProj = opts["camIdxProj"].asInt();
 
     bool projPoints = false;
-    if(camIdxProj) {
+    if(camIdxProj >= 0) {
         camIdx = camIdxProj;
         projPoints = true;
     }
@@ -129,6 +129,7 @@ main(int argc, const char *argv[])
     Ply ply;
     std::stringstream comments;
     comments << "Input filename: " << bundleFName << "\n";
+
 
     if(colorByNCams) {
         comments << "Colored points based on number of visible cameras\n";
@@ -147,7 +148,9 @@ main(int argc, const char *argv[])
             int width, height;
             bundler.getImageSizeForCamera(camIdx, width, height, true);
 
-            ply.addCamera(bundler.getCameras()[camIdx], width, height, Ply::Color(255, 0, 0));
+            const Camera &cam = bundler.getCameras()[camIdx];
+
+            ply.addCamera(cam, width, height, Ply::Color(255, 0, 0));
         }
     }
 
