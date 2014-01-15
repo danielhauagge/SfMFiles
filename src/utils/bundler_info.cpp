@@ -85,14 +85,8 @@ mainCameraMode(const Bundler::Reconstruction bundle,
 
         // Camera aiming direction in world coordinates
         if ( selFields.count("lookat") || selFields.count("all") ) {
-            Eigen::Vector3d camCentC = Eigen::Vector3d::Zero();
-            Eigen::Vector3d imCentC = Eigen::Vector3d::Zero();
-            imCentC[2] = 1.0;
-
-            Eigen::Vector3d camCentW, imCentW;
-            cam->cam2world(camCentC, camCentW);
-            cam->cam2world(imCentC, imCentW);
-            Eigen::Vector3d lookAt = imCentW - camCentW;
+            Eigen::Vector3d lookAt;
+            cam->lookingAt(lookAt);
 
             std::cout << std::setw(w) << "LookAt: "
                       << "(" << lookAt[0]
